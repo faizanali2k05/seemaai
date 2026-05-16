@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seema — SRA Compliance Platform</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: #1E293B; background: #fff; width: 210mm; min-height: 297mm; margin: 0 auto; }
+  .page { width: 210mm; min-height: 297mm; padding: 14mm 18mm 10mm; position: relative; }
+
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 3px solid #0891B2; }
+  .logo { font-size: 32px; font-weight: 800; color: #1B2A4A; letter-spacing: 2px; }
+  .tagline { font-size: 11px; color: #64748B; text-align: right; }
+  .tagline strong { color: #0891B2; font-size: 13px; display: block; margin-bottom: 2px; }
+
+  .hero { background: linear-gradient(135deg, #1B2A4A 0%, #0F172A 100%); color: #fff; padding: 14px 18px; border-radius: 8px; margin-bottom: 12px; }
+  .hero h1 { font-size: 18px; margin-bottom: 5px; }
+  .hero p { font-size: 10.5px; color: #CBD5E1; line-height: 1.5; }
+
+  h2 { font-size: 13px; color: #1B2A4A; margin-bottom: 7px; padding-bottom: 3px; border-bottom: 2px solid #E2E8F0; }
+  h2 span { color: #0891B2; }
+
+  /* 5 Workflow Cards */
+  .workflows { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .wf { display: flex; align-items: flex-start; gap: 10px; background: #F8FAFC; border-left: 3px solid #0891B2; padding: 8px 10px; border-radius: 0 4px 4px 0; }
+  .wf-num { font-size: 20px; font-weight: 800; color: #0891B2; min-width: 24px; line-height: 1; }
+  .wf-content { flex: 1; }
+  .wf h3 { font-size: 10.5px; color: #1B2A4A; margin-bottom: 2px; }
+  .wf p { font-size: 8.5px; color: #64748B; line-height: 1.4; }
+  .wf .highlight { font-size: 8px; color: #0891B2; font-weight: 600; margin-top: 2px; }
+
+  /* Additional features */
+  .extras { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+  .extra { background: #1B2A4A; color: #fff; font-size: 7.5px; padding: 4px 7px; border-radius: 3px; }
+
+  /* Stats bar */
+  .stats { display: flex; gap: 6px; margin-bottom: 12px; }
+  .stat { flex: 1; background: #F0F9FF; border: 1px solid #E0F2FE; border-radius: 5px; padding: 8px 6px; text-align: center; }
+  .stat .num { font-size: 20px; font-weight: 800; color: #0891B2; }
+  .stat .label { font-size: 7.5px; color: #64748B; margin-top: 2px; }
+
+  /* Pricing */
+  .pricing { display: flex; gap: 8px; margin-bottom: 12px; }
+  .plan { flex: 1; border: 1px solid #E2E8F0; border-radius: 5px; padding: 8px; text-align: center; }
+  .plan.featured { border-color: #0891B2; background: #F0FDFA; }
+  .plan h3 { font-size: 11px; color: #1B2A4A; margin-bottom: 3px; }
+  .plan .price { font-size: 22px; font-weight: 800; color: #0891B2; }
+  .plan .price span { font-size: 10px; font-weight: 400; color: #64748B; }
+  .plan .desc { font-size: 7.5px; color: #64748B; margin-top: 3px; line-height: 1.4; }
+
+  /* Security */
+  .security { display: flex; gap: 10px; background: #F8FAFC; padding: 8px 12px; border-radius: 5px; margin-bottom: 10px; }
+  .sec-item { font-size: 8px; color: #64748B; }
+  .sec-item strong { color: #1B2A4A; display: block; font-size: 8.5px; }
+
+  /* CTA */
+  .cta { background: linear-gradient(135deg, #0891B2 0%, #0E7490 100%); color: #fff; padding: 12px 18px; border-radius: 7px; text-align: center; }
+  .cta h2 { color: #fff; border: none; font-size: 14px; margin-bottom: 4px; }
+  .cta p { font-size: 9.5px; color: #E0F2FE; }
+  .cta .contact { font-size: 10px; margin-top: 6px; font-weight: 600; }
+
+  .footer { text-align: center; font-size: 7px; color: #94A3B8; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="logo">SEEMA</div>
+    <div class="tagline">
+      <strong>SRA Compliance, Simplified</strong>
+      The only compliance platform built exclusively for UK law firms
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>5 compliance workflows. One platform. Zero spreadsheets.</h1>
+    <p>Seema replaces manual compliance processes with 5 structured, AI-powered workflows — so your COLP can focus on practising law, not chasing paperwork.</p>
+  </div>
+
+  <h2>The <span>5 Core</span> Compliance Workflows</h2>
+  <div class="workflows">
+    <div class="wf">
+      <div class="wf-num">1</div>
+      <div class="wf-content">
+        <h3>Dashboard — Compliance Command Centre</h3>
+        <p>Real-time compliance health score across all SRA obligations. Pending tasks, upcoming deadlines, critical alerts — all in one view. 20+ automated background tasks keep everything current.</p>
+        <div class="highlight">Real-time health score | Critical alerts | Task management</div>
+      </div>
+    </div>
+    <div class="wf">
+      <div class="wf-num">2</div>
+      <div class="wf-content">
+        <h3>Regulatory Intelligence — AI-Powered Monitoring</h3>
+        <p>Monitors SRA, ICO, HMRC, Law Society & GOV.UK every 4 hours (30 scans/day). AI analyses impact on your specific firm, identifies affected SRA Principles, generates action items with deadlines.</p>
+        <div class="highlight">5 sources | Every 4 hours | Firm-specific AI analysis</div>
+      </div>
+    </div>
+    <div class="wf">
+      <div class="wf-num">3</div>
+      <div class="wf-content">
+        <h3>Breach Reporting — 72-Hour ICO Compliance</h3>
+        <p>Auto-calculates ICO 72-hour deadline on breach creation. Instant COLP email alerts. AI assesses whether ICO notification is required under Article 33, identifies SRA implications, generates prioritised remediation plan.</p>
+        <div class="highlight">Auto ICO deadline | COLP alerts | AI breach analysis</div>
+      </div>
+    </div>
+    <div class="wf">
+      <div class="wf-num">4</div>
+      <div class="wf-content">
+        <h3>SRA Audit Workflow — Always Inspection-Ready</h3>
+        <p>Annual return pre-populated from year-round compliance data. Tamper-proof, timestamped audit trails for every action. COLP/COFA obligation tracking. When the SRA inspector arrives, everything is ready.</p>
+        <div class="highlight">Pre-populated return | Audit trails | Saves 2-3 days/year</div>
+      </div>
+    </div>
+    <div class="wf">
+      <div class="wf-num">5</div>
+      <div class="wf-content">
+        <h3>Policy Management — AI-Generated, Expert-Approved</h3>
+        <p>AI generates comprehensive policies across 6 categories with UK regulatory references (POCA 2002, UK GDPR, Equality Act 2010, Bribery Act 2010). Review date tracking with automatic reminders. Human approval required.</p>
+        <div class="highlight">6 categories | UK legal refs | Review tracking</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Plus <span>16+</span> Additional Compliance Modules</h2>
+  <div class="extras">
+    <div class="extra">AML / KYC</div>
+    <div class="extra">Conflict Checks</div>
+    <div class="extra">Complaints Handling</div>
+    <div class="extra">Staff Competency</div>
+    <div class="extra">CPD Tracking</div>
+    <div class="extra">Risk Register</div>
+    <div class="extra">Undertakings</div>
+    <div class="extra">File Reviews</div>
+    <div class="extra">Supervision</div>
+    <div class="extra">Client Onboarding</div>
+    <div class="extra">Source of Funds</div>
+    <div class="extra">Sanctions Screening</div>
+    <div class="extra">Equality & Diversity</div>
+    <div class="extra">Financial Compliance</div>
+    <div class="extra">Info Security</div>
+    <div class="extra">Regulatory Alerts</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="num">5</div><div class="label">Regulatory sources<br>monitored by AI</div></div>
+    <div class="stat"><div class="num">4hrs</div><div class="label">Scanning frequency<br>(30 checks/day)</div></div>
+    <div class="stat"><div class="num">6</div><div class="label">AI capabilities<br>Anthropic Claude</div></div>
+    <div class="stat"><div class="num">72h</div><div class="label">ICO deadline<br>auto-tracked</div></div>
+  </div>
+
+  <h2>Simple, Transparent <span>Pricing</span></h2>
+  <div class="pricing">
+    <div class="plan">
+      <h3>Starter</h3>
+      <div class="price">&pound;49<span>/month</span></div>
+      <div class="desc">1-5 fee-earners<br>5 core workflows<br>Basic AI features<br>Email support</div>
+    </div>
+    <div class="plan featured">
+      <h3>Professional</h3>
+      <div class="price">&pound;149<span>/month</span></div>
+      <div class="desc">6-20 fee-earners<br>Full AI suite (6 capabilities)<br>All modules + priority support</div>
+    </div>
+    <div class="plan">
+      <h3>Enterprise</h3>
+      <div class="price">&pound;349<span>/month</span></div>
+      <div class="desc">20+ fee-earners<br>Custom integrations<br>Dedicated success manager</div>
+    </div>
+  </div>
+
+  <div class="security">
+    <div class="sec-item"><strong>AES-256 Encryption</strong>Data encrypted at rest & in transit (TLS 1.3)</div>
+    <div class="sec-item"><strong>Row-Level Isolation</strong>Your data completely separated from other firms</div>
+    <div class="sec-item"><strong>DPA Ready</strong>Signed Data Processing Agreement template included</div>
+    <div class="sec-item"><strong>UK GDPR Compliant</strong>ICO registered. Full 8-document legal suite.</div>
+  </div>
+
+  <div class="cta">
+    <h2>Start your free 14-day trial — no credit card required</h2>
+    <p>We pre-load your firm details from your SRA registration. See all 5 workflows working in minutes.</p>
+    <div class="contact">Book a demo: hello@seema.legal | www.seema.legal</div>
+  </div>
+
+  <div class="footer">&copy; 2026 Seema Technologies Ltd | Registered in England & Wales | ICO Registration in Progress | Confidential</div>
+
+</div>
+</body>
+</html>

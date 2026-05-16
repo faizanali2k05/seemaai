@@ -1,0 +1,21 @@
+.git
+.gitignore
+README.md
+.next
+node_modules
+npm-debug.log
+.env
+.env.local
+.DS_Store
+.vscode
+.idea
+coverage
+dist
+build
+# Playwright artifacts (don't copy ~10MB of test traces into the build)
+tests
+test-results
+playwright-report
+playwright/.cache
+# Misc
+*.log

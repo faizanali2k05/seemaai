@@ -1,0 +1,158 @@
+services:
+  # ── PostgreSQL ──
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: seema
+      POSTGRES_PASSWORD: seema
+      POSTGRES_DB: seema
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U seema"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ──
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI Backend ──
+  api:
+    build:
+      context: ./seema-api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./seema-api/.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # main.py lifespan handler auto-creates tables on startup
+    command: ["gunicorn", "main:app", "--worker-class", "uvicorn.workers.UvicornWorker", "--workers", "2", "--bind", "0.0.0.0:8000", "--timeout", "120", "--access-logfile", "-"]
+
+  # ── Celery Worker ──
+  celery-worker:
+    build:
+      context: ./seema-api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./seema-api/.env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A celery_app worker --loglevel=info --queues=compliance,email,default --concurrency=2
+
+  # ── Celery Beat Scheduler ──
+  celery-beat:
+    build:
+      context: ./seema-api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./seema-api/.env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A celery_app beat --loglevel=info
+
+  # ── Node.js API (new — runs in parallel with FastAPI during migration) ──
+  node-api:
+    build:
+      context: ./seema-node
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./seema-node/.env
+    ports:
+      - "4000:4000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - FASTAPI_URL=http://api:8000
+
+  # ── Node.js Workers (BullMQ — replaces Celery for email/billing/compliance) ──
+  node-workers:
+    build:
+      context: ./seema-node
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./seema-node/.env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - FASTAPI_URL=http://api:8000
+    command: ["node", "dist/workers/index.js"]
+
+  # ── Next.js Frontend ──
+  web:
+    build:
+      context: ./seema-web
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Browser hits nginx on port 80, which proxies /api/ to the backend
+      - NEXT_PUBLIC_API_URL=http://localhost/api
+    depends_on:
+      - api
+
+  # ── Nginx Reverse Proxy ──
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # For local dev: use local.conf (HTTP only, no SSL certs needed)
+      # For production: swap to seemaai.conf and uncomment certbot volumes
+      - ./nginx/local.conf:/etc/nginx/conf.d/default.conf:ro
+      # - ./nginx/seemaai.conf:/etc/nginx/conf.d/default.conf:ro
+      # - certbot-webroot:/var/www/certbot:ro
+      # - certbot-certs:/etc/letsencrypt:ro
+    depends_on:
+      - api
+      - web
+
+  # ── Certbot (SSL) ──
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - certbot-webroot:/var/www/certbot
+      - certbot-certs:/etc/letsencrypt
+
+volumes:
+  pgdata:
+  certbot-webroot:
+  certbot-certs:

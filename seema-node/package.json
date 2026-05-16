@@ -1,0 +1,47 @@
+{
+  "name": "@seema/api",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "tsx watch src/app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "workers": "tsx src/workers/index.ts",
+    "scheduler": "tsx src/workers/scheduler.ts",
+    "prisma:pull": "prisma db pull",
+    "prisma:generate": "prisma generate"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "@prisma/client": "^5.22.0",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "bullmq": "^5.25.0",
+    "ioredis": "^5.4.1",
+    "stripe": "^17.3.0",
+    "@sendgrid/mail": "^8.1.4",
+    "helmet": "^8.0.0",
+    "cors": "^2.8.5",
+    "express-rate-limit": "^7.4.1",
+    "winston": "^3.15.0",
+    "zod": "^3.23.8",
+    "uuid": "^10.0.0",
+    "multer": "^1.4.5-lts.1",
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "csv-parse": "^5.5.6",
+    "http-proxy-middleware": "^3.0.3",
+    "@sentry/node": "^7.119.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "tsx": "^4.19.1",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/uuid": "^10.0.0",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.8.0",
+    "prisma": "^5.22.0"
+  }
+}

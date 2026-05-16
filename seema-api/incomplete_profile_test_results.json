@@ -1,0 +1,164 @@
+[
+  {
+    "profile_id": "PROF-1",
+    "label": "COMPLETE (baseline)",
+    "firm_name": "Henderson & Clarke Solicitors LLP",
+    "practice_areas": "Conveyancing, Family Law, Wills & Probate, Commercial Property, Employment Law",
+    "firm_size": "18",
+    "interpretation": {
+      "summary": "The SRA now requires all law firms to use only the UK Sanctions List (maintained by OFSI) for sanctions screening. Firms must review and update their current screening processes to ensure compliance with this single authoritative source, and the SRA may take enforcement action if arrangements are inadequate.",
+      "applicability": "yes",
+      "applicability_reasoning": "This notice applies to Henderson & Clarke Solicitors because they handle conveyancing, commercial property, and wills & probate work, all of which involve client money and financial transactions. The notice explicitly states that firms handling property work, financial transactions, or client money are particularly at risk of enforcement action.",
+      "action_items": [
+        "Review current sanctions screening processes to verify they reference only the UK Sanctions List maintained by OFSI as the authoritative source",
+        "If using third-party screening tools for conveyancing, commercial property, or probate matters, verify these tools are configured to use the UK Sanctions List",
+        "Update internal compliance procedures and policies to mandate use of the UK Sanctions List for all client screening",
+        "Train relevant staff (particularly those handling conveyancing, commercial property, and probate matters) on the requirement to use only the UK Sanctions List",
+        "Document the review and any changes made to screening arrangements to demonstrate compliance if subject to SRA enforcement review"
+      ],
+      "source_citation": "SRA, 'Sanctions enforcement update \u2014 firms must use UK Sanctions List as sole authoritative source', published February 2026. Available at: https://www.sra.org.uk/news/news/sra-update-147-sanctions-enforcement/",
+      "confidence_score": 0.9,
+      "confidence_label": "high"
+    },
+    "issues": [],
+    "hallucination_issues": [],
+    "passed": true,
+    "tokens_in": 1691,
+    "tokens_out": 404,
+    "elapsed_ms": 8864
+  },
+  {
+    "profile_id": "PROF-2",
+    "label": "MISSING PRACTICE AREAS",
+    "firm_name": "Henderson & Clarke Solicitors LLP",
+    "practice_areas": "",
+    "firm_size": "18",
+    "interpretation": {
+      "summary": "The SRA now requires all law firms to use only the UK Sanctions List maintained by OFSI for sanctions screening, and to verify that any third-party screening tools also reference this single authoritative source. Firms with inadequate screening processes may face enforcement action, particularly those handling financial transactions, property work, or client money.",
+      "applicability": "maybe",
+      "applicability_reasoning": "The notice creates a mandatory obligation for all law firms, but without knowing Henderson & Clarke's practice areas, I cannot determine whether they handle the high-risk work types mentioned (financial transactions, property work, or client money). If they do handle any of these areas, this notice clearly applies.",
+      "action_items": [
+        "Confirm whether your firm handles financial transactions, property work, or client money",
+        "If you handle any of these areas, review your current sanctions screening processes to ensure they use only the UK Sanctions List maintained by OFSI as the authoritative source",
+        "If you use third-party screening tools, verify that they reference the UK Sanctions List and contact providers if necessary to confirm compliance",
+        "Document your review and any changes made to screening arrangements to demonstrate compliance if the SRA conducts an inspection"
+      ],
+      "source_citation": "SRA, 'Sanctions enforcement update \u2014 firms must use UK Sanctions List as sole authoritative source', published February 2026. Available at: https://www.sra.org.uk/news/news/sra-update-147-sanctions-enforcement/",
+      "confidence_score": 0.65,
+      "confidence_label": "medium"
+    },
+    "issues": [],
+    "hallucination_issues": [],
+    "passed": true,
+    "tokens_in": 1673,
+    "tokens_out": 374,
+    "elapsed_ms": 7695
+  },
+  {
+    "profile_id": "PROF-3",
+    "label": "MISSING PRACTICE AREAS + FIRM SIZE",
+    "firm_name": "Henderson & Clarke Solicitors LLP",
+    "practice_areas": "",
+    "firm_size": "0",
+    "interpretation": {
+      "summary": "The SRA now requires all law firms to use only the UK Sanctions List (maintained by OFSI) as the authoritative source for sanctions screening. Firms must review and update their screening processes, and the SRA may take enforcement action against firms with inadequate arrangements, particularly those handling financial transactions, property work, or client money.",
+      "applicability": "maybe",
+      "applicability_reasoning": "Without knowing Henderson & Clarke's practice areas, I cannot determine whether they handle financial transactions, property work, or client money\u2014the categories the SRA identifies as particularly at risk. While sanctions screening is broadly relevant to all firms, the specific obligation and urgency depends on the type of work undertaken.",
+      "action_items": [
+        "Confirm whether your firm handles financial transactions, property work, or client money",
+        "If you handle these practice areas, review current sanctions screening processes to ensure they use the UK Sanctions List (OFSI) as the sole authoritative source",
+        "If using third-party screening tools, verify they reference the UK Sanctions List",
+        "Document your sanctions screening arrangements in case of SRA enforcement review"
+      ],
+      "source_citation": "SRA, 'Sanctions enforcement update \u2014 firms must use UK Sanctions List as sole authoritative source', published February 2026. Available at: https://www.sra.org.uk/news/news/sra-update-147-sanctions-enforcement/",
+      "confidence_score": 0.55,
+      "confidence_label": "medium"
+    },
+    "issues": [],
+    "hallucination_issues": [],
+    "passed": true,
+    "tokens_in": 1673,
+    "tokens_out": 356,
+    "elapsed_ms": 6477
+  },
+  {
+    "profile_id": "PROF-4",
+    "label": "ONLY FIRM NAME",
+    "firm_name": "Henderson & Clarke Solicitors LLP",
+    "practice_areas": "",
+    "firm_size": "0",
+    "interpretation": {
+      "summary": "The SRA now requires all law firms to use only the UK Sanctions List maintained by OFSI for sanctions screening. Firms must review and update their screening processes, including any third-party tools they use. The SRA may take enforcement action against firms with inadequate screening arrangements, particularly those handling financial transactions, property work, or client money.",
+      "applicability": "maybe",
+      "applicability_reasoning": "Without knowing Henderson & Clarke's practice areas, I cannot determine whether they handle financial transactions, property work, or client money\u2014the areas flagged as particularly at risk. While sanctions screening obligations apply broadly to all SRA-regulated firms, the firm-specific impact and urgency cannot be assessed with the information provided.",
+      "action_items": [
+        "Confirm whether your firm handles financial transactions, property work, or client money, as these areas are identified as particularly at risk",
+        "If applicable, review current sanctions screening processes to ensure they use only the UK Sanctions List maintained by OFSI as the authoritative source",
+        "If using third-party screening tools, verify that they reference the UK Sanctions List and update vendor arrangements if necessary"
+      ],
+      "source_citation": "SRA, 'Sanctions enforcement update \u2014 firms must use UK Sanctions List as sole authoritative source', published February 2026. Available at: https://www.sra.org.uk/news/news/sra-update-147-sanctions-enforcement/",
+      "confidence_score": 0.55,
+      "confidence_label": "medium"
+    },
+    "issues": [],
+    "hallucination_issues": [],
+    "passed": true,
+    "tokens_in": 1675,
+    "tokens_out": 359,
+    "elapsed_ms": 6737
+  },
+  {
+    "profile_id": "PROF-5",
+    "label": "BARE MINIMUM (name only, everything else blank)",
+    "firm_name": "Unknown Firm",
+    "practice_areas": "N/A",
+    "firm_size": "0",
+    "interpretation": {
+      "summary": "The SRA now requires all law firms to use only the UK Sanctions List maintained by OFSI for sanctions screening. Firms must review and update their current screening processes, including any third-party tools they use. The SRA may take enforcement action if screening arrangements are inadequate, with firms handling financial transactions, property work, or client money facing particular scrutiny.",
+      "applicability": "maybe",
+      "applicability_reasoning": "Without knowing this firm's practice areas, I cannot determine whether they handle financial transactions, property work, or client money\u2014the categories flagged as 'particularly at risk'. While sanctions screening may apply broadly, the firm-specific impact and urgency depends entirely on what work they do.",
+      "action_items": [
+        "Confirm whether your firm handles financial transactions, property work, or client money",
+        "If applicable, review current sanctions screening processes to verify they reference only the UK Sanctions List maintained by OFSI as the authoritative source",
+        "If using third-party screening tools, verify they are configured to use the UK Sanctions List",
+        "Document the review and any updates made to screening arrangements"
+      ],
+      "source_citation": "SRA, 'Sanctions enforcement update \u2014 firms must use UK Sanctions List as sole authoritative source', published February 2026. Available at: https://www.sra.org.uk/news/news/sra-update-147-sanctions-enforcement/",
+      "confidence_score": 0.55,
+      "confidence_label": "medium"
+    },
+    "issues": [],
+    "hallucination_issues": [],
+    "passed": true,
+    "tokens_in": 1670,
+    "tokens_out": 357,
+    "elapsed_ms": 7237
+  },
+  {
+    "profile_id": "PROF-6",
+    "label": "COMPLETELY EMPTY",
+    "firm_name": "",
+    "practice_areas": "",
+    "firm_size": "0",
+    "interpretation": {
+      "summary": "The SRA now requires all law firms to use only the UK Sanctions List (maintained by OFSI) as their authoritative source for sanctions screening. Firms must review and update their current screening processes, including any third-party tools they use. The SRA may take enforcement action against firms with inadequate screening arrangements, particularly those handling financial transactions, property work, or client money.",
+      "applicability": "maybe",
+      "applicability_reasoning": "Without knowing this firm's practice areas, I cannot determine whether they handle financial transactions, property work, or client money\u2014the areas the SRA identifies as particularly at risk. All SRA-regulated firms are subject to sanctions compliance obligations, but the urgency and scope of required action depends on the firm's work type, which is not provided in this profile.",
+      "action_items": [
+        "Confirm whether your firm handles financial transactions, property work, or client money.",
+        "If applicable, review current sanctions screening processes to ensure they use the UK Sanctions List (OFSI) as the sole authoritative source.",
+        "If using third-party screening tools, verify that they reference the UK Sanctions List maintained by OFSI.",
+        "Document the review and any changes made to screening arrangements in case of SRA enforcement inquiry."
+      ],
+      "source_citation": "SRA, 'Sanctions enforcement update \u2014 firms must use UK Sanctions List as sole authoritative source', published February 2026. Available at: https://www.sra.org.uk/news/news/sra-update-147-sanctions-enforcement/",
+      "confidence_score": 0.55,
+      "confidence_label": "medium"
+    },
+    "issues": [],
+    "hallucination_issues": [],
+    "passed": true,
+    "tokens_in": 1670,
+    "tokens_out": 386,
+    "elapsed_ms": 7343
+  }
+]

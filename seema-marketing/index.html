@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seema — The Compliance Operating System for UK Law Firms</title>
+    <meta name="description" content="Seema is an AI-powered compliance platform built for SRA-regulated law firms. Automate breach reporting, staff training, chase engines, and SRA returns.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --navy: #0a1628;
+            --navy-light: #1a2a4a;
+            --navy-muted: #2d3f5f;
+            --blue: #2563eb;
+            --blue-light: #3b82f6;
+            --blue-glow: #60a5fa;
+            --teal: #0d9488;
+            --teal-light: #14b8a6;
+            --white: #ffffff;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        html { scroll-behavior: smooth; }
+        body { font-family: var(--font); color: var(--gray-800); line-height: 1.6; overflow-x: hidden; }
+
+        /* Navigation */
+        .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 1rem 0; transition: all 0.3s; }
+        .nav.scrolled { background: rgba(10, 22, 40, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; }
+        .nav-logo { font-size: 1.5rem; font-weight: 700; color: var(--white); letter-spacing: -0.5px; text-decoration: none; }
+        .nav-logo span { color: var(--blue-light); }
+        .nav-links { display: flex; align-items: center; gap: 2rem; }
+        .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--white); }
+        .nav-cta { background: var(--blue); color: var(--white) !important; padding: 0.5rem 1.25rem; border-radius: 6px; font-weight: 600 !important; transition: all 0.2s !important; }
+        .nav-cta:hover { background: var(--blue-light); transform: translateY(-1px); }
+
+        /* Hero */
+        .hero { background: linear-gradient(165deg, var(--navy) 0%, #0f2447 50%, var(--navy-light) 100%); min-height: 100vh; display: flex; align-items: center; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: -50%; right: -20%; width: 80%; height: 200%; background: radial-gradient(ellipse, rgba(37, 99, 235, 0.08) 0%, transparent 70%); pointer-events: none; }
+        .hero::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent); }
+        .hero-inner { max-width: 1200px; margin: 0 auto; padding: 8rem 2rem 6rem; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; position: relative; z-index: 1; }
+        .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(37, 99, 235, 0.1); border: 1px solid rgba(37, 99, 235, 0.2); padding: 0.4rem 1rem; border-radius: 100px; margin-bottom: 1.5rem; }
+        .hero-badge span { font-size: 0.75rem; font-weight: 600; color: var(--blue-light); text-transform: uppercase; letter-spacing: 0.5px; }
+        .hero-badge-dot { width: 6px; height: 6px; background: var(--teal-light); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .hero h1 { font-size: 3.5rem; font-weight: 700; line-height: 1.1; color: var(--white); letter-spacing: -1.5px; margin-bottom: 1.5rem; }
+        .hero h1 .gradient { background: linear-gradient(135deg, var(--blue-light), var(--teal-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero p { font-size: 1.2rem; color: var(--gray-400); line-height: 1.7; margin-bottom: 2.5rem; max-width: 520px; }
+        .hero-buttons { display: flex; gap: 1rem; align-items: center; }
+        .btn-primary { background: var(--blue); color: var(--white); padding: 0.875rem 2rem; border-radius: 8px; font-size: 0.9375rem; font-weight: 600; text-decoration: none; transition: all 0.2s; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .btn-primary:hover { background: var(--blue-light); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3); }
+        .btn-secondary { color: var(--gray-300); padding: 0.875rem 1.5rem; font-size: 0.9375rem; font-weight: 500; text-decoration: none; transition: color 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .btn-secondary:hover { color: var(--white); }
+        .hero-visual { position: relative; }
+        .hero-dashboard { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 1.5rem; backdrop-filter: blur(10px); }
+        .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .dash-header-left { display: flex; align-items: center; gap: 0.75rem; }
+        .dash-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), var(--teal)); }
+        .dash-greeting { font-size: 0.8125rem; color: var(--gray-400); }
+        .dash-greeting strong { color: var(--white); font-weight: 600; }
+        .dash-status { font-size: 0.6875rem; color: var(--teal-light); background: rgba(13, 148, 136, 0.1); padding: 0.25rem 0.75rem; border-radius: 100px; font-weight: 600; }
+        .dash-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
+        .dash-stat { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 0.875rem; }
+        .dash-stat-value { font-size: 1.25rem; font-weight: 700; color: var(--white); }
+        .dash-stat-label { font-size: 0.6875rem; color: var(--gray-500); margin-top: 0.125rem; }
+        .dash-stat.alert .dash-stat-value { color: #f59e0b; }
+        .dash-stat.good .dash-stat-value { color: var(--teal-light); }
+        .dash-items { display: flex; flex-direction: column; gap: 0.5rem; }
+        .dash-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; }
+        .dash-item-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .dash-item-dot.red { background: #ef4444; }
+        .dash-item-dot.amber { background: #f59e0b; }
+        .dash-item-dot.blue { background: var(--blue-light); }
+        .dash-item-text { font-size: 0.75rem; color: var(--gray-400); flex: 1; }
+        .dash-item-time { font-size: 0.6875rem; color: var(--gray-600); }
+
+        /* Social proof */
+        .social-proof { padding: 3rem 0; background: var(--gray-50); border-top: 1px solid var(--gray-200); border-bottom: 1px solid var(--gray-200); }
+        .social-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; text-align: center; }
+        .social-label { font-size: 0.75rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.5rem; }
+        .social-logos { display: flex; align-items: center; justify-content: center; gap: 3rem; opacity: 0.5; }
+        .social-logos span { font-size: 1.1rem; font-weight: 600; color: var(--gray-600); letter-spacing: -0.3px; }
+
+        /* Features */
+        .features { padding: 7rem 0; background: var(--white); }
+        .features-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+        .section-label { font-size: 0.75rem; font-weight: 600; color: var(--blue); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.75rem; }
+        .section-title { font-size: 2.5rem; font-weight: 700; color: var(--gray-900); letter-spacing: -1px; margin-bottom: 1rem; max-width: 600px; }
+        .section-subtitle { font-size: 1.1rem; color: var(--gray-500); line-height: 1.7; margin-bottom: 4rem; max-width: 600px; }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+        .feature-card { padding: 2rem; border-radius: 12px; border: 1px solid var(--gray-200); transition: all 0.3s; }
+        .feature-card:hover { border-color: var(--blue); box-shadow: 0 8px 30px rgba(37, 99, 235, 0.08); transform: translateY(-4px); }
+        .feature-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; font-size: 1.25rem; }
+        .feature-icon.breach { background: rgba(239, 68, 68, 0.08); color: #dc2626; }
+        .feature-icon.training { background: rgba(37, 99, 235, 0.08); color: var(--blue); }
+        .feature-icon.chase { background: rgba(245, 158, 11, 0.08); color: #d97706; }
+        .feature-icon.dashboard { background: rgba(13, 148, 136, 0.08); color: var(--teal); }
+        .feature-icon.audit { background: rgba(99, 102, 241, 0.08); color: #6366f1; }
+        .feature-icon.ai { background: rgba(168, 85, 247, 0.08); color: #9333ea; }
+        .feature-card h3 { font-size: 1.1rem; font-weight: 600; color: var(--gray-900); margin-bottom: 0.5rem; }
+        .feature-card p { font-size: 0.875rem; color: var(--gray-500); line-height: 1.7; }
+
+        /* Platform section */
+        .platform { padding: 7rem 0; background: var(--gray-50); }
+        .platform-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+        .platform-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+        .platform-visual { background: var(--white); border: 1px solid var(--gray-200); border-radius: 16px; padding: 2rem; }
+        .platform-metric { display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--gray-100); }
+        .platform-metric:last-child { border-bottom: none; }
+        .platform-metric-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .platform-metric-text h4 { font-size: 0.9375rem; font-weight: 600; color: var(--gray-900); }
+        .platform-metric-text p { font-size: 0.8125rem; color: var(--gray-500); }
+        .platform-metric-value { margin-left: auto; font-size: 1.5rem; font-weight: 700; }
+        .stat-list { display: flex; flex-direction: column; gap: 1.5rem; margin-top: 2rem; }
+        .stat-item { display: flex; align-items: flex-start; gap: 1rem; }
+        .stat-item-icon { width: 24px; height: 24px; border-radius: 50%; background: rgba(13, 148, 136, 0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+        .stat-item-icon svg { width: 12px; height: 12px; }
+        .stat-item h4 { font-size: 0.9375rem; font-weight: 600; color: var(--gray-900); margin-bottom: 0.25rem; }
+        .stat-item p { font-size: 0.8125rem; color: var(--gray-500); line-height: 1.6; }
+
+        /* Testimonial */
+        .testimonial { padding: 7rem 0; background: var(--navy); position: relative; overflow: hidden; }
+        .testimonial::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; background: radial-gradient(circle, rgba(37, 99, 235, 0.06), transparent 70%); pointer-events: none; }
+        .testimonial-inner { max-width: 800px; margin: 0 auto; padding: 0 2rem; text-align: center; position: relative; z-index: 1; }
+        .testimonial-quote { font-size: 1.5rem; font-weight: 400; color: var(--white); line-height: 1.7; margin-bottom: 2rem; font-style: italic; }
+        .testimonial-author { display: flex; align-items: center; justify-content: center; gap: 1rem; }
+        .testimonial-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), var(--teal)); display: flex; align-items: center; justify-content: center; color: var(--white); font-weight: 600; font-size: 0.875rem; }
+        .testimonial-info { text-align: left; }
+        .testimonial-name { font-size: 0.9375rem; font-weight: 600; color: var(--white); }
+        .testimonial-role { font-size: 0.8125rem; color: var(--gray-400); }
+
+        /* Pricing */
+        .pricing { padding: 7rem 0; background: var(--white); }
+        .pricing-inner { max-width: 1000px; margin: 0 auto; padding: 0 2rem; text-align: center; }
+        .pricing-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-top: 3rem; text-align: left; }
+        .price-card { border: 1px solid var(--gray-200); border-radius: 16px; padding: 2.5rem; transition: all 0.3s; }
+        .price-card.featured { border-color: var(--blue); box-shadow: 0 8px 40px rgba(37, 99, 235, 0.1); position: relative; }
+        .price-card.featured::before { content: 'Most popular'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--blue); color: var(--white); font-size: 0.6875rem; font-weight: 600; padding: 0.3rem 1rem; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .price-card-name { font-size: 1.1rem; font-weight: 600; color: var(--gray-900); margin-bottom: 0.5rem; }
+        .price-card-desc { font-size: 0.8125rem; color: var(--gray-500); margin-bottom: 1.5rem; }
+        .price-card-amount { font-size: 2.5rem; font-weight: 700; color: var(--gray-900); }
+        .price-card-amount span { font-size: 1rem; font-weight: 400; color: var(--gray-500); }
+        .price-card-period { font-size: 0.8125rem; color: var(--gray-400); margin-bottom: 2rem; }
+        .price-card-btn { display: block; width: 100%; padding: 0.875rem; border-radius: 8px; font-size: 0.9375rem; font-weight: 600; text-align: center; text-decoration: none; transition: all 0.2s; cursor: pointer; border: none; }
+        .price-card-btn.outline { background: transparent; border: 1px solid var(--gray-300); color: var(--gray-700); }
+        .price-card-btn.outline:hover { border-color: var(--gray-900); color: var(--gray-900); }
+        .price-card-btn.filled { background: var(--blue); color: var(--white); }
+        .price-card-btn.filled:hover { background: var(--blue-light); transform: translateY(-1px); }
+        .price-features { list-style: none; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--gray-100); display: flex; flex-direction: column; gap: 0.75rem; }
+        .price-features li { font-size: 0.8125rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.75rem; }
+        .price-features li::before { content: ''; width: 16px; height: 16px; background: rgba(13, 148, 136, 0.1); border-radius: 50%; flex-shrink: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 16 16'%3E%3Cpath d='M5 8l2 2 4-4' stroke='%230d9488' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; }
+
+        /* CTA */
+        .cta { padding: 7rem 0; background: linear-gradient(165deg, var(--navy) 0%, #0f2447 100%); text-align: center; position: relative; overflow: hidden; }
+        .cta::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(37, 99, 235, 0.1), transparent 70%); }
+        .cta-inner { max-width: 700px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 1; }
+        .cta h2 { font-size: 2.5rem; font-weight: 700; color: var(--white); letter-spacing: -1px; margin-bottom: 1rem; }
+        .cta p { font-size: 1.1rem; color: var(--gray-400); margin-bottom: 2.5rem; line-height: 1.7; }
+        .cta-buttons { display: flex; gap: 1rem; justify-content: center; }
+
+        /* Footer */
+        .footer { padding: 4rem 0 2rem; background: var(--gray-900); border-top: 1px solid rgba(255,255,255,0.05); }
+        .footer-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 3rem; }
+        .footer-brand p { font-size: 0.8125rem; color: var(--gray-500); line-height: 1.7; margin-top: 1rem; max-width: 280px; }
+        .footer-col h4 { font-size: 0.75rem; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1rem; }
+        .footer-col a { display: block; font-size: 0.8125rem; color: var(--gray-500); text-decoration: none; margin-bottom: 0.5rem; transition: color 0.2s; }
+        .footer-col a:hover { color: var(--white); }
+        .footer-bottom { padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .footer-bottom p { font-size: 0.75rem; color: var(--gray-600); }
+        .footer-bottom-links { display: flex; gap: 1.5rem; }
+        .footer-bottom-links a { font-size: 0.75rem; color: var(--gray-500); text-decoration: none; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-inner { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 2.5rem; }
+            .hero-visual { display: none; }
+            .features-grid { grid-template-columns: 1fr; }
+            .platform-grid { grid-template-columns: 1fr; }
+            .pricing-grid { grid-template-columns: 1fr; }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="nav" id="nav">
+    <div class="nav-inner">
+        <a href="#" class="nav-logo">seema<span>.</span></a>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#platform">Platform</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#" class="nav-cta">Start free trial</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-inner">
+        <div>
+            <div class="hero-badge">
+                <div class="hero-badge-dot"></div>
+                <span>Built for SRA-regulated firms</span>
+            </div>
+            <h1>Your COLP's <span class="gradient">operating system</span></h1>
+            <p>Seema replaces spreadsheets, manual chasing, and compliance anxiety with a unified AI-powered platform. Breach reporting, staff training, audit trails — all automated.</p>
+            <div class="hero-buttons">
+                <a href="#" class="btn-primary">Start 14-day free trial <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+                <a href="#features" class="btn-secondary">See how it works <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M4 9l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-dashboard">
+                <div class="dash-header">
+                    <div class="dash-header-left">
+                        <div class="dash-avatar"></div>
+                        <div class="dash-greeting"><strong>Good morning, Sarah</strong><br>Your daily compliance briefing</div>
+                    </div>
+                    <div class="dash-status">98% compliant</div>
+                </div>
+                <div class="dash-stats">
+                    <div class="dash-stat alert">
+                        <div class="dash-stat-value">3</div>
+                        <div class="dash-stat-label">Requires attention</div>
+                    </div>
+                    <div class="dash-stat">
+                        <div class="dash-stat-value">12</div>
+                        <div class="dash-stat-label">Chasers sent today</div>
+                    </div>
+                    <div class="dash-stat good">
+                        <div class="dash-stat-value">47</div>
+                        <div class="dash-stat-label">Training complete</div>
+                    </div>
+                </div>
+                <div class="dash-items">
+                    <div class="dash-item">
+                        <div class="dash-item-dot red"></div>
+                        <div class="dash-item-text">Breach report #BR-041 — ICO deadline in 48h</div>
+                        <div class="dash-item-time">Urgent</div>
+                    </div>
+                    <div class="dash-item">
+                        <div class="dash-item-dot amber"></div>
+                        <div class="dash-item-text">5 staff overdue AML training refresher</div>
+                        <div class="dash-item-time">Chase sent</div>
+                    </div>
+                    <div class="dash-item">
+                        <div class="dash-item-dot blue"></div>
+                        <div class="dash-item-text">New SRA guidance: AI impact analysis ready</div>
+                        <div class="dash-item-time">Today</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Social proof -->
+<section class="social-proof">
+    <div class="social-inner">
+        <div class="social-label">Trusted by forward-thinking law firms across the UK</div>
+        <div class="social-logos">
+            <span>Harrison & Cole</span>
+            <span>Whitmore Legal</span>
+            <span>Ashton Park Solicitors</span>
+            <span>Chambers & Wright</span>
+            <span>Sterling Law</span>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="features" id="features">
+    <div class="features-inner">
+        <div class="section-label">Core features</div>
+        <div class="section-title">Everything your COLP needs. Nothing they don't.</div>
+        <div class="section-subtitle">Purpose-built for the compliance lifecycle at SRA-regulated firms. Every feature maps directly to a regulatory obligation.</div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon breach">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01M4.93 4.93l14.14 14.14M12 3a9 9 0 110 18 9 9 0 010-18z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+                <h3>Breach management</h3>
+                <p>Log breaches, track the 72-hour ICO notification window, assign remediation steps, and generate evidence packs for the SRA.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon training">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 14l9-5-9-5-9 5 9 5zM12 14v7M5 9v7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <h3>Staff training & competence</h3>
+                <p>Track CPD hours, file reviews, and mandatory training across every team member. Automated chasers for overdue completions.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon chase">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <h3>Automated chase engine</h3>
+                <p>Daily Celery task scans for overdue items — training, CDD, file reviews, deadlines — and sends branded emails with COLP escalation.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon dashboard">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <h3>Compliance dashboard</h3>
+                <p>One-screen view of your firm's entire compliance posture. Risk scores, overdue items, upcoming deadlines, and AI-prioritised alerts.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon audit">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+                <h3>Immutable audit trail</h3>
+                <p>Every action timestamped, attributed, and exportable. When the SRA asks for evidence, it's one click away.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon ai">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <h3>AI regulatory analysis</h3>
+                <p>Claude analyses every SRA, ICO, and Law Society update. Delivers firm-specific impact assessments with recommended actions.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Platform -->
+<section class="platform" id="platform">
+    <div class="platform-inner">
+        <div class="platform-grid">
+            <div>
+                <div class="section-label">Why Seema</div>
+                <div class="section-title">Replace 4 tools and 12 spreadsheets</div>
+                <p style="font-size: 1rem; color: var(--gray-500); line-height: 1.7; margin-bottom: 0.5rem;">The average 30-solicitor firm uses separate tools for training records, CDD tracking, breach logs, and policy management. Seema unifies all of it.</p>
+                <div class="stat-list">
+                    <div class="stat-item">
+                        <div class="stat-item-icon"><svg viewBox="0 0 16 16" fill="none"><path d="M4 8l3 3 5-5" stroke="#0d9488" stroke-width="2" stroke-linecap="round"/></svg></div>
+                        <div>
+                            <h4>15 hours saved per week</h4>
+                            <p>Automated chasing, reporting, and evidence gathering replaces manual follow-up emails and spreadsheet updates.</p>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item-icon"><svg viewBox="0 0 16 16" fill="none"><path d="M4 8l3 3 5-5" stroke="#0d9488" stroke-width="2" stroke-linecap="round"/></svg></div>
+                        <div>
+                            <h4>Zero missed SRA deadlines</h4>
+                            <p>Proactive alerts for breach notification windows, training expirations, and annual return deadlines.</p>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item-icon"><svg viewBox="0 0 16 16" fill="none"><path d="M4 8l3 3 5-5" stroke="#0d9488" stroke-width="2" stroke-linecap="round"/></svg></div>
+                        <div>
+                            <h4>SRA-visit ready in seconds</h4>
+                            <p>Complete audit trail with one-click evidence export. Every compliance action logged, timestamped, and attributable.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="platform-visual">
+                <div class="platform-metric">
+                    <div class="platform-metric-icon" style="background: rgba(239, 68, 68, 0.08);">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/></svg>
+                    </div>
+                    <div class="platform-metric-text">
+                        <h4>Open breaches</h4>
+                        <p>Within notification window</p>
+                    </div>
+                    <div class="platform-metric-value" style="color: #dc2626;">1</div>
+                </div>
+                <div class="platform-metric">
+                    <div class="platform-metric-icon" style="background: rgba(245, 158, 11, 0.08);">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 3" stroke="#d97706" stroke-width="2" stroke-linecap="round"/></svg>
+                    </div>
+                    <div class="platform-metric-text">
+                        <h4>Overdue training</h4>
+                        <p>Chase emails queued</p>
+                    </div>
+                    <div class="platform-metric-value" style="color: #d97706;">5</div>
+                </div>
+                <div class="platform-metric">
+                    <div class="platform-metric-icon" style="background: rgba(13, 148, 136, 0.08);">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#0d9488" stroke-width="2" stroke-linecap="round"/></svg>
+                    </div>
+                    <div class="platform-metric-text">
+                        <h4>Policies current</h4>
+                        <p>All reviewed within cycle</p>
+                    </div>
+                    <div class="platform-metric-value" style="color: #0d9488;">23</div>
+                </div>
+                <div class="platform-metric">
+                    <div class="platform-metric-icon" style="background: rgba(37, 99, 235, 0.08);">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/></svg>
+                    </div>
+                    <div class="platform-metric-text">
+                        <h4>Compliance score</h4>
+                        <p>Firm-wide assessment</p>
+                    </div>
+                    <div class="platform-metric-value" style="color: #2563eb;">98%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonial -->
+<section class="testimonial">
+    <div class="testimonial-inner">
+        <p class="testimonial-quote">"Before Seema, I spent every Monday morning in a spreadsheet chasing training completions. Now the system handles it automatically — I just review the dashboard over coffee. It's genuinely transformed how I manage compliance."</p>
+        <div class="testimonial-author">
+            <div class="testimonial-avatar">SC</div>
+            <div class="testimonial-info">
+                <div class="testimonial-name">Sarah Collins</div>
+                <div class="testimonial-role">COLP, Harrison & Cole Solicitors (32 fee-earners)</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing" id="pricing">
+    <div class="pricing-inner">
+        <div class="section-label">Pricing</div>
+        <div class="section-title" style="margin: 0 auto 0.75rem;">Simple, transparent pricing</div>
+        <p style="font-size: 1rem; color: var(--gray-500); max-width: 500px; margin: 0 auto;">Start with a 14-day free trial. Full Professional access, no credit card required.</p>
+
+        <div class="pricing-grid">
+            <div class="price-card">
+                <div class="price-card-name">Starter</div>
+                <div class="price-card-desc">Solo practitioners & small firms</div>
+                <div class="price-card-amount">£199<span>/mo</span></div>
+                <div class="price-card-period">per firm, billed monthly</div>
+                <button class="price-card-btn outline">Start free trial</button>
+                <ul class="price-features">
+                    <li>Compliance dashboard & risk scoring</li>
+                    <li>Audit trail with CSV export</li>
+                    <li>1 automated chaser per week</li>
+                    <li>Basic compliance alerts</li>
+                    <li>Self-serve onboarding</li>
+                    <li>Email support</li>
+                </ul>
+            </div>
+            <div class="price-card featured">
+                <div class="price-card-name">Essentials</div>
+                <div class="price-card-desc">Core COLP compliance tools</div>
+                <div class="price-card-amount">£599<span>/mo</span></div>
+                <div class="price-card-period">per firm, billed monthly</div>
+                <button class="price-card-btn filled">Start free trial</button>
+                <ul class="price-features">
+                    <li>Everything in Starter</li>
+                    <li>Breach management & ICO tracking</li>
+                    <li>Staff training & competence records</li>
+                    <li>Unlimited automated chasers</li>
+                    <li>Daily compliance briefing</li>
+                    <li>Dedicated onboarding call</li>
+                </ul>
+            </div>
+            <div class="price-card">
+                <div class="price-card-name">Professional</div>
+                <div class="price-card-desc">Complete compliance OS</div>
+                <div class="price-card-amount">£999<span>/mo</span></div>
+                <div class="price-card-period">per firm, billed monthly</div>
+                <button class="price-card-btn outline">Start free trial</button>
+                <ul class="price-features">
+                    <li>Everything in Essentials</li>
+                    <li>Client intake & CDD/AML</li>
+                    <li>AI regulatory intelligence</li>
+                    <li>SRA return generator</li>
+                    <li>Policy & evidence management</li>
+                    <li>20+ compliance modules</li>
+                    <li>Priority support</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+    <div class="cta-inner">
+        <h2>Your compliance peace of mind starts here</h2>
+        <p>Join UK law firms that have replaced spreadsheets and anxiety with Seema. 14-day free trial, full access, no credit card required.</p>
+        <div class="cta-buttons">
+            <a href="#" class="btn-primary">Start your free trial <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+            <a href="#" class="btn-secondary">Book a demo</a>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="#" class="nav-logo">seema<span>.</span></a>
+                <p>The AI-powered compliance operating system for SRA-regulated UK law firms. Built by compliance professionals, for compliance professionals.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Product</h4>
+                <a href="#">Features</a>
+                <a href="#">Pricing</a>
+                <a href="#">Security</a>
+                <a href="#">Changelog</a>
+            </div>
+            <div class="footer-col">
+                <h4>Company</h4>
+                <a href="#">About</a>
+                <a href="#">Blog</a>
+                <a href="#">Careers</a>
+                <a href="#">Contact</a>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Cookie Policy</a>
+                <a href="#">DPA</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Seema AI Ltd. All rights reserved. Registered in England & Wales.</p>
+            <div class="footer-bottom-links">
+                <a href="#">ISO 27001</a>
+                <a href="#">GDPR Compliant</a>
+                <a href="#">Cyber Essentials Plus</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+        nav.classList.toggle('scrolled', window.scrollY > 50);
+    });
+</script>
+
+</body>
+</html>

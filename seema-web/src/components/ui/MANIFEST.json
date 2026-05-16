@@ -1,0 +1,66 @@
+{
+  "library": "Seema UI Component Library",
+  "version": "1.0.0",
+  "created": "2026-04-24",
+  "path": "src/components/ui/",
+  "statistics": {
+    "total_files": 17,
+    "total_lines": 1203,
+    "components": 16,
+    "documentation": 1
+  },
+  "color_scheme": {
+    "primary": "#2563eb",
+    "success": "#059669",
+    "warning": "#d97706",
+    "error": "#dc2626",
+    "background": "#f5f6fa",
+    "border": "#e2e5ed"
+  },
+  "components": {
+    "form_controls": [
+      "Button",
+      "Input",
+      "Select",
+      "SearchBar"
+    ],
+    "display": [
+      "Card",
+      "StatCard",
+      "StatusBadge",
+      "DataTable"
+    ],
+    "feedback": [
+      "LoadingSpinner",
+      "EmptyState",
+      "Modal",
+      "ConfirmDialog",
+      "Toast"
+    ],
+    "layout": [
+      "PageHeader",
+      "Tabs"
+    ]
+  },
+  "features": [
+    "Full TypeScript support",
+    "Accessibility features",
+    "Responsive design",
+    "Smooth animations",
+    "Comprehensive prop validation",
+    "Loading states",
+    "Error states",
+    "Customizable via className",
+    "No external icon dependencies",
+    "Tailwind CSS integrated"
+  ],
+  "dependencies": [
+    "react",
+    "react-hot-toast"
+  ],
+  "exports": {
+    "components": "All 16 components",
+    "types": "All TypeScript interfaces",
+    "utilities": "showToast, SeemaToaster functions"
+  }
+}

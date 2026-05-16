@@ -1,0 +1,216 @@
+[
+  {
+    "notice_id": 1,
+    "title": "SRA consults on proposals to strengthen continuing competence requirements",
+    "category": "consultation",
+    "interpretation": {
+      "summary": "The SRA is consulting on new rules that would require all solicitors to keep records of their learning and development activities and participate in mandatory annual ethics discussions. This is a consultation running until 15 July 2026, not yet a firm requirement, but may become mandatory if adopted.",
+      "applicability": "maybe",
+      "applicability_reasoning": "This is a consultation on proposed rules, not yet implemented requirements. If adopted, these continuing competence requirements would apply to all SRA-regulated solicitors, including Henderson & Clarke's 18 staff members across all their practice areas.",
+      "action_items": [
+        "Monitor the consultation progress and note the closing date of 15 July 2026",
+        "Consider whether to respond to the consultation with feedback on how the proposals would affect the firm's CPD practices",
+        "Review current learning and development record-keeping practices in preparation for potential new requirements",
+        "Begin planning for potential implementation of mandatory annual ethical discussions if the proposals are adopted"
+      ],
+      "source_citation": "SRA, 'SRA consults on proposals to strengthen continuing competence requirements', published 22 April 2026. Available at: https://www.sra.org.uk/news/news/press/competence-requirements",
+      "confidence_score": 0.72,
+      "confidence_label": "medium"
+    },
+    "tokens_in": 1390,
+    "tokens_out": 318,
+    "elapsed_ms": 7872
+  },
+  {
+    "notice_id": 2,
+    "title": "Reports find SQE to be robust with improvements made",
+    "category": "education",
+    "interpretation": {
+      "summary": "The SRA has published its annual reports on the Solicitors Qualifying Examination (SQE), confirming the assessment remains robust and detailing improvements made in its fourth year. This is a routine informational update about the qualification pathway for new solicitors, with results from the January 2026 sitting included.",
+      "applicability": "maybe",
+      "applicability_reasoning": "This notice may have indirect relevance if Henderson & Clarke employs trainees or is considering recruiting newly qualified solicitors who have taken the SQE route, but it creates no direct compliance obligations for the firm itself.",
+      "action_items": [
+        "If the firm recruits trainee solicitors or newly qualified staff, note that SQE continues as the qualification route and remains robust according to SRA reports",
+        "No action required unless the firm's recruitment or training supervisor responsibilities are affected by SQE candidate performance trends"
+      ],
+      "source_citation": "SRA, 'Reports find SQE to be robust with improvements made', published 21 April 2026. Available at: https://www.sra.org.uk/news/news/press/sqe-2026",
+      "confidence_score": 0.6,
+      "confidence_label": "medium"
+    },
+    "tokens_in": 1397,
+    "tokens_out": 299,
+    "elapsed_ms": 8063
+  },
+  {
+    "notice_id": 3,
+    "title": "New Executive Director to lead casework review",
+    "category": "governance",
+    "interpretation": {
+      "summary": "The SRA has appointed a new Executive Director to review how it handles investigations and enforcement cases, including how cases are prioritised and decisions communicated. This is an internal SRA governance change in response to concerns about investigation delays and inconsistent enforcement. No new obligations are created for firms.",
+      "applicability": "maybe",
+      "applicability_reasoning": "This is primarily an internal SRA governance announcement about improving their own casework processes. While the outcomes may eventually affect how Henderson & Clarke experiences any future SRA investigation, the notice creates no immediate compliance obligations for the firm.",
+      "action_items": [
+        "Note that the SRA is reviewing its investigation and enforcement processes, which may lead to changes in how any future regulatory matters are handled",
+        "Monitor for any subsequent announcements detailing changes to SRA investigation procedures or communication protocols"
+      ],
+      "source_citation": "SRA, 'New Executive Director to lead casework review', published April 2026. Available at: https://www.sra.org.uk/news/sra-update/sra-update-issue-149-april-2026/",
+      "confidence_score": 0.65,
+      "confidence_label": "medium"
+    },
+    "tokens_in": 1377,
+    "tokens_out": 286,
+    "elapsed_ms": 7144
+  },
+  {
+    "notice_id": 4,
+    "title": "Sanctions enforcement update \u2014 firms must use UK Sanctions List as sole authoritative source",
+    "category": "enforcement",
+    "interpretation": {
+      "summary": "The SRA now requires firms to use only the UK Sanctions List (maintained by OFSI) for all client and matter screening. Firms must review and update their current sanctions screening processes to ensure they reference this single authoritative source, as the SRA may take enforcement action for inadequate screening.",
+      "applicability": "yes",
+      "applicability_reasoning": "This applies to Henderson & Clarke as all law firms must conduct sanctions screening on clients and matters regardless of practice area. Even routine conveyancing, family law, and probate work requires client due diligence and sanctions checks.",
+      "action_items": [
+        "Review current sanctions screening processes to confirm they use the UK Sanctions List maintained by OFSI as the sole authoritative source",
+        "Update any written policies, procedures, or screening protocols to reference the UK Sanctions List exclusively",
+        "If using third-party screening software or databases, verify they pull data from the official UK Sanctions List",
+        "Brief all fee-earners and compliance staff on the requirement to use only the UK Sanctions List for screening",
+        "Document the review and any changes made to demonstrate compliance if the SRA requests evidence"
+      ],
+      "source_citation": "SRA, 'Sanctions enforcement update \u2014 firms must use UK Sanctions List as sole authoritative source', published February 2026. Available at: https://www.sra.org.uk/news/news/sra-update-147-sanctions-enforcement/",
+      "confidence_score": 0.85,
+      "confidence_label": "high"
+    },
+    "tokens_in": 1399,
+    "tokens_out": 365,
+    "elapsed_ms": 8166
+  },
+  {
+    "notice_id": 5,
+    "title": "Strategic Lawsuits Against Public Participation (SLAPPs) \u2014 Warning Notice",
+    "category": "warning_notice",
+    "interpretation": {
+      "summary": "The SRA has issued a warning notice reminding solicitors that using legal proceedings primarily to silence critics or suppress free speech (known as SLAPPs) may breach professional obligations, particularly duties to uphold the rule of law, public trust, and integrity. Solicitors must ensure legal actions they bring are to vindicate genuine legal rights, not to intimidate or suppress legitimate public interest reporting.",
+      "applicability": "maybe",
+      "applicability_reasoning": "While Henderson & Clarke's practice areas (conveyancing, family, wills, commercial property, employment) do not typically involve defamation or media litigation where SLAPPs are most common, the warning applies to all solicitors and any legal proceedings they bring or threaten. The firm could potentially encounter situations in employment or commercial disputes where this guidance becomes relevant.",
+      "action_items": [
+        "Ensure all fee earners are aware of the SRA's warning on SLAPPs and understand the definition of such proceedings",
+        "Review internal matter inception procedures to include consideration of whether any threatened or actual litigation could be perceived as intimidatory rather than vindicating genuine legal rights",
+        "Remind solicitors to assess compliance with SRA Principles 1, 2, and 5 before bringing or threatening legal proceedings, particularly in sensitive disputes"
+      ],
+      "source_citation": "SRA, 'Strategic Lawsuits Against Public Participation (SLAPPs) \u2014 Warning Notice', published 2026. Available at: https://www.sra.org.uk/solicitors/guidance/slapps-warning-notice/",
+      "confidence_score": 0.6,
+      "confidence_label": "medium"
+    },
+    "tokens_in": 1422,
+    "tokens_out": 389,
+    "elapsed_ms": 10754
+  },
+  {
+    "notice_id": 6,
+    "title": "Chief executive sets out priorities for change in 2026",
+    "category": "governance",
+    "interpretation": {
+      "summary": "The SRA has outlined its strategic priorities for 2026, focusing on improving regulatory processes including faster casework, stronger continuing competence requirements, enhanced AML supervision, and better engagement with firms and consumers. These are high-level organisational priorities rather than immediate rule changes, though they signal areas where future regulatory changes may occur.",
+      "applicability": "maybe",
+      "applicability_reasoning": "This is a strategic announcement of the SRA's focus areas rather than a concrete regulatory change with specific obligations. While some priorities (AML supervision, continuing competence) will likely affect Henderson & Clarke in future, no immediate compliance actions are mandated by this notice itself.",
+      "action_items": [
+        "Monitor SRA communications throughout 2026 for specific guidance or rule changes relating to continuing competence requirements",
+        "Be prepared for potential enhanced AML supervision activity and ensure existing AML policies and procedures are robust",
+        "Watch for upcoming announcements regarding changes to casework processes that may affect how the firm interacts with the SRA"
+      ],
+      "source_citation": "SRA, 'Chief executive sets out priorities for change in 2026', published 2026. Available at: https://www.sra.org.uk/news/news/press/priorities-2026/",
+      "confidence_score": 0.65,
+      "confidence_label": "medium"
+    },
+    "tokens_in": 1374,
+    "tokens_out": 321,
+    "elapsed_ms": 8045
+  },
+  {
+    "notice_id": 7,
+    "title": "Warning on use of AI \u2014 National Economic Crime Centre guidance",
+    "category": "guidance",
+    "interpretation": {
+      "summary": "The National Economic Crime Centre has warned that criminals are using AI to create sophisticated fraud attempts including fake emails, identity documents, and social engineering attacks. Law firms should review their cybersecurity measures, train staff to spot AI-generated fraud, and check their professional indemnity insurance covers AI-enabled fraud losses.",
+      "applicability": "maybe",
+      "applicability_reasoning": "This is guidance with advisory language ('firms are advised to', 'should consider') rather than a mandatory requirement. While relevant to all law firms given cybersecurity risks, it does not create a specific regulatory obligation that Henderson & Clarke must comply with by a set deadline.",
+      "action_items": [
+        "Review current cybersecurity arrangements in light of AI-enabled fraud risks, particularly focusing on email security and identity verification processes",
+        "Arrange training for all 18 staff members on identifying AI-generated phishing emails and fake identity documents",
+        "Check with professional indemnity insurance provider whether current policy covers losses from AI-enabled fraud",
+        "Consider implementing enhanced verification procedures for client identity documents and payment instruction changes"
+      ],
+      "source_citation": "Solicitors Regulation Authority, 'Warning on use of AI \u2014 National Economic Crime Centre guidance', published March 2026. Available at: https://www.sra.org.uk/news/sra-update/sra-update-issue-148-march-2026/",
+      "confidence_score": 0.72,
+      "confidence_label": "medium"
+    },
+    "tokens_in": 1401,
+    "tokens_out": 350,
+    "elapsed_ms": 8068
+  },
+  {
+    "notice_id": 8,
+    "title": "Updated guidance on digital ID checks for anti-money laundering",
+    "category": "guidance",
+    "interpretation": {
+      "summary": "The SRA has updated its guidance to confirm that law firms can use digital identity verification technology for anti-money laundering checks when onboarding clients. Firms must still perform a risk assessment before using such technology and keep records of the systems and checks used.",
+      "applicability": "yes",
+      "applicability_reasoning": "This applies directly to Henderson & Clarke because all SRA-regulated firms must comply with AML obligations when conducting customer due diligence. Given their practice areas (conveyancing, commercial property, family law, wills & probate), they routinely onboard new clients and must perform ID verification.",
+      "action_items": [
+        "Review the updated LSAG Anti-Money Laundering Guidance to understand the standards required for digital ID verification technology",
+        "If the firm currently uses or plans to use digital ID verification tools, conduct a risk assessment to ensure the technology meets required standards",
+        "Update internal AML policies and procedures to reflect the guidance on digital ID checks, including requirements for maintaining records of technology used, checks performed, and results obtained",
+        "Ensure staff responsible for client onboarding are trained on the updated guidance and record-keeping requirements for digital ID verification"
+      ],
+      "source_citation": "SRA, 'Updated guidance on digital ID checks for anti-money laundering', published March 2026. Available at: https://www.sra.org.uk/news/sra-update/sra-update-issue-148-march-2026/",
+      "confidence_score": 0.85,
+      "confidence_label": "high"
+    },
+    "tokens_in": 1401,
+    "tokens_out": 372,
+    "elapsed_ms": 7139
+  },
+  {
+    "notice_id": 9,
+    "title": "Firm anti-money laundering and sanctions data requirements",
+    "category": "compliance",
+    "interpretation": {
+      "summary": "The SRA requires law firms that fall under the Money Laundering Regulations to submit detailed data about their anti-money laundering and sanctions procedures through the SRA's reporting site. This data includes information on risk assessments, client identification, source of funds verification, PEP and sanctions screening, and suspicious activity reporting. Failure to submit this data could lead to regulatory action.",
+      "applicability": "yes",
+      "applicability_reasoning": "Henderson & Clarke Solicitors handles conveyancing, commercial property, and wills & probate work, all of which involve client money and transactions that fall within the scope of the Money Laundering Regulations. As an SRA-regulated firm conducting regulated activities, they must comply with this mandatory data submission requirement.",
+      "action_items": [
+        "Access the SRA's reporting site and complete the required AML and sanctions data submission covering all specified areas",
+        "Review and update the firm's AML risk assessment to ensure it is current and comprehensive before submission",
+        "Verify that documented procedures are in place for client identification, source of funds verification, PEP screening, and sanctions screening",
+        "Compile data on any suspicious activity reports (SARs) filed during the relevant reporting period",
+        "Designate a responsible person to ensure timely submission and maintain records of the data submitted"
+      ],
+      "source_citation": "SRA, 'Firm anti-money laundering and sanctions data requirements', published 2026. Available at: https://www.sra.org.uk/news/news/firm-anti-money-laundering-sanctions-data-requirements/",
+      "confidence_score": 0.85,
+      "confidence_label": "high"
+    },
+    "tokens_in": 1397,
+    "tokens_out": 398,
+    "elapsed_ms": 7959
+  },
+  {
+    "notice_id": 10,
+    "title": "Financial Penalties: further developing our framework",
+    "category": "consultation",
+    "interpretation": {
+      "summary": "The SRA is consulting on introducing minimum fine levels for regulatory breaches and seeking views on whether current penalties adequately deter non-compliance, particularly for anti-money laundering failures. This is a consultation, not a rule change, so no immediate action is required, but it signals the SRA's intention to increase financial penalties in future.",
+      "applicability": "maybe",
+      "applicability_reasoning": "As a consultation rather than a binding rule change, this does not create immediate obligations. However, Henderson & Clarke handles conveyancing and commercial property work which involves client money handling and AML compliance, so future changes to penalty frameworks could affect the firm if compliance failures occur.",
+      "action_items": [
+        "Monitor the consultation outcome and any subsequent changes to the SRA's penalty framework expected after the consultation closes",
+        "Consider reviewing current AML and compliance procedures to ensure they would withstand increased regulatory scrutiny, particularly in conveyancing and commercial property matters"
+      ],
+      "source_citation": "SRA, 'Financial Penalties: further developing our framework', published 2026. Available at: https://www.sra.org.uk/sra/consultations/consultation-listing/financial-penalties-further-developing-framework/",
+      "confidence_score": 0.65,
+      "confidence_label": "medium"
+    },
+    "tokens_in": 1391,
+    "tokens_out": 311,
+    "elapsed_ms": 7855
+  }
+]

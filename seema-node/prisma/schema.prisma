@@ -1,0 +1,920 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Firm {
+  id                         String                     @id @default(uuid()) @db.VarChar(36)
+  name                       String                     @db.VarChar(255)
+  sraNumber                  String                     @unique @map("sra_number") @db.VarChar(20)
+  email                      String?                    @db.VarChar(255)
+  phone                      String?                    @db.VarChar(50)
+  address                    String?
+  postcode                   String?                    @db.VarChar(10)
+  website                    String?                    @db.VarChar(255)
+  subscriptionTier           String?                    @map("subscription_tier") @db.VarChar(20)
+  subscriptionPlan           String?                    @map("subscription_plan") @db.VarChar(20)
+  subscriptionStatus         String?                    @map("subscription_status") @db.VarChar(20)
+  billingEmail               String?                    @map("billing_email") @db.VarChar(255)
+  nextBillingDate            String?                    @map("next_billing_date") @db.VarChar(30)
+  annualCost                 Int?                       @map("annual_cost")
+  stripeCustomerId           String?                    @map("stripe_customer_id") @db.VarChar(100)
+  stripeSubscriptionId       String?                    @map("stripe_subscription_id") @db.VarChar(100)
+  trialEndsAt                DateTime?                  @map("trial_ends_at") @db.Timestamp(6)
+  practiceAreas              String?                    @map("practice_areas")
+  firmSize                   Int?                       @map("firm_size")
+  colpName                   String?                    @map("colp_name") @db.VarChar(255)
+  cofaName                   String?                    @map("cofa_name") @db.VarChar(255)
+  mlroName                   String?                    @map("mlro_name") @db.VarChar(255)
+  notificationPreferences    String?                    @map("notification_preferences")
+  firmPreferences            String?                    @map("firm_preferences")
+  sraReturnEdits             String?                    @map("sra_return_edits")
+  onboardingStatus           String?                    @map("onboarding_status") @db.VarChar(20)
+  onboardingCompletedAt      DateTime?                  @map("onboarding_completed_at") @db.Timestamp(6)
+  isActive                   Boolean?                   @map("is_active")
+  createdAt                  DateTime?                  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt                  DateTime?                  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  compliance_alerts          ComplianceAlert[]
+  compliance_checks          ComplianceCheck[]
+  compliance_scan_results    ComplianceScanResult[]
+  compliance_tasks           ComplianceTask[]
+  integration_sync_logs      IntegrationSyncLog[]
+  regulatory_interpretations RegulatoryInterpretation[]
+  risk_scores                RiskScore[]
+  sra_audit_items            SraAuditItem[]
+
+  @@map("firms")
+}
+
+model UserAccount {
+  id                                                                                   String                     @id @default(uuid()) @db.VarChar(36)
+  firmId                                                                               String                     @map("firm_id") @db.VarChar(36)
+  email                                                                                String                     @unique @db.VarChar(255)
+  passwordHash                                                                         String                     @map("password_hash") @db.VarChar(255)
+  role                                                                                 String                     @db.VarChar(50)
+  staffId                                                                              String?                    @map("staff_id") @db.VarChar(36)
+  isActive                                                                             Boolean?                   @map("is_active")
+  lastLogin                                                                            DateTime?                  @map("last_login") @db.Timestamp(6)
+  failedLoginAttempts                                                                  Int?                       @map("failed_login_attempts")
+  lockedUntil                                                                          DateTime?                  @map("locked_until") @db.Timestamp(6)
+  createdAt                                                                            DateTime?                  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt                                                                            DateTime?                  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  regulatory_interpretations_regulatory_interpretations_acknowledged_byTouser_accounts RegulatoryInterpretation[] @relation("regulatory_interpretations_acknowledged_byTouser_accounts")
+  regulatory_interpretations_regulatory_interpretations_overridden_byTouser_accounts   RegulatoryInterpretation[] @relation("regulatory_interpretations_overridden_byTouser_accounts")
+
+  @@index([firmId], map: "ix_user_accounts_firm_id")
+  @@map("user_accounts")
+}
+
+model UserSession {
+  id           String    @id @default(uuid()) @db.VarChar(36)
+  userId       String    @map("user_id") @db.VarChar(36)
+  firmId       String    @map("firm_id") @db.VarChar(36)
+  token        String    @unique @db.VarChar(500)
+  refreshToken String?   @unique @map("refresh_token") @db.VarChar(500)
+  ipAddress    String?   @map("ip_address") @db.VarChar(50)
+  userAgent    String?   @map("user_agent") @db.VarChar(500)
+  expiresAt    DateTime  @map("expires_at") @db.Timestamp(6)
+  isActive     Boolean?  @map("is_active")
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_user_sessions_firm_id")
+  @@index([userId], map: "ix_user_sessions_user_id")
+  @@map("user_sessions")
+}
+
+model StaffMember {
+  id           String    @id @default(uuid()) @db.VarChar(36)
+  firmId       String    @map("firm_id") @db.VarChar(36)
+  name         String    @db.VarChar(255)
+  email        String?   @db.VarChar(255)
+  role         String?   @db.VarChar(100)
+  department   String?   @db.VarChar(100)
+  status       String?   @db.VarChar(50)
+  pqe          String?   @db.VarChar(50)
+  sraId        String?   @map("sra_id") @db.VarChar(50)
+  startDate    DateTime? @map("start_date") @db.Timestamp(6)
+  lastTraining DateTime? @map("last_training") @db.Timestamp(6)
+  phone        String?   @db.VarChar(50)
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  externalRef  String?   @map("external_ref") @db.VarChar(100)
+  source       String?   @db.VarChar(50)
+
+  @@index([firmId], map: "ix_staff_members_firm_id")
+  @@map("staff_members")
+}
+
+model StaffTraining {
+  id              String    @id @default(uuid()) @db.VarChar(36)
+  firmId          String    @map("firm_id") @db.VarChar(36)
+  staffId         String    @map("staff_id") @db.VarChar(36)
+  staffName       String?   @map("staff_name") @db.VarChar(255)
+  title           String?   @db.VarChar(255)
+  trainingType    String?   @map("training_type") @db.VarChar(100)
+  status          String?   @db.VarChar(50)
+  dueDate         DateTime? @map("due_date") @db.Timestamp(6)
+  completedAt     DateTime? @map("completed_at") @db.Timestamp(6)
+  cpdHours        Int?      @map("cpd_hours")
+  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  courseName      String?   @map("course_name") @db.VarChar(255)
+  provider        String?   @db.VarChar(255)
+  completedDate   String?   @map("completed_date") @db.VarChar(20)
+  certificateRef  String?   @map("certificate_ref") @db.VarChar(100)
+  category        String?   @db.VarChar(32)
+  reflectionNotes String?   @map("reflection_notes")
+  evidenceUrl     String?   @map("evidence_url") @db.VarChar(512)
+
+  @@index([firmId, category], map: "ix_staff_training_category")
+  @@index([firmId], map: "ix_staff_training_firm_id")
+  @@map("staff_training")
+}
+
+model FirmCpdTarget {
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  firmId      String   @map("firm_id") @db.VarChar(36)
+  role        String   @db.VarChar(100)
+  year        Int
+  targetHours Decimal  @map("target_hours") @db.Decimal(6, 2)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@unique([firmId, role, year], map: "uq_firm_cpd_targets_firm_role_year")
+  @@index([firmId], map: "ix_firm_cpd_targets_firm_id")
+  @@map("firm_cpd_targets")
+}
+
+model AuditLog {
+  id         String    @id @default(uuid()) @db.VarChar(36)
+  firmId     String    @map("firm_id") @db.VarChar(36)
+  action     String    @db.VarChar(100)
+  entityType String    @map("entity_type") @db.VarChar(100)
+  entityId   String?   @map("entity_id") @db.VarChar(36)
+  userId     String?   @map("user_id") @db.VarChar(36)
+  details    String?
+  ipAddress  String?   @map("ip_address") @db.VarChar(50)
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_audit_logs_firm_id")
+  @@map("audit_logs")
+}
+
+model ComplianceAlert {
+  id                     String    @id @default(uuid()) @db.VarChar(36)
+  firmId                 String    @map("firm_id") @db.VarChar(36)
+  alertType              String?   @map("alert_type") @db.VarChar(50)
+  severity               String?   @db.VarChar(20)
+  title                  String?   @db.VarChar(255)
+  description            String?
+  caseId                 String?   @map("case_id") @db.VarChar(36)
+  clientId               String?   @map("client_id") @db.VarChar(36)
+  regulationRef          String?   @map("regulation_ref") @db.VarChar(100)
+  actionRequired         String?   @map("action_required")
+  createdAt              DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  acknowledgedAt         DateTime? @map("acknowledged_at") @db.Timestamp(6)
+  resolvedAt             DateTime? @map("resolved_at") @db.Timestamp(6)
+  status                 String?   @db.VarChar(20)
+  overrideSeverity       String?   @map("override_severity") @db.VarChar(20)
+  overrideActionRequired String?   @map("override_action_required")
+  overrideNotes          String?   @map("override_notes")
+  overriddenBy           String?   @map("overridden_by") @db.VarChar(36)
+  overriddenAt           DateTime? @map("overridden_at") @db.Timestamp(6)
+  firms                  Firm      @relation(fields: [firmId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([firmId], map: "ix_compliance_alerts_firm_id")
+  @@map("compliance_alerts")
+}
+
+model ComplianceCheck {
+  id            String    @id @default(uuid()) @db.VarChar(36)
+  firmId        String    @map("firm_id") @db.VarChar(36)
+  caseId        String?   @map("case_id") @db.VarChar(36)
+  clientId      String?   @map("client_id") @db.VarChar(36)
+  checkType     String?   @map("check_type") @db.VarChar(50)
+  checkName     String?   @map("check_name") @db.VarChar(255)
+  status        String?   @db.VarChar(20)
+  severity      String?   @db.VarChar(20)
+  description   String?
+  regulationRef String?   @map("regulation_ref") @db.VarChar(100)
+  remediation   String?
+  checkedAt     DateTime? @map("checked_at") @db.Timestamp(6)
+  dueDate       String?   @map("due_date") @db.VarChar(20)
+  resolvedAt    DateTime? @map("resolved_at") @db.Timestamp(6)
+  firms         Firm      @relation(fields: [firmId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([firmId], map: "ix_compliance_checks_firm_id")
+  @@map("compliance_checks")
+}
+
+model ComplianceTask {
+  id                String    @id @default(uuid()) @db.VarChar(36)
+  firmId            String    @map("firm_id") @db.VarChar(36)
+  taskType          String?   @map("task_type") @db.VarChar(50)
+  title             String?   @db.VarChar(255)
+  description       String?
+  assignedTo        String?   @map("assigned_to") @db.VarChar(36)
+  relatedEntityType String?   @map("related_entity_type") @db.VarChar(50)
+  relatedEntityId   String?   @map("related_entity_id") @db.VarChar(36)
+  priority          String?   @db.VarChar(20)
+  status            String?   @db.VarChar(20)
+  dueDate           String?   @map("due_date") @db.VarChar(20)
+  completedAt       DateTime? @map("completed_at") @db.Timestamp(6)
+  createdAt         DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  firms             Firm      @relation(fields: [firmId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([firmId], map: "ix_compliance_tasks_firm_id")
+  @@map("compliance_tasks")
+}
+
+model RiskScore {
+  id                   String    @id @default(uuid()) @db.VarChar(36)
+  firmId               String    @map("firm_id") @db.VarChar(36)
+  entityType           String?   @map("entity_type") @db.VarChar(50)
+  entityId             String?   @map("entity_id") @db.VarChar(36)
+  overallScore         Int?      @map("overall_score")
+  sraScore             Int?      @map("sra_score")
+  amlScore             Int?      @map("aml_score")
+  cprScore             Int?      @map("cpr_score")
+  gdprScore            Int?      @map("gdpr_score")
+  limitationScore      Int?      @map("limitation_score")
+  calculatedAt         DateTime? @default(now()) @map("calculated_at") @db.Timestamp(6)
+  overrideOverallScore Int?      @map("override_overall_score")
+  overrideNotes        String?   @map("override_notes")
+  overriddenBy         String?   @map("overridden_by") @db.VarChar(36)
+  overriddenAt         DateTime? @map("overridden_at") @db.Timestamp(6)
+  firms                Firm      @relation(fields: [firmId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([firmId], map: "ix_risk_scores_firm_id")
+  @@map("risk_scores")
+}
+
+model SraAuditItem {
+  id            String  @id @default(uuid()) @db.VarChar(36)
+  firmId        String  @map("firm_id") @db.VarChar(36)
+  category      String? @db.VarChar(100)
+  itemName      String? @map("item_name") @db.VarChar(255)
+  description   String?
+  status        String? @db.VarChar(20)
+  evidenceRef   String? @map("evidence_ref") @db.VarChar(36)
+  lastReviewed  String? @map("last_reviewed") @db.VarChar(30)
+  nextReviewDue String? @map("next_review_due") @db.VarChar(20)
+  notes         String?
+  firms         Firm    @relation(fields: [firmId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([firmId], map: "ix_sra_audit_items_firm_id")
+  @@map("sra_audit_items")
+}
+
+model SraFeedLog {
+  id           String    @id @default(uuid()) @db.VarChar(36)
+  feedSource   String?   @map("feed_source") @db.VarChar(100)
+  lastChecked  DateTime? @map("last_checked") @db.Timestamp(6)
+  itemsFound   Int?      @map("items_found")
+  newItems     Int?      @map("new_items")
+  status       String?   @db.VarChar(20)
+  errorMessage String?   @map("error_message")
+
+  @@map("sra_feed_log")
+}
+
+model ComplianceScanResult {
+  id                     String    @id @default(uuid()) @db.VarChar(36)
+  firmId                 String    @map("firm_id") @db.VarChar(36)
+  scanDate               DateTime? @default(now()) @map("scan_date") @db.Timestamp(6)
+  category               String?   @db.VarChar(100)
+  checkName              String?   @map("check_name") @db.VarChar(255)
+  status                 String?   @db.VarChar(20)
+  details                String?
+  recommendation         String?
+  createdAt              DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  overrideStatus         String?   @map("override_status") @db.VarChar(20)
+  overrideRecommendation String?   @map("override_recommendation")
+  overrideNotes          String?   @map("override_notes")
+  overriddenBy           String?   @map("overridden_by") @db.VarChar(36)
+  overriddenAt           DateTime? @map("overridden_at") @db.Timestamp(6)
+  firms                  Firm      @relation(fields: [firmId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([firmId], map: "ix_compliance_scan_results_firm_id")
+  @@map("compliance_scan_results")
+}
+
+model RegulatoryUpdate {
+  id                         String                     @id @default(uuid()) @db.VarChar(36)
+  firmId                     String                     @map("firm_id") @db.VarChar(36)
+  title                      String                     @db.VarChar(255)
+  source                     String?                    @db.VarChar(100)
+  impactLevel                String?                    @map("impact_level") @db.VarChar(50)
+  publishedDate              DateTime?                  @map("published_date") @db.Timestamp(6)
+  description                String?
+  regulatoryBody             String?                    @map("regulatory_body") @db.VarChar(100)
+  status                     String?                    @db.VarChar(50)
+  createdAt                  DateTime?                  @default(now()) @map("created_at") @db.Timestamp(6)
+  body                       String?
+  category                   String?                    @db.VarChar(100)
+  contentHash                String?                    @map("content_hash") @db.VarChar(64)
+  effectiveDate              String?                    @map("effective_date") @db.VarChar(20)
+  scrapedAt                  DateTime?                  @default(now()) @map("scraped_at") @db.Timestamp(6)
+  sourceUrl                  String?                    @map("source_url") @db.VarChar(500)
+  summary                    String?
+  tags                       String?
+  regulatory_interpretations RegulatoryInterpretation[]
+
+  @@index([firmId], map: "ix_regulatory_updates_firm_id")
+  @@map("regulatory_updates")
+}
+
+model RegulatoryInterpretation {
+  id                                                                      String           @id @default(uuid()) @db.VarChar(36)
+  firmId                                                                  String           @map("firm_id") @db.VarChar(36)
+  updateId                                                                String           @map("update_id") @db.VarChar(36)
+  summary                                                                 String
+  applicability                                                           String           @db.VarChar(10)
+  applicabilityReasoning                                                  String?          @map("applicability_reasoning")
+  actionItems                                                             String?          @map("action_items")
+  sourceCitation                                                          String?          @map("source_citation")
+  confidenceScore                                                         Float?           @map("confidence_score")
+  confidenceLabel                                                         String?          @map("confidence_label") @db.VarChar(20)
+  modelUsed                                                               String?          @map("model_used") @db.VarChar(50)
+  promptTokens                                                            Int?             @map("prompt_tokens")
+  completionTokens                                                        Int?             @map("completion_tokens")
+  processingTimeMs                                                        Int?             @map("processing_time_ms")
+  status                                                                  String?          @db.VarChar(20)
+  errorMessage                                                            String?          @map("error_message")
+  overrideApplicability                                                   String?          @map("override_applicability") @db.VarChar(10)
+  overrideNotes                                                           String?          @map("override_notes")
+  overrideActionItems                                                     String?          @map("override_action_items")
+  overriddenBy                                                            String?          @map("overridden_by") @db.VarChar(36)
+  overriddenAt                                                            DateTime?        @map("overridden_at") @db.Timestamp(6)
+  deliveredAt                                                             DateTime?        @map("delivered_at") @db.Timestamp(6)
+  acknowledgedAt                                                          DateTime?        @map("acknowledged_at") @db.Timestamp(6)
+  acknowledgedBy                                                          String?          @map("acknowledged_by") @db.VarChar(36)
+  createdAt                                                               DateTime?        @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt                                                               DateTime?        @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  user_accounts_regulatory_interpretations_acknowledged_byTouser_accounts UserAccount?     @relation("regulatory_interpretations_acknowledged_byTouser_accounts", fields: [acknowledgedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  firms                                                                   Firm             @relation(fields: [firmId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_accounts_regulatory_interpretations_overridden_byTouser_accounts   UserAccount?     @relation("regulatory_interpretations_overridden_byTouser_accounts", fields: [overriddenBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  regulatory_updates                                                      RegulatoryUpdate @relation(fields: [updateId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([firmId], map: "ix_regulatory_interpretations_firm_id")
+  @@index([updateId], map: "ix_regulatory_interpretations_update_id")
+  @@map("regulatory_interpretations")
+}
+
+model RegulatoryAcknowledgement {
+  id             String   @id @default(uuid()) @db.VarChar(36)
+  firmId         String   @map("firm_id") @db.VarChar(36)
+  updateId       String   @map("update_id") @db.VarChar(36)
+  userId         String   @map("user_id") @db.VarChar(36)
+  acknowledgedAt DateTime @default(now()) @map("acknowledged_at") @db.Timestamp(6)
+  notes          String?
+
+  @@unique([firmId, updateId, userId], map: "uq_regulatory_acks_firm_update_user")
+  @@index([firmId], map: "ix_regulatory_acks_firm_id")
+  @@index([updateId], map: "ix_regulatory_acks_update_id")
+  @@map("regulatory_acknowledgements")
+}
+
+model SraReturnResponse {
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  firmId      String   @map("firm_id") @db.VarChar(36)
+  returnYear  Int      @map("return_year")
+  sectionKey  String   @map("section_key") @db.VarChar(64)
+  status      String   @db.VarChar(20)
+  value       String?
+  notes       String?
+  completedBy String?  @map("completed_by") @db.VarChar(36)
+  completedAt DateTime @default(now()) @map("completed_at") @db.Timestamp(6)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@unique([firmId, returnYear, sectionKey], map: "uq_sra_return_responses_firm_year_section")
+  @@index([firmId], map: "ix_sra_return_responses_firm_id")
+  @@index([firmId, returnYear], map: "ix_sra_return_responses_firm_year")
+  @@map("sra_return_responses")
+}
+
+model SraReturnFinalisation {
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  firmId      String   @map("firm_id") @db.VarChar(36)
+  returnYear  Int      @map("return_year")
+  finalisedBy String?  @map("finalised_by") @db.VarChar(36)
+  finalisedAt DateTime @default(now()) @map("finalised_at") @db.Timestamp(6)
+  summaryJson String?  @map("summary_json")
+
+  @@unique([firmId, returnYear], map: "uq_sra_return_finalisations_firm_year")
+  @@index([firmId], map: "ix_sra_return_finalisations_firm_id")
+  @@map("sra_return_finalisations")
+}
+
+model CddRecord {
+  id                 String    @id @default(uuid()) @db.VarChar(36)
+  firmId             String    @map("firm_id") @db.VarChar(36)
+  clientName         String    @map("client_name") @db.VarChar(255)
+  clientType         String?   @map("client_type") @db.VarChar(100)
+  cddLevel           String?   @map("cdd_level") @db.VarChar(50)
+  riskLevel          String?   @map("risk_level") @db.VarChar(50)
+  idVerified         Boolean?  @map("id_verified")
+  addressVerified    Boolean?  @map("address_verified")
+  sofVerified        Boolean?  @map("sof_verified")
+  status             String?   @db.VarChar(50)
+  nationality        String?   @db.VarChar(100)
+  countryOfResidence String?   @map("country_of_residence") @db.VarChar(100)
+  companyNumber      String?   @map("company_number") @db.VarChar(50)
+  dateOfBirth        DateTime? @map("date_of_birth") @db.Timestamp(6)
+  createdAt          DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt          DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_cdd_records_firm_id")
+  @@map("cdd_records")
+}
+
+model SarRecord {
+  id                  String    @id @default(uuid()) @db.VarChar(36)
+  firmId              String    @map("firm_id") @db.VarChar(36)
+  clientName          String    @map("client_name") @db.VarChar(255)
+  matterRef           String?   @map("matter_ref") @db.VarChar(100)
+  suspicionType       String?   @map("suspicion_type") @db.VarChar(100)
+  amount              Decimal?  @db.Decimal(15, 2)
+  reportDate          DateTime? @map("report_date") @db.Timestamp(6)
+  mlroDecision        String?   @map("mlro_decision") @db.VarChar(100)
+  ncaFiled            Boolean?  @map("nca_filed")
+  status              String?   @db.VarChar(50)
+  groundsForSuspicion String?   @map("grounds_for_suspicion")
+  transactionDetails  String?   @map("transaction_details")
+  createdAt           DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_sar_records_firm_id")
+  @@map("sar_records")
+}
+
+model BreachReport {
+  id                       String    @id @default(uuid()) @db.VarChar(36)
+  firmId                   String    @map("firm_id") @db.VarChar(36)
+  title                    String    @db.VarChar(255)
+  description              String?
+  breachType               String?   @map("breach_type") @db.VarChar(100)
+  severity                 String?   @db.VarChar(50)
+  status                   String?   @db.VarChar(50)
+  reportedDate             DateTime? @map("reported_date") @db.Timestamp(6)
+  icoDeadline              DateTime? @map("ico_deadline") @db.Timestamp(6)
+  notificationStatus       String?   @map("notification_status") @db.VarChar(50)
+  affectedRecords          Int?      @map("affected_records")
+  rootCause                String?   @map("root_cause")
+  resolutionDate           DateTime? @map("resolution_date") @db.Timestamp(6)
+  remediationPlanId        String?   @map("remediation_plan_id") @db.VarChar(36)
+  createdAt                DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt                DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  icoNotificationDraft     String?   @map("ico_notification_draft")
+  icoNotificationDraftedAt DateTime? @map("ico_notification_drafted_at") @db.Timestamp(6)
+  icoNotifiedAt            DateTime? @map("ico_notified_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_breach_reports_firm_id")
+  @@map("breach_reports")
+}
+
+model ClientIntake {
+  id                   String    @id @default(uuid()) @db.VarChar(36)
+  firmId               String    @map("firm_id") @db.VarChar(36)
+  clientName           String    @map("client_name") @db.VarChar(255)
+  clientEmail          String?   @map("client_email") @db.VarChar(255)
+  practiceArea         String?   @map("practice_area") @db.VarChar(100)
+  status               String?   @db.VarChar(50)
+  conflictCheckStatus  String?   @map("conflict_check_status") @db.VarChar(50)
+  conflictCheckDetails String?   @map("conflict_check_details")
+  clientCareLetterSent Boolean   @default(false) @map("client_care_letter_sent")
+  riskLevel            String?   @map("risk_level") @db.VarChar(50)
+  riskScore            Decimal?  @map("risk_score") @db.Decimal(5, 2)
+  assignedTo           String?   @map("assigned_to") @db.VarChar(36)
+  sourceOfFunds        String?   @map("source_of_funds") @db.VarChar(100)
+  pepScreening         String?   @map("pep_screening") @db.VarChar(50)
+  sanctionsCheck       String?   @map("sanctions_check") @db.VarChar(50)
+  cddStatus            String?   @map("cdd_status") @db.VarChar(50)
+  createdAt            DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt            DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  externalRef          String?   @map("external_ref") @db.VarChar(100)
+  source               String?   @db.VarChar(50)
+  clientPhone          String?   @map("client_phone") @db.VarChar(50)
+  clientType           String?   @map("client_type") @db.VarChar(50)
+  companyName          String?   @map("company_name") @db.VarChar(255)
+
+  @@index([firmId], map: "ix_client_intakes_firm_id")
+  @@map("client_intakes")
+}
+
+model Matter {
+  id           String    @id @default(uuid()) @db.VarChar(36)
+  firmId       String    @map("firm_id") @db.VarChar(36)
+  clientName   String    @map("client_name") @db.VarChar(255)
+  matterType   String    @map("matter_type") @db.VarChar(100)
+  reference    String?   @unique @db.VarChar(50)
+  status       String?   @db.VarChar(50)
+  assignedTo   String?   @map("assigned_to") @db.VarChar(36)
+  riskLevel    String?   @map("risk_level") @db.VarChar(50)
+  feeEstimate  Decimal?  @map("fee_estimate") @db.Decimal(15, 2)
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  externalRef  String?   @map("external_ref") @db.VarChar(100)
+  source       String?   @db.VarChar(50)
+  title        String?   @db.VarChar(255)
+  description  String?
+  practiceArea String?   @map("practice_area") @db.VarChar(100)
+  clientId     String?   @map("client_id") @db.VarChar(36)
+  openDate     String?   @map("open_date") @db.VarChar(20)
+  closeDate    String?   @map("close_date") @db.VarChar(20)
+
+  @@index([externalRef], map: "ix_matters_external_ref")
+  @@index([firmId], map: "ix_matters_firm_id")
+  @@map("matters")
+}
+
+model ConflictCheck {
+  id           String    @id @default(uuid()) @db.VarChar(36)
+  firmId       String    @map("firm_id") @db.VarChar(36)
+  clientName   String    @map("client_name") @db.VarChar(255)
+  matterType   String?   @map("matter_type") @db.VarChar(100)
+  parties      String?
+  status       String?   @db.VarChar(50)
+  conflictType String?   @map("conflict_type") @db.VarChar(100)
+  checkedBy    String?   @map("checked_by") @db.VarChar(36)
+  resolution   String?
+  resolvedAt   DateTime? @map("resolved_at") @db.Timestamp(6)
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_conflict_checks_firm_id")
+  @@map("conflict_checks")
+}
+
+model ConflictParty {
+  id        String    @id @default(uuid()) @db.VarChar(36)
+  firmId    String    @map("firm_id") @db.VarChar(36)
+  partyName String    @map("party_name") @db.VarChar(255)
+  partyType String?   @map("party_type") @db.VarChar(50)
+  dateAdded DateTime? @default(now()) @map("date_added") @db.Timestamp(6)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_conflict_parties_firm_id")
+  @@map("conflict_parties")
+}
+
+model Undertaking {
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  firmId      String    @map("firm_id") @db.VarChar(36)
+  description String
+  matterRef   String?   @map("matter_ref") @db.VarChar(100)
+  givenTo     String?   @map("given_to") @db.VarChar(255)
+  givenBy     String?   @map("given_by") @db.VarChar(255)
+  givenDate   DateTime? @map("given_date") @db.Timestamp(6)
+  dueDate     DateTime? @map("due_date") @db.Timestamp(6)
+  status      String?   @db.VarChar(50)
+  completedAt DateTime? @map("completed_at") @db.Timestamp(6)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_undertakings_firm_id")
+  @@map("undertakings")
+}
+
+model Complaint {
+  id              String    @id @default(uuid()) @db.VarChar(36)
+  firmId          String    @map("firm_id") @db.VarChar(36)
+  complainantName String    @map("complainant_name") @db.VarChar(255)
+  complainantType String?   @map("complainant_type") @db.VarChar(100)
+  category        String?   @db.VarChar(100)
+  description     String?
+  priority        String?   @db.VarChar(50)
+  status          String?   @db.VarChar(50)
+  assignedTo      String?   @map("assigned_to") @db.VarChar(36)
+  openedDate      DateTime? @default(now()) @map("opened_date") @db.Timestamp(6)
+  closedDate      DateTime? @map("closed_date") @db.Timestamp(6)
+  resolution      String?
+  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_complaints_firm_id")
+  @@map("complaints")
+}
+
+model EvidenceDocument {
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  firmId      String    @map("firm_id") @db.VarChar(36)
+  title       String    @db.VarChar(255)
+  description String?
+  category    String?   @db.VarChar(100)
+  filePath    String?   @map("file_path") @db.VarChar(500)
+  fileSize    Int?      @map("file_size")
+  uploadedBy  String?   @map("uploaded_by") @db.VarChar(36)
+  status      String?   @db.VarChar(50)
+  reviewDate  DateTime? @map("review_date") @db.Timestamp(6)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_evidence_documents_firm_id")
+  @@map("evidence_documents")
+}
+
+model PolicyDocument {
+  id           String    @id @default(uuid()) @db.VarChar(36)
+  firmId       String    @map("firm_id") @db.VarChar(36)
+  title        String    @db.VarChar(255)
+  category     String?   @db.VarChar(100)
+  status       String?   @db.VarChar(50)
+  version      String?   @db.VarChar(20)
+  content      String?
+  lastReviewed DateTime? @map("last_reviewed") @db.Timestamp(6)
+  nextReview   DateTime? @map("next_review") @db.Timestamp(6)
+  owner        String?   @db.VarChar(36)
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_policy_documents_firm_id")
+  @@map("policy_documents")
+}
+
+model ChaserLog {
+  id         String    @id @default(uuid()) @db.VarChar(36)
+  firmId     String    @map("firm_id") @db.VarChar(36)
+  matterRef  String?   @map("matter_ref") @db.VarChar(100)
+  chaserType String?   @map("chaser_type") @db.VarChar(100)
+  recipient  String?   @db.VarChar(255)
+  subject    String?   @db.VarChar(255)
+  status     String?   @db.VarChar(50)
+  sentAt     DateTime? @map("sent_at") @db.Timestamp(6)
+  responseAt DateTime? @map("response_at") @db.Timestamp(6)
+  attempts   Int?
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_chaser_logs_firm_id")
+  @@map("chaser_logs")
+}
+
+model ClientAccount {
+  id            String    @id @default(uuid()) @db.VarChar(36)
+  firmId        String    @map("firm_id") @db.VarChar(36)
+  accountName   String    @map("account_name") @db.VarChar(255)
+  accountType   String?   @map("account_type") @db.VarChar(50)
+  balance       Decimal?  @db.Decimal(15, 2)
+  status        String?   @db.VarChar(50)
+  bankName      String?   @map("bank_name") @db.VarChar(255)
+  accountNumber String?   @map("account_number") @db.VarChar(50)
+  sortCode      String?   @map("sort_code") @db.VarChar(10)
+  createdAt     DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt     DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_client_accounts_firm_id")
+  @@map("client_accounts")
+}
+
+model Transaction {
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  firmId      String    @map("firm_id") @db.VarChar(36)
+  accountId   String    @map("account_id") @db.VarChar(36)
+  date        DateTime  @db.Timestamp(6)
+  description String?   @db.VarChar(255)
+  amount      Decimal   @db.Decimal(15, 2)
+  type        String?   @db.VarChar(50)
+  matterRef   String?   @map("matter_ref") @db.VarChar(100)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_transactions_firm_id")
+  @@map("transactions")
+}
+
+model Reconciliation {
+  id            String    @id @default(uuid()) @db.VarChar(36)
+  firmId        String    @map("firm_id") @db.VarChar(36)
+  period        String?   @db.VarChar(50)
+  status        String?   @db.VarChar(50)
+  reconciledBy  String?   @map("reconciled_by") @db.VarChar(36)
+  discrepancies String?
+  completedAt   DateTime? @map("completed_at") @db.Timestamp(6)
+  createdAt     DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_reconciliations_firm_id")
+  @@map("reconciliations")
+}
+
+model EmailTemplate {
+  id        String    @id @default(uuid()) @db.VarChar(36)
+  firmId    String    @map("firm_id") @db.VarChar(36)
+  name      String    @db.VarChar(255)
+  subject   String    @db.VarChar(255)
+  body      String
+  category  String?   @db.VarChar(100)
+  isActive  Boolean?  @map("is_active")
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_email_templates_firm_id")
+  @@map("email_templates")
+}
+
+model EmailQueueItem {
+  id         String    @id @default(uuid()) @db.VarChar(36)
+  firmId     String    @map("firm_id") @db.VarChar(36)
+  templateId String?   @map("template_id") @db.VarChar(36)
+  recipient  String    @db.VarChar(255)
+  subject    String    @db.VarChar(255)
+  status     String?   @db.VarChar(50)
+  sentAt     DateTime? @map("sent_at") @db.Timestamp(6)
+  error      String?
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_email_queue_firm_id")
+  @@map("email_queue")
+}
+
+model PackDelivery {
+  id              String   @id @default(uuid()) @db.VarChar(36)
+  firmId          String   @map("firm_id") @db.VarChar(36)
+  packType        String   @map("pack_type") @db.VarChar(32)
+  recipientEmail  String   @map("recipient_email") @db.VarChar(255)
+  recipientName   String?  @map("recipient_name") @db.VarChar(255)
+  message         String?
+  sentByUserId    String   @map("sent_by_user_id") @db.VarChar(36)
+  sentAt          DateTime @default(now()) @map("sent_at") @db.Timestamp(6)
+  packSnapshotUrl String?  @map("pack_snapshot_url")
+  status          String   @default("queued") @db.VarChar(20)
+  failureReason   String?  @map("failure_reason")
+
+  @@index([firmId], map: "ix_pack_deliveries_firm_id")
+  @@index([packType], map: "ix_pack_deliveries_pack_type")
+  @@index([sentAt], map: "ix_pack_deliveries_sent_at")
+  @@map("pack_deliveries")
+}
+
+model RemediationPlan {
+  id         String    @id @default(uuid()) @db.VarChar(36)
+  firmId     String    @map("firm_id") @db.VarChar(36)
+  title      String    @db.VarChar(255)
+  source     String?   @db.VarChar(100)
+  priority   String?   @db.VarChar(50)
+  status     String?   @db.VarChar(50)
+  assignedTo String?   @map("assigned_to") @db.VarChar(36)
+  dueDate    DateTime? @map("due_date") @db.Timestamp(6)
+  steps      String?
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt  DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_remediation_plans_firm_id")
+  @@map("remediation_plans")
+}
+
+model ImportHistory {
+  id               String    @id @default(uuid()) @db.VarChar(36)
+  firmId           String    @map("firm_id") @db.VarChar(36)
+  importType       String    @map("import_type") @db.VarChar(100)
+  filename         String?   @db.VarChar(255)
+  status           String?   @db.VarChar(50)
+  recordsProcessed Int?      @map("records_processed")
+  recordsFailed    Int?      @map("records_failed")
+  importedBy       String?   @map("imported_by") @db.VarChar(36)
+  createdAt        DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_import_history_firm_id")
+  @@map("import_history")
+}
+
+model Integration {
+  id                    String               @id @default(uuid()) @db.VarChar(36)
+  firmId                String               @map("firm_id") @db.VarChar(36)
+  name                  String               @db.VarChar(255)
+  type                  String               @db.VarChar(100)
+  status                String?              @db.VarChar(50)
+  config                String?
+  lastSync              DateTime?            @map("last_sync") @db.Timestamp(6)
+  createdAt             DateTime?            @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt             DateTime?            @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  provider              String?              @db.VarChar(50)
+  accessToken           String?              @map("access_token")
+  refreshToken          String?              @map("refresh_token")
+  tokenExpiresAt        DateTime?            @map("token_expires_at") @db.Timestamp(6)
+  tokenScope            String?              @map("token_scope") @db.VarChar(500)
+  providerFirmName      String?              @map("provider_firm_name") @db.VarChar(255)
+  providerUserName      String?              @map("provider_user_name") @db.VarChar(255)
+  providerUserId        String?              @map("provider_user_id") @db.VarChar(100)
+  providerAccountId     String?              @map("provider_account_id") @db.VarChar(100)
+  connectedAt           DateTime?            @map("connected_at") @db.Timestamp(6)
+  disconnectedAt        DateTime?            @map("disconnected_at") @db.Timestamp(6)
+  lastError             String?              @map("last_error")
+  integration_sync_logs IntegrationSyncLog[]
+
+  @@index([firmId], map: "ix_integrations_firm_id")
+  @@map("integrations")
+}
+
+model IntegrationSyncLog {
+  id              String      @id @default(uuid()) @db.VarChar(36)
+  firmId          String      @map("firm_id") @db.VarChar(36)
+  integrationId   String      @map("integration_id") @db.VarChar(36)
+  syncType        String      @map("sync_type") @db.VarChar(50)
+  status          String?     @db.VarChar(20)
+  direction       String?     @db.VarChar(10)
+  recordsSynced   Int?        @map("records_synced")
+  recordsCreated  Int?        @map("records_created")
+  recordsUpdated  Int?        @map("records_updated")
+  recordsSkipped  Int?        @map("records_skipped")
+  recordsErrored  Int?        @map("records_errored")
+  startedAt       DateTime?   @default(now()) @map("started_at") @db.Timestamp(6)
+  completedAt     DateTime?   @map("completed_at") @db.Timestamp(6)
+  durationSeconds Int?        @map("duration_seconds")
+  errorMessage    String?     @map("error_message")
+  errorDetails    String?     @map("error_details")
+  createdAt       DateTime?   @default(now()) @map("created_at") @db.Timestamp(6)
+  firms           Firm        @relation(fields: [firmId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  integrations    Integration @relation(fields: [integrationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([firmId], map: "ix_integration_sync_logs_firm_id")
+  @@index([integrationId], map: "ix_integration_sync_logs_integration_id")
+  @@map("integration_sync_logs")
+}
+
+model KeyDate {
+  id         String    @id @default(uuid()) @db.VarChar(36)
+  firmId     String    @map("firm_id") @db.VarChar(36)
+  title      String    @db.VarChar(255)
+  date       DateTime  @db.Timestamp(6)
+  category   String?   @db.VarChar(100)
+  status     String?   @db.VarChar(50)
+  assignedTo String?   @map("assigned_to") @db.VarChar(36)
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_key_dates_firm_id")
+  @@map("key_dates")
+}
+
+model SupervisionRecord {
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  firmId      String    @map("firm_id") @db.VarChar(36)
+  staffId     String    @map("staff_id") @db.VarChar(36)
+  staffName   String?   @map("staff_name") @db.VarChar(255)
+  supervisor  String?   @db.VarChar(255)
+  frequency   String?   @db.VarChar(50)
+  lastSession DateTime? @map("last_session") @db.Timestamp(6)
+  nextDue     DateTime? @map("next_due") @db.Timestamp(6)
+  status      String?   @db.VarChar(50)
+  notesCount  Int?      @map("notes_count")
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  cadenceDays Int?      @map("cadence_days")
+
+  @@index([firmId], map: "ix_supervision_records_firm_id")
+  @@map("supervision_records")
+}
+
+model SupervisionSession {
+  id                       String    @id @default(uuid()) @db.VarChar(36)
+  firmId                   String    @map("firm_id") @db.VarChar(36)
+  relationshipId           String    @map("relationship_id") @db.VarChar(36)
+  sessionDate              DateTime  @map("session_date") @db.Timestamp(6)
+  durationMinutes          Int?      @map("duration_minutes")
+  topicsDiscussed          String?   @map("topics_discussed")
+  actionItems              String?   @map("action_items")
+  superviseeAcknowledgedAt DateTime? @map("supervisee_acknowledged_at") @db.Timestamp(6)
+  createdByUserId          String?   @map("created_by_user_id") @db.VarChar(36)
+  createdAt                DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt                DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_supervision_sessions_firm_id")
+  @@index([relationshipId], map: "ix_supervision_sessions_relationship_id")
+  @@index([sessionDate], map: "ix_supervision_sessions_session_date")
+  @@map("supervision_sessions")
+}
+
+model Deadline {
+  id         String    @id @default(uuid()) @db.VarChar(36)
+  firmId     String    @map("firm_id") @db.VarChar(36)
+  title      String    @db.VarChar(255)
+  dueDate    DateTime  @map("due_date") @db.Timestamp(6)
+  priority   String?   @db.VarChar(50)
+  status     String?   @db.VarChar(50)
+  assignedTo String?   @map("assigned_to") @db.VarChar(36)
+  category   String?   @db.VarChar(100)
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt  DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_deadlines_firm_id")
+  @@map("deadlines")
+}
+
+model MatterItem {
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  firmId      String    @map("firm_id") @db.VarChar(36)
+  matterId    String    @map("matter_id") @db.VarChar(36)
+  title       String    @db.VarChar(255)
+  description String?   @db.VarChar(500)
+  isComplete  Boolean?  @map("is_complete")
+  order       Decimal?  @db.Decimal(5, 2)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([firmId], map: "ix_matter_items_firm_id")
+  @@map("matter_items")
+}
+
+model alembic_version {
+  version_num String @id(map: "alembic_version_pkc") @db.VarChar(32)
+}

@@ -1,0 +1,138 @@
+"""Seema API — SRA compliance platform for UK law firms."""
+import logging
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from config import get_settings
+from database import engine, Base
+
+logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Lifespan — create tables on startup
+# ---------------------------------------------------------------------------
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Create tables (dev convenience) and yield."""
+    import models  # noqa: F401 — triggers SQLAlchemy model registration
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    logger.info("Database tables ensured.")
+    yield
+
+
+# ---------------------------------------------------------------------------
+# Application factory
+# ---------------------------------------------------------------------------
+
+settings = get_settings()
+
+app = FastAPI(
+    title="Seema API",
+    description="Compliance automation platform for SRA-regulated law firms",
+    version="0.1.0",
+    lifespan=lifespan,
+)
+
+# -- CORS --
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS if isinstance(settings.CORS_ORIGINS, list) else settings.CORS_ORIGINS.split(",") if settings.CORS_ORIGINS else ["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# -- Tier gate middleware (checks subscription limits) --
+from middleware.tier_gate import TierGateMiddleware  # noqa: E402
+app.add_middleware(TierGateMiddleware)
+
+# -- Response envelope middleware --
+# from middleware.response_envelope import ResponseEnvelopeMiddleware  # noqa: E402
+app.add_middleware(ResponseEnvelopeMiddleware)
+
+
+# ---------------------------------------------------------------------------
+# Routers
+# ---------------------------------------------------------------------------
+
+from routers.auth import router as auth_router  # noqa: E402
+from routers.dashboard import router as dashboard_router  # noqa: E402
+from routers.compliance import router as compliance_router  # noqa: E402
+from routers.regulatory import router as regulatory_router  # noqa: E402
+from routers.aml import router as aml_router  # noqa: E402
+from routers.breach import router as breach_router  # noqa: E402
+from routers.intake import router as intake_router  # noqa: E402
+from routers.matters import router as matters_router  # noqa: E402
+from routers.conflicts import router as conflicts_router  # noqa: E402
+from routers.undertakings import router as undertakings_router  # noqa: E402
+from routers.complaints import router as complaints_router  # noqa: E402
+from routers.evidence import router as evidence_router  # noqa: E402
+from routers.policies import router as policies_router  # noqa: E402
+from routers.staff import router as staff_router  # noqa: E402
+from routers.staff_portal import router as staff_portal_router  # noqa: E402
+from routers.accounts import router as accounts_router  # noqa: E402
+from routers.chasers import router as chasers_router  # noqa: E402
+from routers.audit import router as audit_router  # noqa: E402
+from routers.sra_return import router as sra_return_router  # noqa: E402
+from routers.key_dates import router as key_dates_router  # noqa: E402
+from routers.deadlines import router as deadlines_router  # noqa: E402
+from routers.supervision import router as supervision_router  # noqa: E402
+from routers.remediation import router as remediation_router  # noqa: E402
+from routers.data_mgmt import router as data_mgmt_router  # noqa: E402
+from routers.email_admin import router as email_admin_router  # noqa: E402
+from routers.integrations import router as integrations_router  # noqa: E402
+from routers.billing import router as billing_router  # noqa: E402
+from routers.onboarding import router as onboarding_router  # noqa: E402
+from routers.validation import router as validation_router  # noqa: E402
+from routers.ai import router as ai_router  # noqa: E402
+from routers.tier import router as tier_router  # noqa: E402
+from routers.sra_audit_pack import router as sra_audit_pack_router  # noqa: E402
+
+API_PREFIX = "/api"
+
+app.include_router(auth_router, prefix=API_PREFIX)
+app.include_router(dashboard_router, prefix=API_PREFIX)
+app.include_router(compliance_router, prefix=API_PREFIX)
+app.include_router(regulatory_router, prefix=API_PREFIX)
+app.include_router(aml_router, prefix=API_PREFIX)
+app.include_router(breach_router, prefix=API_PREFIX)
+app.include_router(intake_router, prefix=API_PREFIX)
+app.include_router(matters_router, prefix=API_PREFIX)
+app.include_router(conflicts_router, prefix=API_PREFIX)
+app.include_router(undertakings_router, prefix=API_PREFIX)
+app.include_router(complaints_router, prefix=API_PREFIX)
+app.include_router(evidence_router, prefix=API_PREFIX)
+app.include_router(policies_router, prefix=API_PREFIX)
+app.include_router(staff_router, prefix=API_PREFIX)
+app.include_router(staff_portal_router, prefix=API_PREFIX)
+app.include_router(accounts_router, prefix=API_PREFIX)
+app.include_router(chasers_router, prefix=API_PREFIX)
+app.include_router(audit_router, prefix=API_PREFIX)
+app.include_router(sra_return_router, prefix=API_PREFIX)
+app.include_router(key_dates_router, prefix=API_PREFIX)
+app.include_router(deadlines_router, prefix=API_PREFIX)
+app.include_router(supervision_router, prefix=API_PREFIX)
+app.include_router(remediation_router, prefix=API_PREFIX)
+app.include_router(data_mgmt_router, prefix=API_PREFIX)
+app.include_router(email_admin_router, prefix=API_PREFIX)
+app.include_router(integrations_router, prefix=API_PREFIX)
+app.include_router(billing_router, prefix=API_PREFIX)
+app.include_router(onboarding_router, prefix=API_PREFIX)
+app.include_router(validation_router, prefix=API_PREFIX)
+app.include_router(ai_router, prefix=API_PREFIX)
+app.include_router(tier_router, prefix=API_PREFIX)
+app.include_router(sra_audit_pack_router, prefix=API_PREFIX)
+
+
+# ---------------------------------------------------------------------------
+# Health check
+# ---------------------------------------------------------------------------
+
+@app.get("/health")
+async def health():
+    return {"status": "ok", "service": "seema-api"}
