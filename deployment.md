@@ -1,11 +1,36 @@
 # Seema — VPS Deployment Guide
 
 **Target VPS:** `root@69.62.110.2` (Ubuntu 22.04+ assumed)
+**GitHub repo:** `https://github.com/faizanali2k05/seemaai.git`
 **Domains:**
 - `seemaai.co.uk` + `www.seemaai.co.uk` → marketing/portfolio site (static, from `seema-marketing/`)
 - `app.seemaai.co.uk` → web application (Next.js + Node API + FastAPI stack)
+- `n8n.seemaai.co.uk` → reserved for future n8n self-host (DNS already pointed; not deployed by this guide)
 
-This guide assumes you have **never touched the VPS or the DNS panel** before. Follow every step in order. Estimated time: 60–90 minutes start to finish.
+Follow every step in order. Estimated time: 60–90 minutes start to finish.
+
+---
+
+## 0a. Claude-driven deployment from VS Code (recommended workflow)
+
+You can let Claude (this assistant) run the entire deploy from your local VS Code terminal so errors are caught and fixed in real time. The flow:
+
+1. **Open a PowerShell terminal in VS Code** (`Ctrl + ` `` ` ``) — keep it focused on this repo's root.
+2. **Set up passwordless SSH to the VPS** (one-time, so Claude isn't blocked by password prompts):
+
+   ```powershell
+   # If you don't yet have an SSH key
+   ssh-keygen -t ed25519 -C "seemaai-deploy"
+   # Copy it to the VPS (will prompt for the root password once)
+   type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh root@69.62.110.2 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+   # Verify — this should land you in a remote shell without asking for a password
+   ssh root@69.62.110.2 "echo connected"
+   ```
+
+3. **Tell Claude:** "deploy seema — follow deployment.md from step 2 onward." Claude will then issue commands of the form `ssh root@69.62.110.2 "<command>"` from this terminal, read the output, and react to errors immediately.
+4. **Have your API keys ready** before starting (paste them into chat when Claude asks): `ANTHROPIC_API_KEY`, `SENDGRID_API_KEY`, and optionally `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET`.
+
+> Why this beats running the script blindly: each command runs as a one-off SSH call, so Claude sees stdout/stderr for every step. If `alembic upgrade head` errors or nginx fails to start, Claude reads the log line that caused it and patches forward — not retroactively.
 
 ---
 
@@ -21,27 +46,19 @@ This guide assumes you have **never touched the VPS or the DNS panel** before. F
 
 ---
 
-## 1. DNS — point your domain at the VPS
+## 1. DNS — point your domain at the VPS ✅ DONE
 
-Log into your domain registrar's DNS panel for `seemaai.co.uk` and add **three A records**. Delete any existing A/AAAA records for `@`, `www`, and `app` first to avoid conflicts.
+DNS A records for `@`, `www`, `app`, and `n8n` already point to `69.62.110.2` (TTL 14400 / 300 for n8n). Confirm propagation from your local machine before continuing:
 
-| Type | Name / Host | Value           | TTL  |
-| ---- | ----------- | --------------- | ---- |
-| A    | `@`         | `69.62.110.2`   | 3600 |
-| A    | `www`       | `69.62.110.2`   | 3600 |
-| A    | `app`       | `69.62.110.2`   | 3600 |
-
-> Some registrars label the root domain as `@`, others want it blank. `www` and `app` are the subdomain parts only — don't type the full `app.seemaai.co.uk`.
-
-**Wait for propagation (5–30 min typically).** Verify from your local machine:
-
-```bash
+```powershell
 nslookup seemaai.co.uk          # should return 69.62.110.2
 nslookup www.seemaai.co.uk
 nslookup app.seemaai.co.uk
 ```
 
-Do not move past Step 5 (SSL) until all three resolve to `69.62.110.2`. SSL issuance will fail otherwise.
+If any of those don't yet resolve to `69.62.110.2`, wait 5–30 minutes and retry — Let's Encrypt issuance in Step 5 will fail otherwise.
+
+> The `n8n` record is for a future self-hosted n8n install — this guide does not deploy it. Leaving the DNS record in place is harmless.
 
 ---
 
@@ -110,44 +127,21 @@ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 
 ---
 
-## 3. Get the code onto the VPS
+## 3. Get the code onto the VPS — clone from GitHub
 
-You have two options. Pick **one**.
-
-### Option A — Push from local via Git (recommended)
-
-On your local Windows machine:
-
-```bash
-cd c:/Users/Faizan/Desktop/seemaai
-git init                          # if not already a git repo
-git add .
-git commit -m "Initial deploy"
-# Create an empty private repo on GitHub, then:
-git remote add origin git@github.com:YOUR_USERNAME/seemaai.git
-git push -u origin main
-```
-
-On the VPS:
+The repo is already published at `https://github.com/faizanali2k05/seemaai.git`. On the VPS:
 
 ```bash
 sudo mkdir -p /opt/seema
 sudo chown $USER:$USER /opt/seema
 cd /opt
-git clone https://github.com/YOUR_USERNAME/seemaai.git seema
+git clone https://github.com/faizanali2k05/seemaai.git seema
 cd seema
 ```
 
-### Option B — Direct upload via rsync
+> If the repo is **private**, generate a fine-grained GitHub PAT with `repo:read` scope and clone with `git clone https://<PAT>@github.com/faizanali2k05/seemaai.git seema` — or set up a deploy key (`ssh-keygen` on the VPS, add the `.pub` to GitHub → Repo → Settings → Deploy keys, then clone via the `git@github.com:...` URL).
 
-From your local machine (use Git Bash or WSL on Windows):
-
-```bash
-rsync -avz --exclude node_modules --exclude .next --exclude __pycache__ \
-  c:/Users/Faizan/Desktop/seemaai/ root@69.62.110.2:/opt/seema/
-```
-
-Then on the VPS: `cd /opt/seema`.
+Pulling future updates is just `cd /opt/seema && git pull` — see Step 9.
 
 ---
 
