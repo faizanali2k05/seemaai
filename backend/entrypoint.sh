@@ -1,38 +1,55 @@
 #!/bin/bash
+# Seema API container entrypoint.
+#   1. Wait for Postgres to accept connections (as seema_admin).
+#   2. Run Alembic migrations  -> creates/updates the schema.
+#   3. Apply RLS policies + grants (idempotent).
+#   4. Launch the API server.
+#
+# Only the `api` service runs this. The celery worker/beat services override
+# the container command, so they skip migrations (they wait for `api` to be
+# healthy first — see docker-compose.yml).
 set -e
 
 echo "=== Seema API starting ==="
 
-# Wait for database to be ready (retry up to 30 seconds)
-MAX_RETRIES=15
-RETRY=0
-until python -c "
+# 1. Wait for the database -----------------------------------------------------
+python - <<'PY'
+import os, sys, time
 from sqlalchemy import create_engine, text
-import os
-url = os.environ.get('DATABASE_URL', '').replace('+asyncpg', '')
-engine = create_engine(url)
-with engine.connect() as conn:
-    conn.execute(text('SELECT 1'))
-print('Database ready')
-" 2>/dev/null; do
-    RETRY=$((RETRY + 1))
-    if [ $RETRY -ge $MAX_RETRIES ]; then
-        echo "ERROR: Database not ready after ${MAX_RETRIES} attempts"
-        exit 1
-    fi
-    echo "Waiting for database... (attempt $RETRY/$MAX_RETRIES)"
-    sleep 2
-done
 
-# Run migrations
-echo "Running database migrations..."
+url = (os.environ.get("ADMIN_DATABASE_URL") or os.environ.get("DATABASE_URL") or "")
+url = url.replace("+asyncpg", "+psycopg2")  # sync driver for the readiness probe
+if not url:
+    sys.exit("FATAL: ADMIN_DATABASE_URL / DATABASE_URL not set")
+
+for attempt in range(1, 31):
+    try:
+        engine = create_engine(url)
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        print("Database ready.")
+        break
+    except Exception as exc:
+        print(f"Waiting for database... ({attempt}/30): {exc}")
+        time.sleep(2)
+else:
+    sys.exit("FATAL: database not ready after 60s")
+PY
+
+# 2. Migrations ----------------------------------------------------------------
+echo "Running database migrations (alembic upgrade head)..."
 alembic upgrade head
 
-echo "Starting Seema API server..."
+# 3. Row-Level Security + grants ----------------------------------------------
+echo "Applying RLS policies and runtime grants..."
+python scripts/apply_rls.py
+
+# 4. Serve ---------------------------------------------------------------------
+echo "Starting Seema API server on :8000 ..."
 exec gunicorn main:app \
-    --bind 0.0.0.0:8000 \
-    --workers ${API_WORKERS:-4} \
     --worker-class uvicorn.workers.UvicornWorker \
+    --workers "${API_WORKERS:-2}" \
+    --bind 0.0.0.0:8000 \
     --timeout 120 \
     --graceful-timeout 30 \
     --keep-alive 5 \

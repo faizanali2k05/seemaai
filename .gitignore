@@ -60,6 +60,7 @@ htmlcov/
 *.log
 logs/
 
-# Legacy files (pre-rewrite)
-app/demo-server.py
-app/demo-workflows.db
+# Legacy / demo data kept under archive/
+archive/app/demo-server.py
+archive/app/demo-workflows.db
+archive/data/

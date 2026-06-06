@@ -1,158 +1,141 @@
+# ============================================================================
+# Seema — consolidated production stack for a single VPS (app.seemaai.co.uk)
+#
+#   db            PostgreSQL 16   (tenant data, RLS-enforced)
+#   redis         Redis 7         (Celery broker + cache)
+#   api           FastAPI         (migrations + RLS bootstrap + REST API)
+#   celery-worker Celery worker   (email, compliance, regulatory jobs)
+#   celery-beat   Celery beat     (scheduled scrapers, chasers, digests)
+#   web           Next.js         (the dashboard, standalone build)
+#   caddy         Caddy 2         (reverse proxy + automatic HTTPS)
+#
+# All secrets come from the root .env file (see .env.example). Generate it
+# once with: ./scripts/generate-secrets.sh   (or generate-secrets.ps1)
+# ============================================================================
+
+# Shared backend environment — used by api, celery-worker and celery-beat.
+x-backend-env: &backend-env
+  APP_ENV: ${APP_ENV:-production}
+  DATABASE_URL: postgresql+asyncpg://seema_app:${SEEMA_APP_PASSWORD}@db:5432/${POSTGRES_DB:-seema}
+  ADMIN_DATABASE_URL: postgresql+asyncpg://seema_admin:${SEEMA_ADMIN_PASSWORD}@db:5432/${POSTGRES_DB:-seema}
+  REDIS_URL: redis://redis:6379/0
+  JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+  CORS_ORIGINS: '["https://${DOMAIN:-app.seemaai.co.uk}","http://localhost:3000"]'
+  # --- AI (required) ---
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  # --- Clio PMS (required for integration) ---
+  CLIO_CLIENT_ID: ${CLIO_CLIENT_ID:-}
+  CLIO_CLIENT_SECRET: ${CLIO_CLIENT_SECRET:-}
+  CLIO_REDIRECT_URI: ${CLIO_REDIRECT_URI:-https://app.seemaai.co.uk/api/integrations/clio/callback}
+  # --- Optional integrations (features stay disabled while blank) ---
+  SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
+  EMAIL_FROM: ${EMAIL_FROM:-noreply@seemaai.co.uk}
+  STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+  STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+  SENTRY_DSN: ${SENTRY_DSN:-}
+
 services:
-  # ── PostgreSQL ──
   db:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: seema
-      POSTGRES_PASSWORD: seema
-      POSTGRES_DB: seema
+      POSTGRES_USER: ${POSTGRES_SUPER_USER:-seema}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-seema}
+      # Consumed by scripts/db-init/01-roles.sh on first boot:
+      SEEMA_APP_PASSWORD: ${SEEMA_APP_PASSWORD}
+      SEEMA_ADMIN_PASSWORD: ${SEEMA_ADMIN_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+      - ./deploy/db-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U seema"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_SUPER_USER:-seema}"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
-  # ── Redis ──
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    ports:
-      - "6379:6379"
+    volumes:
+      - redisdata:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
-  # ── FastAPI Backend ──
   api:
     build:
-      context: ./seema-api
-      dockerfile: Dockerfile
+      context: ./backend
     restart: unless-stopped
-    env_file:
-      - ./seema-api/.env
-    ports:
-      - "8000:8000"
+    environment: *backend-env
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
-    # main.py lifespan handler auto-creates tables on startup
-    command: ["gunicorn", "main:app", "--worker-class", "uvicorn.workers.UvicornWorker", "--workers", "2", "--bind", "0.0.0.0:8000", "--timeout", "120", "--access-logfile", "-"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
 
-  # ── Celery Worker ──
   celery-worker:
     build:
-      context: ./seema-api
-      dockerfile: Dockerfile
+      context: ./backend
     restart: unless-stopped
-    env_file:
-      - ./seema-api/.env
+    environment: *backend-env
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
+      api:
         condition: service_healthy
     command: celery -A celery_app worker --loglevel=info --queues=compliance,email,default --concurrency=2
 
-  # ── Celery Beat Scheduler ──
   celery-beat:
     build:
-      context: ./seema-api
-      dockerfile: Dockerfile
+      context: ./backend
     restart: unless-stopped
-    env_file:
-      - ./seema-api/.env
+    environment: *backend-env
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
+      api:
         condition: service_healthy
     command: celery -A celery_app beat --loglevel=info
 
-  # ── Node.js API (new — runs in parallel with FastAPI during migration) ──
-  node-api:
-    build:
-      context: ./seema-node
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    env_file:
-      - ./seema-node/.env
-    ports:
-      - "4000:4000"
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    environment:
-      - FASTAPI_URL=http://api:8000
-
-  # ── Node.js Workers (BullMQ — replaces Celery for email/billing/compliance) ──
-  node-workers:
-    build:
-      context: ./seema-node
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    env_file:
-      - ./seema-node/.env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    environment:
-      - FASTAPI_URL=http://api:8000
-    command: ["node", "dist/workers/index.js"]
-
-  # ── Next.js Frontend ──
   web:
     build:
-      context: ./seema-web
-      dockerfile: Dockerfile
+      context: ./frontend
+      args:
+        # NEXT_PUBLIC_API_URL is baked into the JS bundle at build time.
+        NEXT_PUBLIC_API_URL: https://${DOMAIN:-app.seemaai.co.uk}/api
     restart: unless-stopped
-    ports:
-      - "3000:3000"
     environment:
-      # Browser hits nginx on port 80, which proxies /api/ to the backend
-      - NEXT_PUBLIC_API_URL=http://localhost/api
+      # Make the Next.js standalone server bind on the container network so
+      # Caddy can reach it (it otherwise defaults to localhost in some builds).
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
     depends_on:
       - api
 
-  # ── Nginx Reverse Proxy ──
-  nginx:
-    image: nginx:alpine
+  caddy:
+    image: caddy:2-alpine
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-app.seemaai.co.uk}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@seemaai.co.uk}
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      # For local dev: use local.conf (HTTP only, no SSL certs needed)
-      # For production: swap to seemaai.conf and uncomment certbot volumes
-      - ./nginx/local.conf:/etc/nginx/conf.d/default.conf:ro
-      # - ./nginx/seemaai.conf:/etc/nginx/conf.d/default.conf:ro
-      # - certbot-webroot:/var/www/certbot:ro
-      # - certbot-certs:/etc/letsencrypt:ro
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
       - api
       - web
 
-  # ── Certbot (SSL) ──
-  certbot:
-    image: certbot/certbot
-    volumes:
-      - certbot-webroot:/var/www/certbot
-      - certbot-certs:/etc/letsencrypt
-
 volumes:
   pgdata:
-  certbot-webroot:
-  certbot-certs:
+  redisdata:
+  caddy_data:
+  caddy_config:

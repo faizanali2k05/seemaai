@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Breach Register — Seema</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px;color:#1F2937;background:#F8F9FB;line-height:1.5}
+button{font-family:inherit;font-size:inherit;cursor:pointer}
+a{color:#2563EB;text-decoration:none}
+h1,h2,h3,h4{margin:0;font-weight:600}
+input,select,textarea{font-family:inherit;font-size:14px}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:240px;background:#0F1B3D;color:#fff;flex-shrink:0;display:flex;flex-direction:column;padding:16px 0}
+.sidebar .brand{padding:0 20px 20px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:12px}
+.sidebar .brand h2{font-size:18px;margin:0}
+.sidebar .brand p{margin:2px 0 0;font-size:11px;opacity:0.6}
+.sidebar .firm{padding:8px 20px;margin-bottom:16px;font-size:12px;opacity:0.8}
+.sidebar .firm strong{display:block;font-weight:500;color:#fff;opacity:1;margin-bottom:2px}
+.sidebar nav a{display:flex;align-items:center;gap:12px;padding:9px 20px;color:rgba(255,255,255,0.75);font-size:13px;border-left:3px solid transparent}
+.sidebar nav a:hover{background:rgba(255,255,255,0.05);color:#fff}
+.sidebar nav a.active{background:rgba(255,255,255,0.08);color:#fff;border-left-color:#fff;font-weight:500}
+.sidebar nav a .ico{width:16px;height:16px;display:inline-block;flex-shrink:0}
+.sidebar .sec{padding:14px 20px 6px;font-size:10px;text-transform:uppercase;letter-spacing:0.06em;opacity:0.4;margin-top:12px}
+.sidebar .footer{margin-top:auto;padding:16px 20px;border-top:1px solid rgba(255,255,255,0.1);font-size:12px}
+.sidebar .user{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.sidebar .avatar{width:32px;height:32px;border-radius:50%;background:#7DD3FC;color:#0F1B3D;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px}
+.sidebar .logout{background:#DC2626;color:#fff;border:0;width:100%;padding:8px;border-radius:6px;font-weight:500;font-size:12px}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{background:#fff;border-bottom:1px solid #E5E7EB;padding:10px 24px;display:flex;align-items:center;justify-content:space-between}
+.topbar .crumbs{font-size:13px;color:#6B7280}
+.topbar .crumbs span{color:#1F2937;font-weight:500}
+.topbar .actions{display:flex;align-items:center;gap:12px}
+.topbar .bell{position:relative;background:transparent;border:0;color:#6B7280;font-size:18px;padding:6px}
+.topbar .bell .badge{position:absolute;top:0;right:0;background:#DC2626;color:#fff;font-size:10px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600}
+.page{padding:20px 24px 80px;max-width:1400px;width:100%;margin:0 auto;flex:1;min-width:0}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:16px}
+.page-head h1{font-size:24px;margin:0 0 4px}
+.page-head .sub{font-size:13px;color:#6B7280;margin:0}
+.page-head .sub .cite{color:#7C3AED;font-weight:500}
+.btn{padding:9px 14px;border-radius:6px;border:1px solid #D1D5DB;background:#fff;font-size:13px;font-weight:500;color:#1F2937;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:#F9FAFB;border-color:#9CA3AF}
+.btn-primary{background:#0F1B3D;color:#fff;border-color:#0F1B3D}
+.btn-primary:hover{background:#1B2A55;border-color:#1B2A55}
+.btn-danger{background:#DC2626;color:#fff;border-color:#DC2626}
+.btn-danger:hover{background:#B91C1C;border-color:#B91C1C}
+.btn-warning{background:#F59E0B;color:#fff;border-color:#F59E0B}
+.btn-warning:hover{background:#D97706}
+.btn-success{background:#10B981;color:#fff;border-color:#10B981}
+.btn-success:hover{background:#059669}
+.btn-ghost{background:transparent;border-color:transparent;color:#6B7280}
+.btn-ghost:hover{background:#F3F4F6;border-color:#E5E7EB}
+.btn-sm{padding:6px 10px;font-size:12px}
+.btn-lg{padding:11px 18px;font-size:14px}
+.actions-row{display:flex;gap:8px}
+.kpi-strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:14px 16px;min-width:0}
+.kpi .lbl{font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:0.04em;margin:0 0 6px;font-weight:500}
+.kpi .val{font-size:24px;font-weight:600;margin:0;color:#0F1B3D}
+.kpi .val.warn{color:#D97706}
+.kpi .val.danger{color:#DC2626}
+.kpi .val.ok{color:#10B981}
+.kpi .trend{font-size:11px;color:#6B7280;margin:4px 0 0}
+.alert-strip{background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px}
+.alert-strip .ico{width:24px;height:24px;background:#DC2626;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:600}
+.alert-strip .text{flex:1;font-size:13px;color:#7F1D1D}
+.alert-strip strong{font-weight:600}
+.alert-strip .countdown{font-size:18px;font-weight:600;color:#DC2626;font-variant-numeric:tabular-nums;background:#fff;padding:4px 10px;border-radius:6px;border:1px solid #FECACA}
+.alert-strip .alert-action{flex-shrink:0}
+.tabs{display:flex;gap:2px;border-bottom:1px solid #E5E7EB;margin-bottom:16px;overflow-x:auto}
+.tab{padding:10px 14px;font-size:13px;color:#6B7280;background:transparent;border:0;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tab:hover{color:#1F2937}
+.tab.active{color:#0F1B3D;border-bottom-color:#0F1B3D;font-weight:600}
+.tab .count{font-size:11px;background:#F3F4F6;color:#6B7280;padding:1px 7px;border-radius:999px;font-weight:600}
+.tab.active .count{background:#0F1B3D;color:#fff}
+.content-grid{display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:flex-start}
+.table-card{background:#fff;border:1px solid #E5E7EB;border-radius:8px;overflow:hidden;min-width:0}
+.filter-bar{display:flex;gap:8px;padding:12px;border-bottom:1px solid #E5E7EB;background:#FAFBFC;flex-wrap:wrap;align-items:center}
+.filter-bar input.search{flex:1;min-width:180px;padding:7px 12px;border:1px solid #D1D5DB;border-radius:6px;font-size:13px}
+.filter-bar select{padding:7px 24px 7px 10px;border:1px solid #D1D5DB;border-radius:6px;background:#fff;font-size:12px;color:#374151;cursor:pointer;appearance:none;background-image:linear-gradient(45deg,transparent 50%,#6B7280 50%),linear-gradient(135deg,#6B7280 50%,transparent 50%);background-position:calc(100% - 12px) 50%,calc(100% - 8px) 50%;background-size:4px 4px;background-repeat:no-repeat}
+table.data{width:100%;border-collapse:collapse;font-size:13px}
+table.data th{text-align:left;padding:10px 12px;font-weight:600;color:#6B7280;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;background:#FAFBFC;border-bottom:1px solid #E5E7EB}
+table.data td{padding:12px;border-bottom:1px solid #F3F4F6;vertical-align:top}
+table.data tr.row:hover td{background:#FAFBFC;cursor:pointer}
+.ref-cell{display:flex;flex-direction:column;gap:2px}
+.ref-cell .ref{font-weight:600;color:#0F1B3D;font-size:13px}
+.ref-cell .source{font-size:11px;color:#6B7280}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;line-height:1.5}
+.pill-serious{background:#FEE2E2;color:#991B1B}
+.pill-minor{background:#FEF3C7;color:#92400E}
+.pill-triage{background:#DBEAFE;color:#1E40AF}
+.pill-resolved{background:#D1FAE5;color:#065F46}
+.pill-closed{background:#F3F4F6;color:#4B5563}
+.pill-sra{background:#EDE9FE;color:#5B21B6}
+.pill-ico{background:#CCFBF1;color:#115E59}
+.pill-investigating{background:#FEF3C7;color:#92400E}
+.pill-reported{background:#D1FAE5;color:#065F46}
+.pill-draft{background:#E0E7FF;color:#3730A3}
+.pill-handoff{background:#CCFBF1;color:#115E59}
+.pill-overdue{background:#FEE2E2;color:#991B1B}
+.tracks{display:flex;gap:4px;flex-wrap:wrap}
+.right-panel{display:flex;flex-direction:column;gap:12px}
+.card{background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:14px}
+.card-h{font-size:12px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.04em;margin:0 0 10px;display:flex;align-items:center;justify-content:space-between}
+.activity{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F3F4F6;font-size:12px;line-height:1.4}
+.activity:last-child{border-bottom:0}
+.activity .dot{width:8px;height:8px;border-radius:50%;background:#10B981;flex-shrink:0;margin-top:5px}
+.activity .dot.warn{background:#F59E0B}
+.activity .dot.info{background:#3B82F6}
+.activity .dot.danger{background:#DC2626}
+.activity .body{flex:1;min-width:0}
+.activity .ref{font-weight:600;color:#0F1B3D}
+.activity .who{color:#6B7280;font-size:11px}
+.trend-bar{display:flex;align-items:flex-end;gap:4px;height:80px;margin:0 0 8px;padding:4px 0;border-bottom:1px solid #E5E7EB}
+.trend-bar .b{flex:1;background:#7C3AED;border-radius:3px 3px 0 0;min-height:6px;position:relative}
+.trend-bar .b.warn{background:#F59E0B}
+.trend-bar .b.danger{background:#DC2626}
+.trend-bar .b:hover::after{content:attr(data-label);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;white-space:nowrap;margin-bottom:4px}
+.trend-x{display:flex;gap:4px;font-size:10px;color:#6B7280;justify-content:space-between}
+.trend-x span{flex:1;text-align:center}
+.review-pack{background:#F5F3FF;border:1px solid #DDD6FE;border-radius:6px;padding:12px;margin-top:8px}
+.review-pack p{margin:0 0 8px;font-size:12px;color:#5B21B6}
+.review-pack .btn{width:100%;justify-content:center;background:#7C3AED;color:#fff;border-color:#7C3AED;font-size:12px}
+.cite-card{background:#F9FAFB;border:1px solid #E5E7EB;border-radius:6px;padding:10px 12px;font-size:11px;color:#4B5563;line-height:1.6}
+.cite-card strong{color:#1F2937;display:block;margin-bottom:4px;font-weight:600;font-size:12px}
+.cite-card .cite-item{margin-bottom:4px}
+.cite-card .cite-item a{color:#7C3AED;font-weight:500}
+
+/* Overlay & Modal */
+.overlay{position:fixed;inset:0;background:rgba(15,27,61,0.6);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+.overlay[hidden]{display:none}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:1100px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,0.25)}
+.modal-head{padding:18px 24px;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;background:#FAFBFC}
+.modal-head h2{font-size:18px;margin:0 0 2px}
+.modal-head .ref{font-size:12px;color:#6B7280;font-family:monospace}
+.modal-head .close{background:transparent;border:0;font-size:24px;color:#6B7280;padding:4px 10px;border-radius:6px;line-height:1}
+.modal-head .close:hover{background:#F3F4F6;color:#1F2937}
+.phase-nav{display:flex;padding:12px 24px;background:#F8F9FB;border-bottom:1px solid #E5E7EB;gap:4px;overflow-x:auto}
+.phase-btn{background:transparent;border:1px solid transparent;padding:8px 12px;border-radius:6px;font-size:12px;color:#6B7280;white-space:nowrap;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.phase-btn:hover{background:#fff;border-color:#E5E7EB;color:#1F2937}
+.phase-btn .n{width:20px;height:20px;border-radius:50%;background:#E5E7EB;color:#6B7280;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;flex-shrink:0}
+.phase-btn.active{background:#fff;border-color:#0F1B3D;color:#0F1B3D;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+.phase-btn.active .n{background:#0F1B3D;color:#fff}
+.phase-btn.done .n{background:#10B981;color:#fff}
+.phase-btn.skipped{opacity:0.5;text-decoration:line-through}
+.phase-content{flex:1;overflow-y:auto;padding:24px 32px}
+.phase[hidden]{display:none}
+.phase h3{font-size:18px;margin:0 0 4px}
+.phase .phase-sub{font-size:13px;color:#6B7280;margin:0 0 20px}
+.phase .phase-sub .cite{color:#7C3AED}
+.section{margin-bottom:24px;background:#FAFBFC;border:1px solid #E5E7EB;border-radius:8px;padding:18px 20px}
+.section h4{font-size:14px;margin:0 0 4px;color:#0F1B3D}
+.section .section-help{font-size:12px;color:#6B7280;margin:0 0 14px}
+.section .section-help a{color:#7C3AED;font-weight:500}
+.form-row{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:12px}
+.form-row.full{grid-template-columns:1fr}
+.form-row.three{grid-template-columns:repeat(3,1fr)}
+.field label{display:block;font-size:12px;font-weight:500;color:#374151;margin-bottom:6px}
+.field label .req{color:#DC2626;margin-left:2px}
+.field label .opt{color:#9CA3AF;font-weight:400;margin-left:4px}
+.field input[type=text],.field input[type=email],.field input[type=number],.field input[type=datetime-local],.field input[type=date],.field select,.field textarea{width:100%;padding:8px 10px;border:1px solid #D1D5DB;border-radius:6px;background:#fff;font-size:13px;color:#1F2937}
+.field textarea{min-height:80px;resize:vertical;font-family:inherit;line-height:1.5}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#7C3AED;box-shadow:0 0 0 3px rgba(124,58,237,0.1)}
+.field .hint{font-size:11px;color:#6B7280;margin-top:4px}
+.checklist{display:flex;flex-direction:column;gap:8px}
+.check{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:#fff;border:1px solid #E5E7EB;border-radius:6px;font-size:13px;cursor:pointer}
+.check:hover{border-color:#A78BFA}
+.check.checked{background:#F5F3FF;border-color:#7C3AED}
+.check input{margin-top:2px;cursor:pointer}
+.check .text{flex:1}
+.check .cite{display:block;font-size:11px;color:#6B7280;margin-top:2px}
+.check.checked .cite{color:#7C3AED}
+.notif-row{display:grid;grid-template-columns:1fr 140px 140px 120px 100px;gap:8px;padding:10px;background:#fff;border:1px solid #E5E7EB;border-radius:6px;margin-bottom:6px;align-items:center;font-size:12px}
+.notif-row .who strong{display:block;font-size:13px;color:#0F1B3D}
+.notif-row .who .why{color:#6B7280;font-size:11px;display:block;margin-top:1px}
+.notif-row select{padding:6px 8px;font-size:12px}
+.notif-row input{padding:6px 8px;font-size:12px}
+.timeline{position:relative;padding-left:24px}
+.timeline::before{content:'';position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:#E5E7EB}
+.timeline-item{position:relative;margin-bottom:14px;padding-bottom:10px}
+.timeline-item::before{content:'';position:absolute;left:-22px;top:5px;width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #7C3AED}
+.timeline-item.done::before{background:#10B981;border-color:#10B981}
+.timeline-item .ts{font-size:11px;color:#6B7280;font-family:monospace}
+.timeline-item .what{font-size:13px;margin:2px 0 2px;font-weight:500}
+.timeline-item .who{font-size:11px;color:#6B7280}
+.report-section{background:#fff;border:1px solid #E5E7EB;border-radius:6px;padding:14px;margin-bottom:8px}
+.report-section .rs-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.report-section .rs-head h5{font-size:13px;margin:0;color:#0F1B3D;font-weight:600}
+.report-section .rs-actions{display:flex;gap:4px}
+.report-section .rs-actions button{background:transparent;border:0;color:#6B7280;font-size:11px;padding:2px 6px;border-radius:4px;cursor:pointer}
+.report-section .rs-actions button:hover{background:#F3F4F6;color:#1F2937}
+.report-section .rs-body{font-size:12px;line-height:1.7;color:#374151;background:#FAFBFC;padding:10px 12px;border-radius:4px;font-family:Georgia,serif;border-left:3px solid #C4B5FD}
+.report-section .ai-tag{font-size:10px;background:#EDE9FE;color:#5B21B6;padding:2px 8px;border-radius:999px;font-weight:500;display:inline-flex;align-items:center;gap:4px}
+.signoff-block{background:#0F1B3D;color:#fff;border-radius:8px;padding:18px 20px;margin-top:14px}
+.signoff-block h4{color:#fff;margin:0 0 14px;font-size:14px}
+.signoff-row{display:grid;grid-template-columns:140px 1fr;gap:10px;margin-bottom:8px;font-size:12px}
+.signoff-row .k{color:rgba(255,255,255,0.6)}
+.signoff-row .v{color:#fff;font-weight:500}
+.signoff-confirm{margin-top:14px;padding:12px;background:rgba(255,255,255,0.05);border-radius:6px;display:flex;align-items:flex-start;gap:10px}
+.signoff-confirm input{margin-top:2px}
+.signoff-confirm label{font-size:12px;color:rgba(255,255,255,0.9);line-height:1.5}
+.modal-foot{padding:14px 24px;border-top:1px solid #E5E7EB;background:#FAFBFC;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.modal-foot .ft-actions{display:flex;gap:8px}
+.modal-foot .ft-status{font-size:12px;color:#6B7280}
+.modal-foot .ft-status .saved{color:#10B981;font-weight:500}
+.method-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.method-card{background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:8px}
+.method-card:hover{border-color:#A78BFA}
+.method-card.selected{border-color:#7C3AED;background:#F5F3FF}
+.method-card .mc-head{display:flex;justify-content:space-between;align-items:center}
+.method-card .mc-title{font-weight:600;font-size:13px;color:#0F1B3D}
+.method-card .mc-rec{font-size:10px;background:#10B981;color:#fff;padding:2px 6px;border-radius:999px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em}
+.method-card .mc-body{font-size:12px;color:#6B7280;line-height:1.5}
+.method-card .mc-meta{font-size:11px;color:#9CA3AF;font-family:monospace}
+.handoff-banner{background:#CCFBF1;border:1px solid #5EEAD4;border-radius:8px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px}
+.handoff-banner .ico{width:32px;height:32px;background:#0D9488;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:600}
+.handoff-banner .text{flex:1;font-size:13px;color:#115E59}
+.handoff-banner .text strong{font-weight:600;display:block;margin-bottom:2px}
+.handoff-banner .btn{background:#0D9488;color:#fff;border-color:#0D9488}
+.tracks-summary{display:flex;gap:10px;padding:14px 18px;background:#F5F3FF;border:1px solid #DDD6FE;border-radius:8px;margin-bottom:14px}
+.tracks-summary .ts-block{flex:1}
+.tracks-summary .ts-label{font-size:11px;color:#5B21B6;text-transform:uppercase;letter-spacing:0.04em;font-weight:600;margin:0 0 4px}
+.tracks-summary .ts-val{font-size:14px;font-weight:600;color:#0F1B3D;margin:0}
+.tracks-summary .ts-note{font-size:11px;color:#6B7280;margin:2px 0 0}
+.audit-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F3F4F6;font-size:12px}
+.audit-row .ts{font-family:monospace;color:#6B7280;width:130px;flex-shrink:0;font-size:11px}
+.audit-row .who{width:140px;flex-shrink:0;color:#1F2937;font-weight:500}
+.audit-row .what{flex:1;color:#374151}
+.summary-card{background:#0F1B3D;color:#fff;border-radius:8px;padding:16px 20px;margin-bottom:16px}
+.summary-card h4{margin:0 0 4px;color:#fff;font-size:13px;opacity:0.7;text-transform:uppercase;letter-spacing:0.04em;font-weight:500}
+.summary-card .big{font-size:18px;font-weight:600;margin:0 0 6px}
+.summary-card .meta{font-size:12px;opacity:0.7}
+.minor-badge{background:#FEF3C7;border:1px solid #FCD34D;border-radius:6px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:13px;color:#78350F}
+.minor-badge strong{font-weight:600}
+
+/* Detail panel */
+.detail-panel{position:fixed;top:0;right:0;height:100vh;width:520px;background:#fff;box-shadow:-10px 0 30px rgba(15,27,61,0.15);z-index:90;display:flex;flex-direction:column;overflow:hidden}
+.detail-panel[hidden]{display:none}
+.detail-head{padding:16px 20px;border-bottom:1px solid #E5E7EB;display:flex;justify-content:space-between;align-items:flex-start;background:#FAFBFC}
+.detail-head h3{margin:0 0 4px;font-size:16px}
+.detail-head .ref{font-family:monospace;font-size:11px;color:#6B7280}
+.detail-head .pills{display:flex;gap:4px;margin-top:6px}
+.detail-head .close{background:transparent;border:0;font-size:22px;color:#6B7280;padding:0 8px;line-height:1;cursor:pointer}
+.detail-body{flex:1;overflow-y:auto;padding:20px}
+.detail-tabs{display:flex;gap:0;border-bottom:1px solid #E5E7EB;margin-bottom:16px}
+.detail-tab{padding:8px 12px;border:0;background:transparent;font-size:12px;color:#6B7280;cursor:pointer;border-bottom:2px solid transparent;font-weight:500}
+.detail-tab.active{color:#0F1B3D;border-bottom-color:#0F1B3D}
+.detail-section{margin-bottom:18px}
+.detail-section h5{font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:0.04em;margin:0 0 8px;font-weight:600}
+.detail-grid{display:grid;grid-template-columns:120px 1fr;gap:6px 12px;font-size:13px}
+.detail-grid .k{color:#6B7280}
+.detail-grid .v{color:#1F2937;font-weight:500}
+.detail-foot{padding:14px 20px;border-top:1px solid #E5E7EB;background:#FAFBFC;display:flex;gap:8px;justify-content:flex-end}
+
+@media (max-width:900px){.content-grid{grid-template-columns:1fr}.kpi-strip{grid-template-columns:repeat(3,1fr)}.form-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <div class="brand">
+    <h2>Seema</h2>
+    <p>Compliance Platform</p>
+  </div>
+  <div class="firm">
+    <strong>Aldridge &amp; Hayward LLP</strong>
+    SRA 624891 · Essentials
+  </div>
+  <nav>
+    <a href="#"><span class="ico">▦</span>Dashboard</a>
+    <a href="#"><span class="ico">◐</span>Regulatory Updates</a>
+    <a href="#"><span class="ico">◉</span>AML / CDD</a>
+    <a href="#"><span class="ico">⚡</span>Chasers</a>
+    <div class="sec">Compliance</div>
+    <a href="#"><span class="ico">⚖</span>Conflict Check</a>
+    <a href="#"><span class="ico">▢</span>Matter Review</a>
+    <a href="#"><span class="ico">▤</span>Deadlines</a>
+    <a href="#"><span class="ico">📜</span>Undertakings</a>
+    <a href="#"><span class="ico">⟳</span>Compliance Scan</a>
+    <a href="#"><span class="ico">💬</span>Complaints</a>
+    <a href="#" class="active"><span class="ico">⚠</span>Breach Register</a>
+    <a href="#"><span class="ico">↺</span>Remediation</a>
+    <a href="#"><span class="ico">⊟</span>Policies</a>
+    <div class="sec">SRA</div>
+    <a href="#"><span class="ico">🔍</span>SRA Audit</a>
+    <a href="#"><span class="ico">📤</span>SRA Return</a>
+    <a href="#"><span class="ico">👥</span>Staff &amp; CPD</a>
+    <a href="#"><span class="ico">🎓</span>Supervision</a>
+  </nav>
+  <div class="footer">
+    <div class="user">
+      <div class="avatar">SM</div>
+      <div>
+        <strong style="display:block;color:#fff;opacity:1">Sarah Mitchell</strong>
+        <span style="opacity:0.6">COLP</span>
+      </div>
+    </div>
+    <button class="logout">Logout</button>
+  </div>
+</aside>
+
+<div class="main">
+
+  <header class="topbar">
+    <div class="crumbs">Compliance / <span>Breach Register</span></div>
+    <div class="actions">
+      <button class="bell" aria-label="Notifications">🔔<span class="badge">3</span></button>
+      <button class="btn btn-sm">Help</button>
+    </div>
+  </header>
+
+  <div class="page">
+
+    <div class="page-head">
+      <div>
+        <h1>Breach Register</h1>
+        <p class="sub">SRA reporting and internal log · <span class="cite">SRA Code for Firms para 3.9</span> · <span class="cite">Code for Solicitors para 7.7</span> · Aldridge &amp; Hayward Solicitors LLP</p>
+      </div>
+      <div class="actions-row">
+        <button class="btn">Export breach log (CSV)</button>
+        <button class="btn">COLP review pack</button>
+        <button class="btn btn-danger btn-lg" onclick="openWizard()">+ Log new breach</button>
+      </div>
+    </div>
+
+    <div class="kpi-strip">
+      <div class="kpi"><p class="lbl">Open breaches</p><p class="val">3</p><p class="trend">▲ 1 vs last week</p></div>
+      <div class="kpi"><p class="lbl">Pending triage</p><p class="val warn">2</p><p class="trend">Oldest 23h ago</p></div>
+      <div class="kpi"><p class="lbl">SRA serious — open</p><p class="val danger">1</p><p class="trend">14d advisory clock</p></div>
+      <div class="kpi"><p class="lbl">Awaiting handoff</p><p class="val warn">1</p><p class="trend">SLA 21h 14m</p></div>
+      <div class="kpi"><p class="lbl">Reported YTD</p><p class="val">5</p><p class="trend">2 closed, 3 open</p></div>
+      <div class="kpi"><p class="lbl">Avg time to report</p><p class="val ok">9.2d</p><p class="trend">Below 14d target</p></div>
+    </div>
+
+    <div class="alert-strip">
+      <div class="ico">!</div>
+      <div class="text">
+        <strong>BR-2026-0042 awaiting partner handoff.</strong>
+        Misdirected email — medical records. Hand off to Sentinel DP Partners so they can meet the ICO 72h window. Firm SLA: 24h from detection.
+      </div>
+      <div class="countdown">21h 14m</div>
+      <div class="alert-action"><button class="btn">Open</button></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active">All<span class="count">8</span></button>
+      <button class="tab">Pending triage<span class="count">2</span></button>
+      <button class="tab">Investigating<span class="count">1</span></button>
+      <button class="tab">Serious — to SRA<span class="count">1</span></button>
+      <button class="tab">Awaiting handoff<span class="count">1</span></button>
+      <button class="tab">Minor — logged<span class="count">3</span></button>
+      <button class="tab">Reported<span class="count">2</span></button>
+      <button class="tab">Closed<span class="count">42</span></button>
+    </div>
+
+    <div class="content-grid">
+
+      <div class="table-card">
+        <div class="filter-bar">
+          <input class="search" type="text" placeholder="Search breaches by ref, client, matter, summary…">
+          <select><option>All categories</option><option>Data Protection</option><option>Client Money</option><option>AML</option><option>Confidentiality</option><option>Supervision</option><option>Undertakings</option><option>Conflict</option></select>
+          <select><option>All fee-earners</option><option>Olivia Hartley</option><option>James O'Brien</option><option>Priya Patel</option></select>
+          <select><option>Last 90 days</option><option>Last 30 days</option><option>This year</option><option>All time</option></select>
+          <button class="btn btn-sm">More filters</button>
+        </div>
+
+        <table class="data">
+          <thead><tr>
+            <th>Ref / Source</th>
+            <th>Detected</th>
+            <th>Summary</th>
+            <th>Tracks</th>
+            <th>Severity</th>
+            <th>Status</th>
+          </tr></thead>
+          <tbody>
+            <tr class="row" onclick="openDetail()">
+              <td><div class="ref-cell"><span class="ref">BR-2026-0042</span><span class="source">Clio rule · email</span></div></td>
+              <td>30 May 14:42<br><span style="color:#6B7280;font-size:11px">2 days ago</span></td>
+              <td><strong>Email containing client medical records sent to wrong recipient</strong><br><span style="color:#6B7280;font-size:11px">Whitfield matter · Olivia Hartley</span></td>
+              <td><div class="tracks"><span class="pill pill-ico">ICO</span><span class="pill pill-sra">SRA</span></div></td>
+              <td><span class="pill pill-serious">Serious</span></td>
+              <td><span class="pill pill-investigating">Phase 5 · SRA draft</span></td>
+            </tr>
+            <tr class="row">
+              <td><div class="ref-cell"><span class="ref">BR-2026-0041</span><span class="source">Clio rule · trust ledger</span></div></td>
+              <td>29 May 09:15<br><span style="color:#6B7280;font-size:11px">3 days ago</span></td>
+              <td><strong>Trust deposit not transferred within 1 working day — £250,000</strong><br><span style="color:#6B7280;font-size:11px">Oakwood Cafés share sale · James O'Brien</span></td>
+              <td><div class="tracks"><span class="pill pill-sra">SRA</span></div></td>
+              <td><span class="pill pill-triage">Triage</span></td>
+              <td><span class="pill pill-triage">Pending triage</span></td>
+            </tr>
+            <tr class="row">
+              <td><div class="ref-cell"><span class="ref">BR-2026-0040</span><span class="source">Manual · self-report</span></div></td>
+              <td>28 May 11:30<br><span style="color:#6B7280;font-size:11px">4 days ago</span></td>
+              <td><strong>Supervision note late · trainee monthly review</strong><br><span style="color:#6B7280;font-size:11px">Charlotte Davies trainee · Olivia Hartley supervisor</span></td>
+              <td><div class="tracks"><span class="pill pill-sra">SRA</span></div></td>
+              <td><span class="pill pill-minor">Minor</span></td>
+              <td><span class="pill pill-closed">Logged · remediated</span></td>
+            </tr>
+            <tr class="row">
+              <td><div class="ref-cell"><span class="ref">BR-2026-0039</span><span class="source">Compliance scan</span></div></td>
+              <td>27 May 08:00<br><span style="color:#6B7280;font-size:11px">5 days ago</span></td>
+              <td><strong>AML training overdue &gt;180 days — 2 fee-earners</strong><br><span style="color:#6B7280;font-size:11px">Daniel Wright · Thomas Greenwood</span></td>
+              <td><div class="tracks"><span class="pill pill-sra">SRA</span></div></td>
+              <td><span class="pill pill-triage">Triage</span></td>
+              <td><span class="pill pill-triage">Pending triage</span></td>
+            </tr>
+            <tr class="row">
+              <td><div class="ref-cell"><span class="ref">BR-2026-0038</span><span class="source">Manual</span></div></td>
+              <td>22 May 16:50</td>
+              <td><strong>Misaddressed letter — contained no personal data, returned unopened</strong><br><span style="color:#6B7280;font-size:11px">Hesketh matter · Mohammed Khan</span></td>
+              <td>—</td>
+              <td><span class="pill pill-minor">Minor</span></td>
+              <td><span class="pill pill-closed">Closed</span></td>
+            </tr>
+            <tr class="row">
+              <td><div class="ref-cell"><span class="ref">BR-2026-0037</span><span class="source">Clio rule · conflict</span></div></td>
+              <td>18 May 10:22</td>
+              <td><strong>New matter opened without conflict check on file</strong><br><span style="color:#6B7280;font-size:11px">Marston Estates · Emma Caldwell</span></td>
+              <td><div class="tracks"><span class="pill pill-sra">SRA</span></div></td>
+              <td><span class="pill pill-minor">Minor</span></td>
+              <td><span class="pill pill-closed">Logged · remediated</span></td>
+            </tr>
+            <tr class="row">
+              <td><div class="ref-cell"><span class="ref">BR-2026-0036</span><span class="source">Self-report · external</span></div></td>
+              <td>12 May 14:10</td>
+              <td><strong>Undertaking breach — failed to provide certified grant copy by deadline</strong><br><span style="color:#6B7280;font-size:11px">Lloyd-Hughes probate · Thomas Greenwood</span></td>
+              <td><div class="tracks"><span class="pill pill-sra">SRA</span></div></td>
+              <td><span class="pill pill-serious">Serious</span></td>
+              <td><span class="pill pill-reported">Reported · SRA case officer assigned</span></td>
+            </tr>
+            <tr class="row">
+              <td><div class="ref-cell"><span class="ref">BR-2026-0035</span><span class="source">COFA review</span></div></td>
+              <td>4 May 09:00</td>
+              <td><strong>Client money held in client account 6 days post-completion</strong><br><span style="color:#6B7280;font-size:11px">Pemberton conveyancing · Rajesh Bhatia</span></td>
+              <td><div class="tracks"><span class="pill pill-sra">SRA</span></div></td>
+              <td><span class="pill pill-serious">Serious</span></td>
+              <td><span class="pill pill-reported">Reported · informal action</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="right-panel">
+
+        <div class="card">
+          <h4 class="card-h">Recent activity <button class="btn btn-sm btn-ghost" style="font-size:11px">View all</button></h4>
+          <div class="activity"><div class="dot danger"></div><div class="body"><span class="ref">BR-2026-0042</span> handoff packet drafted<br><span class="who">Sarah Mitchell · 14m ago</span></div></div>
+          <div class="activity"><div class="dot warn"></div><div class="body"><span class="ref">BR-2026-0041</span> triage card created from Clio webhook<br><span class="who">System · 23h ago</span></div></div>
+          <div class="activity"><div class="dot info"></div><div class="body"><span class="ref">BR-2026-0036</span> SRA case officer assigned (M. Hargreaves)<br><span class="who">Sarah Mitchell · 2d ago</span></div></div>
+          <div class="activity"><div class="dot"></div><div class="body"><span class="ref">BR-2026-0040</span> closed · supervision note filed<br><span class="who">Olivia Hartley · 2d ago</span></div></div>
+          <div class="activity"><div class="dot info"></div><div class="body"><span class="ref">BR-2026-0039</span> training assigned to D. Wright<br><span class="who">System · 4d ago</span></div></div>
+        </div>
+
+        <div class="card">
+          <h4 class="card-h">Last 6 months by category</h4>
+          <div class="trend-bar">
+            <div class="b warn" style="height:35%" data-label="Dec: 4"></div>
+            <div class="b" style="height:25%" data-label="Jan: 2"></div>
+            <div class="b" style="height:40%" data-label="Feb: 5"></div>
+            <div class="b warn" style="height:50%" data-label="Mar: 6"></div>
+            <div class="b warn" style="height:30%" data-label="Apr: 3"></div>
+            <div class="b danger" style="height:70%" data-label="May: 8"></div>
+          </div>
+          <div class="trend-x"><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span></div>
+          <p style="font-size:11px;color:#6B7280;margin:8px 0 0">May spike driven by AML training scan + new Clio rules switched on. Review whether pattern is systemic in next COLP review.</p>
+        </div>
+
+        <div class="card">
+          <h4 class="card-h">COLP quarterly review</h4>
+          <div class="review-pack">
+            <p><strong>Q2 2026 review pack</strong></p>
+            <p>Auto-compiled: all breaches Apr–Jun 2026, themes, remediation status, lessons learned.</p>
+            <p>Last generated: 23 May 2026</p>
+            <button class="btn">Generate updated pack</button>
+          </div>
+        </div>
+
+        <div class="cite-card">
+          <strong>Regulatory sources</strong>
+          <div class="cite-item">• <a href="#">SRA Code for Firms para 3.9</a> — Reporting obligations</div>
+          <div class="cite-item">• <a href="#">Code for Solicitors para 7.7</a> — Personal reporting duty</div>
+          <div class="cite-item">• <a href="#">SRA guidance: Reporting and notification obligations</a></div>
+          <div class="cite-item">• <a href="#">MLR 2017 Reg 21</a> — Independent audit</div>
+          <div class="cite-item">• <a href="#">UK GDPR Art 33</a> — Data breach (handoff)</div>
+          <div class="cite-item">• <a href="#">SRA Accounts Rules</a></div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- BREACH DETAIL PANEL -->
+<div class="detail-panel" id="detail" hidden>
+  <div class="detail-head">
+    <div>
+      <h3>Email containing client medical records sent to wrong recipient</h3>
+      <span class="ref">BR-2026-0042 · Detected 30 May 2026 14:42</span>
+      <div class="pills">
+        <span class="pill pill-ico">ICO · handoff</span>
+        <span class="pill pill-sra">SRA · serious</span>
+        <span class="pill pill-investigating">Phase 5 · SRA draft</span>
+      </div>
+    </div>
+    <button class="close" onclick="closeDetail()">×</button>
+  </div>
+  <div class="detail-body">
+
+    <div class="detail-tabs">
+      <button class="detail-tab active">Overview</button>
+      <button class="detail-tab">Timeline</button>
+      <button class="detail-tab">Evidence</button>
+      <button class="detail-tab">Notifications</button>
+      <button class="detail-tab">Audit trail</button>
+    </div>
+
+    <div class="detail-section">
+      <h5>Facts</h5>
+      <div class="detail-grid">
+        <div class="k">Client</div><div class="v">Mrs Eleanor Whitfield</div>
+        <div class="k">Matter</div><div class="v">AH-2024-1042 · Personal injury</div>
+        <div class="k">Fee-earner</div><div class="v">Olivia Hartley</div>
+        <div class="k">Event time</div><div class="v">30 May 2026 14:42</div>
+        <div class="k">Detected</div><div class="v">30 May 2026 14:50 (recipient replied)</div>
+        <div class="k">Contained</div><div class="v">30 May 2026 15:18 (32 mins after detection)</div>
+        <div class="k">Affected subjects</div><div class="v">1 (one client) · medical category</div>
+        <div class="k">Discovery source</div><div class="v">Recipient self-reported via reply</div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h5>Track classification</h5>
+      <div class="detail-grid">
+        <div class="k">SRA serious</div><div class="v">Yes — 2 indicators ticked: loss of confidential client information; risk of harm</div>
+        <div class="k">ICO required</div><div class="v">Yes — personal data exposed → partner handoff to Sentinel DP Partners</div>
+        <div class="k">COLP decision</div><div class="v">Sarah Mitchell · 30 May 15:42 · "Special category data sent outside party register. Serious under guidance para 4.3. ICO partner engaged."</div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h5>Notifications status</h5>
+      <div style="font-size:12px">
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #F3F4F6"><span>Affected client (Mrs Whitfield)</span><span style="color:#10B981;font-weight:500">✓ Phone 15:18 + letter sent</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #F3F4F6"><span>PII broker (Marsh)</span><span style="color:#10B981;font-weight:500">✓ Circumstance notified</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #F3F4F6"><span>DP partner (Sentinel)</span><span style="color:#F59E0B;font-weight:500">⏱ Packet ready</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #F3F4F6"><span>Managing partners</span><span style="color:#10B981;font-weight:500">✓ Briefed</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0"><span>External counsel</span><span style="color:#6B7280">Not yet engaged</span></div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h5>Audit trail · last 5 actions</h5>
+      <div class="audit-row"><span class="ts">31 May 09:14</span><span class="who">Sarah Mitchell</span><span class="what">Generated SRA report draft (model claude-sonnet-4-6)</span></div>
+      <div class="audit-row"><span class="ts">30 May 16:30</span><span class="who">Sarah Mitchell</span><span class="what">Notifications sent: client, PII broker, partners</span></div>
+      <div class="audit-row"><span class="ts">30 May 15:42</span><span class="who">Sarah Mitchell</span><span class="what">Classified as SRA serious + ICO handoff</span></div>
+      <div class="audit-row"><span class="ts">30 May 15:18</span><span class="who">Olivia Hartley</span><span class="what">Containment confirmed: recipient deleted, recall sent, client called</span></div>
+      <div class="audit-row"><span class="ts">30 May 14:50</span><span class="who">System</span><span class="what">Breach record created from manual report</span></div>
+    </div>
+
+  </div>
+  <div class="detail-foot">
+    <button class="btn btn-sm">Open audit log</button>
+    <button class="btn btn-sm btn-primary" onclick="openWizard()">Continue workflow →</button>
+  </div>
+</div>
+
+<!-- LOG BREACH WIZARD -->
+<div class="overlay" id="wizard" hidden>
+  <div class="modal">
+
+    <div class="modal-head">
+      <div>
+        <h2>Log a breach · BR-2026-0042</h2>
+        <span class="ref">Started 30 May 2026 14:50 by Sarah Mitchell · Auto-saving</span>
+      </div>
+      <button class="close" onclick="closeWizard()" aria-label="Close">×</button>
+    </div>
+
+    <nav class="phase-nav" id="phaseNav">
+      <button class="phase-btn done" data-phase="1" onclick="goToPhase(1)"><span class="n">✓</span>1 · Initial response</button>
+      <button class="phase-btn done" data-phase="2" onclick="goToPhase(2)"><span class="n">✓</span>2 · Triage &amp; classify</button>
+      <button class="phase-btn done" data-phase="3" onclick="goToPhase(3)"><span class="n">✓</span>3 · Notifications</button>
+      <button class="phase-btn done" data-phase="4" onclick="goToPhase(4)"><span class="n">✓</span>4 · Investigation</button>
+      <button class="phase-btn active" data-phase="5" onclick="goToPhase(5)"><span class="n">5</span>5 · SRA report</button>
+      <button class="phase-btn" data-phase="6" onclick="goToPhase(6)"><span class="n">6</span>6 · Submission</button>
+      <button class="phase-btn" data-phase="7" onclick="goToPhase(7)"><span class="n">7</span>7 · Response &amp; remediation</button>
+      <button class="phase-btn" data-phase="8" onclick="goToPhase(8)"><span class="n">8</span>8 · Close</button>
+    </nav>
+
+    <div class="phase-content" id="phaseContent">
+
+      <!-- PHASE 1 -->
+      <div class="phase" data-phase="1" hidden>
+        <h3>Phase 1 · Initial response (first 24–48 hours)</h3>
+        <p class="phase-sub">Capture detection, preserve evidence, contain the harm. Most evidence loss happens here when no one writes it up.</p>
+
+        <div class="section">
+          <h4>Discovery</h4>
+          <p class="section-help">Who noticed, when, how. Required for the SRA report's factual chronology.</p>
+          <div class="form-row">
+            <div class="field"><label>How was this discovered?<span class="req">*</span></label>
+              <select>
+                <option>Fee-earner self-report</option>
+                <option>External party (recipient replied)</option>
+                <option>Client complaint</option>
+                <option selected>Recipient self-reported (external)</option>
+                <option>Compliance scan</option>
+                <option>Internal audit / file review</option>
+                <option>Clio rule auto-detection</option>
+                <option>Whistleblowing channel</option>
+                <option>Insurer / accountant / broker</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field"><label>Who first became aware?<span class="req">*</span></label>
+              <select><option selected>Olivia Hartley (Solicitor)</option><option>Sarah Mitchell (COLP)</option><option>James O'Brien (COFA)</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>When detected<span class="req">*</span></label>
+              <input type="datetime-local" value="2026-05-30T14:50">
+            </div>
+            <div class="field"><label>When did the underlying event occur?<span class="opt">if known</span></label>
+              <input type="datetime-local" value="2026-05-30T14:42">
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="field"><label>Brief description of what happened<span class="req">*</span></label>
+              <textarea>Outbound email from Olivia Hartley to a contact named "E. Whittfield" (typo) instead of the matter client "E. Whitfield". Email contained a 14-page PDF of consultant correspondence and a medical history schedule. The unintended recipient replied within 8 minutes confirming receipt and concerns. Olivia escalated to COLP immediately.</textarea>
+              <p class="hint">Factual only. Avoid speculation or attribution of blame at this stage.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4>Evidence preservation</h4>
+          <p class="section-help">Tick off as you complete. Evidence captured here feeds the SRA report and the audit trail.</p>
+          <div class="checklist">
+            <label class="check checked"><input type="checkbox" checked><div class="text">Email holds applied (sender + matter mailbox)<span class="cite">Outlook hold reference: HLD-2026-0042</span></div></label>
+            <label class="check checked"><input type="checkbox" checked><div class="text">Matter file locked in Clio<span class="cite">Matter AH-2024-1042 locked at 30 May 15:05</span></div></label>
+            <label class="check checked"><input type="checkbox" checked><div class="text">Original email + attachments archived to evidence folder</div></label>
+            <label class="check checked"><input type="checkbox" checked><div class="text">Attendance note written up by fee-earner<span class="cite">By Olivia Hartley, 30 May 15:30</span></div></label>
+            <label class="check"><input type="checkbox"><div class="text">Witness statements collected<span class="cite">Pending: Hannah Brooks (assistant who saw the email queued)</span></div></label>
+            <label class="check checked"><input type="checkbox" checked><div class="text">Trust ledger / time-records snapshot taken from Clio</div></label>
+            <label class="check checked"><input type="checkbox" checked><div class="text">Email recall issued + recipient asked to confirm deletion</div></label>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4>Immediate containment</h4>
+          <p class="section-help">Steps taken in the first hours to stop further harm. Will be quoted verbatim in the SRA report.</p>
+          <div class="checklist">
+            <label class="check checked"><input type="checkbox" checked><div class="text">Email recall sent via Exchange</div></label>
+            <label class="check checked"><input type="checkbox" checked><div class="text">Recipient contacted and confirmed deletion in writing</div></label>
+            <label class="check checked"><input type="checkbox" checked><div class="text">Affected client contacted by phone</div></label>
+            <label class="check"><input type="checkbox"><div class="text">Client account / matter access suspended</div></label>
+            <label class="check"><input type="checkbox"><div class="text">Communications with affected matter halted</div></label>
+          </div>
+          <div class="form-row full" style="margin-top:10px">
+            <div class="field"><label>Other containment actions<span class="opt">if any</span></label>
+              <textarea>Sender's outbound email is now subject to mandatory partner review for the next 30 days while we investigate whether autocomplete suggestion was the cause.</textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4>Brief COLP and line management</h4>
+          <div class="form-row three">
+            <div class="field"><label>COLP briefed?<span class="req">*</span></label>
+              <select><option selected>Yes — 30 May 15:00 in person</option><option>Yes — by email</option><option>Pending</option></select>
+            </div>
+            <div class="field"><label>Line manager briefed</label>
+              <select><option selected>Yes — Priya Patel</option><option>No</option></select>
+            </div>
+            <div class="field"><label>Managing partner</label>
+              <select><option selected>Briefed verbally</option><option>Brief pending</option><option>Not required</option></select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHASE 2 -->
+      <div class="phase" data-phase="2" hidden>
+        <h3>Phase 2 · Triage and classification (24 hours – 3 days)</h3>
+        <p class="phase-sub">Establish affected parties, apply the <span class="cite">SRA's 11 published serious-breach indicators</span>, and make the call. The COLP's reasoning here is what an SRA inspector will scrutinise.</p>
+
+        <div class="section">
+          <h4>Affected parties</h4>
+          <div class="form-row">
+            <div class="field"><label>Affected client(s)</label>
+              <input type="text" value="Mrs Eleanor Whitfield">
+              <p class="hint">Linked to Clio contact ID 84412</p>
+            </div>
+            <div class="field"><label>Affected matter(s)</label>
+              <input type="text" value="AH-2024-1042 · Personal injury">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Data subjects affected</label>
+              <input type="number" value="1">
+              <p class="hint">Categories: special category data (medical) · UK GDPR Art 9</p>
+            </div>
+            <div class="field"><label>Third parties affected</label>
+              <input type="text" value="1 (unintended recipient — Mr Elliot Whittfield, unrelated)">
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="field"><label>Staff involved</label>
+              <input type="text" value="Olivia Hartley (sender) · Hannah Brooks (was preparing the attachment)">
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4>Categorisation</h4>
+          <p class="section-help">Tick all that apply. Drives which obligations are engaged and which notifications are required.</p>
+          <div class="checklist">
+            <label class="check checked"><input type="checkbox" checked><div class="text">Data Protection<span class="cite">UK GDPR Art 5, 32; ICO notification track activates</span></div></label>
+            <label class="check checked"><input type="checkbox" checked><div class="text">Confidentiality<span class="cite">SRA Code for Solicitors para 6.3</span></div></label>
+            <label class="check"><input type="checkbox"><div class="text">Client Money / Accounts Rules</div></label>
+            <label class="check"><input type="checkbox"><div class="text">AML / CDD</div></label>
+            <label class="check"><input type="checkbox"><div class="text">Conflict of interest</div></label>
+            <label class="check"><input type="checkbox"><div class="text">Supervision failure</div></label>
+            <label class="check"><input type="checkbox"><div class="text">Undertaking breach</div></label>
+            <label class="check"><input type="checkbox"><div class="text">Discrimination / EDI</div></label>
+            <label class="check"><input type="checkbox"><div class="text">Dishonesty</div></label>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4>Track activation</h4>
+          <p class="section-help">Decision support: the system suggests, the COLP decides. The reasoning field is the record an SRA inspector reads first.</p>
+
+          <div class="form-row full">
+            <div class="field"><label style="display:flex;justify-content:space-between"><span>Does this involve personal data of an identifiable individual that has been lost, exposed, or wrongly disclosed?</span></label>
+              <div style="display:flex;gap:8px"><button class="btn btn-sm btn-success">✓ Yes — ICO track active</button><button class="btn btn-sm btn-ghost">No</button></div>
+              <p class="hint" style="color:#0D9488;margin-top:8px">ICO handoff track activated. Packet will be generated for Sentinel DP Partners. They will assess and file with the ICO under Art 33 if required. Firm SLA: 24h from detection.</p>
+            </div>
+          </div>
+
+          <p style="font-size:13px;font-weight:600;margin:18px 0 8px;color:#0F1B3D">SRA serious-breach indicators · tick all that apply</p>
+          <p class="section-help" style="margin-top:0">Source: <a href="#">SRA guidance — Reporting and notification obligations (2024)</a></p>
+          <div class="checklist">
+            <label class="check"><input type="checkbox"><div class="text">Involves or suggests dishonesty<span class="cite">SRA guidance para 4.1</span></div></label>
+            <label class="check"><input type="checkbox"><div class="text">Involves sexual misconduct, violence, or discrimination<span class="cite">SRA guidance para 4.2</span></div></label>
+            <label class="check checked"><input type="checkbox" checked><div class="text">Loss of confidential client information<span class="cite">SRA guidance para 4.3 — applies here: special category data disclosed</span></div></label>
+            <label class="check"><input type="checkbox"><div class="text">Significant breach of the SRA Accounts Rules<span class="cite">SRA guidance para 4.4</span></div></label>
+            <label class="check checked"><input type="checkbox" checked><div class="text">Risk of harm to clients, the public, or the administration of justice<span class="cite">SRA guidance para 4.5 — applies here: medical data in third party hands</span></div></label>
+            <label class="check"><input type="checkbox"><div class="text">Misleading or attempting to mislead the SRA, court, or clients<span class="cite">SRA guidance para 4.6</span></div></label>
+            <label class="check"><input type="checkbox"><div class="text">Persistent, repeated, or systemic behaviour<span class="cite">SRA guidance para 4.7</span></div></label>
+            <label class="check"><input type="checkbox"><div class="text">Failure of risk-management systems and controls (AML, undertakings, supervision)<span class="cite">SRA guidance para 4.8</span></div></label>
+            <label class="check"><input type="checkbox"><div class="text">Insolvency-related events<span class="cite">SRA guidance para 4.9</span></div></label>
+            <label class="check"><input type="checkbox"><div class="text">Criminal convictions, charges, or cautions<span class="cite">SRA guidance para 4.10</span></div></label>
+            <label class="check"><input type="checkbox"><div class="text">Failure of management or governance of the firm<span class="cite">SRA guidance para 4.11</span></div></label>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4>COLP classification decision</h4>
+          <div class="tracks-summary">
+            <div class="ts-block">
+              <p class="ts-label">System suggestion</p>
+              <p class="ts-val">Serious</p>
+              <p class="ts-note">2 indicators ticked. Both relate to confidentiality and harm.</p>
+            </div>
+            <div class="ts-block">
+              <p class="ts-label">Tracks active</p>
+              <p class="ts-val"><span class="pill pill-ico">ICO · handoff</span> <span class="pill pill-sra">SRA · serious</span></p>
+              <p class="ts-note">SRA advisory 14d clock starts now.</p>
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="field"><label>COLP final classification<span class="req">*</span></label>
+              <select><option selected>Serious — report to SRA under Code 3.9</option><option>Minor — log only</option><option>Not a breach — close with reasoning</option></select>
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="field"><label>COLP reasoning<span class="req">*</span><span class="opt">visible to SRA on request</span></label>
+              <textarea>Special category personal data (medical correspondence) was disclosed to an unrelated third party. Despite swift containment, the data was viewed by the recipient before deletion. Two SRA indicators apply: loss of confidential client information (para 4.3) and risk of harm to the client (para 4.5). Although this is a one-off and not systemic, the SRA's guidance is conservative: if serious indicators are met, report. I have applied that approach. I have also engaged Sentinel DP Partners to handle the ICO Article 33 track separately.</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHASE 3 -->
+      <div class="phase" data-phase="3" hidden>
+        <h3>Phase 3 · Notifications and engagement (24h – 7 days)</h3>
+        <p class="phase-sub">Notify the right people in the right order. The PII broker conversation must happen even if you don't yet know whether a claim will result — Solicitors' Indemnity Insurance Rules require notification of <em>circumstances</em>.</p>
+
+        <div class="handoff-banner">
+          <div class="ico">→</div>
+          <div class="text">
+            <strong>ICO partner handoff required</strong>
+            Sentinel DP Partners will assess the ICO 72h obligation independently. Send them the packet within the firm SLA of 24h from detection.
+          </div>
+          <button class="btn">Open handoff workflow</button>
+        </div>
+
+        <div class="section">
+          <h4>Required notifications</h4>
+          <p class="section-help">Auto-generated based on Phase 2 classification. Tick when sent, record method and timestamp.</p>
+
+          <div class="notif-row">
+            <div class="who"><strong>Affected client</strong><span class="why">Mrs Eleanor Whitfield · personal duty</span></div>
+            <select><option>Phone first</option><option selected>Phone + letter</option><option>Letter</option><option>In person</option></select>
+            <input type="datetime-local" value="2026-05-30T15:18">
+            <select><option style="color:#10B981" selected>✓ Done</option><option>Pending</option><option>Refused contact</option></select>
+            <button class="btn btn-sm">View note</button>
+          </div>
+
+          <div class="notif-row">
+            <div class="who"><strong>PII broker (Marsh JLT)</strong><span class="why">SIIR notification of circumstance — mandatory</span></div>
+            <select><option selected>Email + call</option><option>Email</option><option>Phone</option></select>
+            <input type="datetime-local" value="2026-05-30T16:30">
+            <select><option style="color:#10B981" selected>✓ Done</option><option>Pending</option></select>
+            <button class="btn btn-sm">Pack</button>
+          </div>
+
+          <div class="notif-row">
+            <div class="who"><strong>DP partner (Sentinel)</strong><span class="why">ICO Art 33 handoff · firm SLA 24h</span></div>
+            <select><option selected>Handoff packet email</option></select>
+            <input type="datetime-local" placeholder="Send by 31 May 14:42">
+            <select><option style="color:#F59E0B" selected>⏱ Packet ready</option><option>Sent</option><option>Acknowledged</option></select>
+            <button class="btn btn-sm">Send</button>
+          </div>
+
+          <div class="notif-row">
+            <div class="who"><strong>Managing partners</strong><span class="why">Internal escalation</span></div>
+            <select><option selected>Email brief</option><option>Verbal</option><option>Meeting</option></select>
+            <input type="datetime-local" value="2026-05-30T17:00">
+            <select><option style="color:#10B981" selected>✓ Done</option><option>Pending</option></select>
+            <button class="btn btn-sm">Brief</button>
+          </div>
+
+          <div class="notif-row">
+            <div class="who"><strong>COFA (James O'Brien)</strong><span class="why">Auto-notify for financial dimension · not required here</span></div>
+            <select><option>Not required</option></select>
+            <input type="datetime-local" disabled>
+            <select><option>N/A</option></select>
+            <button class="btn btn-sm" disabled>—</button>
+          </div>
+
+          <div class="notif-row">
+            <div class="who"><strong>External regulatory counsel</strong><span class="why">Optional — recommended for serious matters</span></div>
+            <select><option>Capsticks LLP</option><option selected>Decline</option><option>Murdochs</option><option>RadcliffesLeBrasseur</option></select>
+            <input type="datetime-local">
+            <select><option selected>Not engaged</option><option>Engaged</option></select>
+            <button class="btn btn-sm">Engage</button>
+          </div>
+
+          <div class="notif-row">
+            <div class="who"><strong>Legal Ombudsman</strong><span class="why">If complaint dimension — not required here</span></div>
+            <select><option selected>Not required</option><option>Required</option></select>
+            <input type="datetime-local" disabled>
+            <select><option>N/A</option></select>
+            <button class="btn btn-sm" disabled>—</button>
+          </div>
+
+          <div class="notif-row">
+            <div class="who"><strong>NCA / HMRC</strong><span class="why">If POCA / AML dimension — not required here</span></div>
+            <select><option selected>Not required</option></select>
+            <input type="datetime-local" disabled>
+            <select><option>N/A</option></select>
+            <button class="btn btn-sm" disabled>—</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHASE 4 -->
+      <div class="phase" data-phase="4" hidden>
+        <h3>Phase 4 · Investigation (3 – 21 days)</h3>
+        <p class="phase-sub">Establish exactly what happened, why, and whether it could happen again. The findings here feed the SRA report's chronology and root cause sections.</p>
+
+        <div class="section">
+          <h4>Investigation team</h4>
+          <div class="form-row">
+            <div class="field"><label>Lead investigator</label>
+              <select><option selected>Sarah Mitchell (COLP)</option><option>External counsel — Capsticks</option><option>Priya Patel (Partner)</option></select>
+            </div>
+            <div class="field"><label>Investigation team</label>
+              <input type="text" value="Sarah Mitchell · Priya Patel · IT (D. Murphy)">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>External regulatory counsel?<span class="opt">recommended for serious matters</span></label>
+              <select><option selected>None engaged</option><option>Capsticks LLP</option><option>Murdochs Solicitors</option><option>RadcliffesLeBrasseur</option><option>Other</option></select>
+              <p class="hint">Capsticks have an existing retainer letter on file.</p>
+            </div>
+            <div class="field"><label>Investigation deadline</label>
+              <input type="date" value="2026-06-13">
+              <p class="hint">14 days after detection (advisory)</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4>Witness interviews</h4>
+          <p class="section-help">Conduct early. Memory degrades fast and statements are protected investigation material.</p>
+          <table class="data" style="background:#fff;border:1px solid #E5E7EB;border-radius:6px">
+            <thead><tr><th>Witness</th><th>Role</th><th>Date</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <tr><td>Olivia Hartley</td><td>Sender</td><td>30 May 15:30</td><td><span class="pill pill-resolved">Statement filed</span></td><td><button class="btn btn-sm">View</button></td></tr>
+              <tr><td>Hannah Brooks</td><td>Assistant who prepared bundle</td><td>1 Jun 11:00</td><td><span class="pill pill-investigating">Scheduled</span></td><td><button class="btn btn-sm">Notes</button></td></tr>
+              <tr><td>D. Murphy</td><td>IT — autocomplete config</td><td>2 Jun 14:00</td><td><span class="pill pill-investigating">Scheduled</span></td><td><button class="btn btn-sm">Notes</button></td></tr>
+            </tbody>
+          </table>
+          <button class="btn btn-sm" style="margin-top:10px">+ Add witness</button>
+        </div>
+
+        <div class="section">
+          <h4>Documents gathered</h4>
+          <p class="section-help">Auto-pulled from Clio where the matter is linked. Add manual uploads alongside.</p>
+          <div class="checklist">
+            <label class="check checked"><input type="checkbox" checked><div class="text">Original outbound email + attachment (preserved with hash)</div></label>
+            <label class="check checked"><input type="checkbox" checked><div class="text">Matter party register (Clio) — confirms intended recipient was different</div></label>
+            <label class="check checked"><input type="checkbox" checked><div class="text">Recipient's reply email confirming receipt + deletion</div></label>
+            <label class="check checked"><input type="checkbox" checked><div class="text">Email recall confirmation from Exchange</div></label>
+            <label class="check checked"><input type="checkbox" checked><div class="text">Call log: Olivia → COLP at 14:55</div></label>
+            <label class="check"><input type="checkbox"><div class="text">Outlook autocomplete cache export (pending IT)</div></label>
+            <label class="check checked"><input type="checkbox" checked><div class="text">Client's signed engagement letter (confidentiality clause referenced)</div></label>
+          </div>
+          <button class="btn btn-sm" style="margin-top:10px">Pull additional from Clio</button>
+          <button class="btn btn-sm">Upload document</button>
+        </div>
+
+        <div class="section">
+          <h4>Root cause analysis</h4>
+          <div class="form-row">
+            <div class="field"><label>Primary root cause<span class="req">*</span></label>
+              <select><option>Human error</option><option selected>System gap — autocomplete suggesting external contacts</option><option>Training gap</option><option>Supervision failure</option><option>Control absent</option><option>Deliberate non-compliance</option><option>Third-party failure</option><option>Unknown — still investigating</option></select>
+            </div>
+            <div class="field"><label>One-off or systemic?<span class="req">*</span></label>
+              <select><option selected>One-off — first occurrence</option><option>Pattern — 2-3 similar in 12 months</option><option>Systemic — recurring</option></select>
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="field"><label>Findings summary<span class="req">*</span></label>
+              <textarea>The fee-earner's Outlook autocomplete had cached an external personal contact (E. Whittfield, unrelated) from a January 2024 phishing simulation. The matter client's address was almost identical (E. Whitfield). The sender selected the first autocomplete suggestion without scrutinising the full email. Contributing factors: rushed end-of-day sending; no second-pair-of-eyes review for medical attachments; firm-wide autocomplete cache not centrally managed. Conclusion: not a deliberate or supervision failure. A system gap and a behavioural shortcut converged.</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHASE 5 -->
+      <div class="phase" data-phase="5">
+        <h3>Phase 5 · SRA report drafting (day 7–14)</h3>
+        <p class="phase-sub">Build the report against the SRA's expected 15-section structure. The AI drafts; the COLP reviews and edits; external counsel optionally reviews. Submission needs the COLP's electronic sign-off.</p>
+
+        <div class="summary-card">
+          <h4>Auto-drafted from Phases 1–4</h4>
+          <p class="big">15 sections drafted · 4 require COLP input · 2 flagged for legal review</p>
+          <div class="meta">Model: claude-sonnet-4-6 · Generated 31 May 2026 09:14 · Draft hash sha256:7f3a…c102</div>
+        </div>
+
+        <div class="report-section">
+          <div class="rs-head"><h5>1. Firm details &amp; SRA number</h5><span class="ai-tag">● Auto</span></div>
+          <div class="rs-body">Aldridge &amp; Hayward Solicitors LLP, SRA number 624891, registered office Aldridge House, 17 King Street, Manchester M2 6AW.</div>
+        </div>
+
+        <div class="report-section">
+          <div class="rs-head"><h5>2. COLP / COFA details</h5><span class="ai-tag">● Auto</span></div>
+          <div class="rs-body">COLP: Sarah Mitchell, SRA number 521408. COFA: James O'Brien, SRA number 488217.</div>
+        </div>
+
+        <div class="report-section">
+          <div class="rs-head"><h5>5. Summary of the matter being reported</h5><div class="rs-actions"><span class="ai-tag">● AI-drafted</span><button>Regenerate</button><button>Edit</button></div></div>
+          <div class="rs-body">On 30 May 2026 at 14:42, an outbound email from a fee-earner of the firm containing 14 pages of consultant correspondence and a medical history schedule relating to one client of the firm was sent to an external recipient outside the matter's authorised party register. The recipient was an unrelated individual with a similar surname whose address had been incorrectly cached in the sender's autocomplete. The recipient self-reported at 14:50 and confirmed deletion at 15:03. The firm reports this matter under SRA Code of Conduct for Firms paragraph 3.9 on the basis that special category personal data was disclosed in breach of the firm's confidentiality obligations and SRA guidance indicators 4.3 and 4.5 apply. The ICO Article 33 obligation is being addressed in parallel by the firm's nominated data protection partner.</div>
+        </div>
+
+        <div class="report-section">
+          <div class="rs-head"><h5>6. Factual chronology</h5><div class="rs-actions"><span class="ai-tag">● AI-drafted from timeline</span><button>Edit</button></div></div>
+          <div class="rs-body">
+            <strong>30 May 2026, 14:42</strong> — Email sent from olivia.hartley@aldridge-hayward.co.uk to elliot.whittfield@gmail.com (third party). Attachment: Whitfield_medical_bundle.pdf, 14 pages.<br>
+            <strong>14:50</strong> — Recipient replied: "I think this was sent to me in error — I do not know any of these parties."<br>
+            <strong>14:51</strong> — Sender realised the error and escalated to COLP.<br>
+            <strong>15:03</strong> — Recipient confirmed deletion in writing.<br>
+            <strong>15:18</strong> — Affected client contacted by phone.<br>
+            <strong>15:30</strong> — Sender's attendance note completed.<br>
+            <strong>16:30</strong> — PII broker (Marsh) notified of circumstance.<br>
+            <strong>17:00</strong> — Managing partners briefed.
+          </div>
+        </div>
+
+        <div class="report-section">
+          <div class="rs-head"><h5>7. Regulatory provisions engaged</h5><div class="rs-actions"><span class="ai-tag">● Auto-cited</span><button>Add</button></div></div>
+          <div class="rs-body">
+            • SRA Code for Firms para 3.9 (reporting obligation)<br>
+            • SRA Code for Solicitors para 6.3 (duty of confidentiality)<br>
+            • SRA Principles 2 (public trust) and 7 (act in clients' best interests)<br>
+            • UK GDPR Articles 5(1)(f) and 32 (integrity and confidentiality)<br>
+            • UK GDPR Article 33 (data breach notification — being addressed via partner)<br>
+            • Firm AML &amp; Information Security Policy v3.1, section 4
+          </div>
+        </div>
+
+        <div class="report-section">
+          <div class="rs-head"><h5>8. Persons affected</h5></div>
+          <div class="rs-body">One client of the firm (medical category data). One unrelated third party (who read but did not retain the data). No other clients, no staff, no opposing parties.</div>
+        </div>
+
+        <div class="report-section">
+          <div class="rs-head"><h5>9. Financial impact</h5></div>
+          <div class="rs-body">Direct financial loss: nil. Client money: not affected. PII insurer notified as a circumstance under SIIR; no claim received at the date of this report.</div>
+        </div>
+
+        <div class="report-section">
+          <div class="rs-head"><h5>10. Immediate actions taken</h5><div class="rs-actions"><span class="ai-tag">● From Phase 1</span></div></div>
+          <div class="rs-body">Email recall issued; recipient confirmed deletion within 21 minutes; affected client contacted by phone within 36 minutes; mandatory partner review imposed on sender's outbound email for 30 days; matter file locked in Clio.</div>
+        </div>
+
+        <div class="report-section">
+          <div class="rs-head"><h5>11. Root cause</h5><div class="rs-actions"><span class="ai-tag">● From Phase 4</span><button>Edit</button></div></div>
+          <div class="rs-body">A system gap (no centrally-managed Outlook autocomplete) intersected with a behavioural shortcut (end-of-day sending without scrutiny). The matter client's surname was similar to a cached external contact. The error is not attributable to dishonesty, supervision failure, or deliberate non-compliance.</div>
+        </div>
+
+        <div class="report-section">
+          <div class="rs-head"><h5>12. Remediation plan</h5><div class="rs-actions"><span class="ai-tag">● From Phase 7 draft</span><button>Edit</button></div></div>
+          <div class="rs-body">
+            • Disable Outlook external-contact autocomplete firm-wide by 14 June 2026 (IT)<br>
+            • Mandatory second-pair-of-eyes review for all outbound communications containing special category data — policy update by 7 June 2026<br>
+            • Refresh confidentiality training for all fee-earners — completion by 30 June 2026<br>
+            • Add "external recipient" warning banner to outbound emails — IT change request raised<br>
+            • Monitor for recurrence over 12 months · quarterly review by COLP
+          </div>
+        </div>
+
+        <div class="report-section">
+          <div class="rs-head"><h5>13. Other regulators / parties notified</h5></div>
+          <div class="rs-body">PII broker (Marsh) — notified as circumstance 30 May 16:30. ICO — being addressed by Sentinel DP Partners (handoff HO-2026-0017). No other regulators engaged.</div>
+        </div>
+
+        <div class="report-section">
+          <div class="rs-head"><h5>14. Records retention statement</h5><div class="rs-actions"><span class="ai-tag">● Auto</span></div></div>
+          <div class="rs-body">All records relating to this breach (evidence, witness statements, audit trail, this report, and any further correspondence) will be retained by the firm for a minimum of 6 years from closure, in accordance with SRA expectations and the firm's records retention policy.</div>
+        </div>
+
+        <div class="signoff-block">
+          <h4>15. COLP electronic sign-off</h4>
+          <div class="signoff-row"><div class="k">COLP</div><div class="v">Sarah Mitchell · SRA 521408</div></div>
+          <div class="signoff-row"><div class="k">Date drafted</div><div class="v">31 May 2026 09:14</div></div>
+          <div class="signoff-row"><div class="k">External review</div><div class="v">None (option to engage Capsticks)</div></div>
+          <div class="signoff-row"><div class="k">PDF hash</div><div class="v" style="font-family:monospace;font-size:11px">sha256:7f3a8c91d9e4b27a1f504c9e8b1d3a47c102…</div></div>
+          <div class="signoff-row"><div class="k">Submission method</div><div class="v">Email to report@sra.org.uk (confirm in Phase 6)</div></div>
+          <div class="signoff-confirm">
+            <input type="checkbox" id="confirmSignoff">
+            <label for="confirmSignoff">I, Sarah Mitchell, COLP of Aldridge &amp; Hayward Solicitors LLP, confirm that I have reviewed this report, that the facts stated are true to the best of my knowledge and belief, and that I authorise its submission to the SRA. I acknowledge that this sign-off is recorded with my name, the timestamp, my IP address, and the hash of the report PDF.</label>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn">Send for external counsel review</button>
+            <button class="btn btn-success">Sign and continue to submission →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHASE 6 -->
+      <div class="phase" data-phase="6" hidden>
+        <h3>Phase 6 · Submission to the SRA</h3>
+        <p class="phase-sub">Choose the channel. Email is what 90% of firms use. Phone first for very urgent matters then follow up in writing.</p>
+
+        <div class="section">
+          <h4>Submission method</h4>
+          <div class="method-grid">
+            <div class="method-card selected">
+              <div class="mc-head"><span class="mc-title">Email</span><span class="mc-rec">Recommended</span></div>
+              <div class="mc-body">Send the report PDF as an attachment from the firm's outbound email with the COLP cc'd. Most common channel.</div>
+              <div class="mc-meta">report@sra.org.uk</div>
+            </div>
+            <div class="method-card">
+              <div class="mc-head"><span class="mc-title">mySRA portal</span></div>
+              <div class="mc-body">Upload to the firm's mySRA portal. Requires the COLP to log in manually.</div>
+              <div class="mc-meta">mySRA → Notifications</div>
+            </div>
+            <div class="method-card">
+              <div class="mc-head"><span class="mc-title">Letter</span></div>
+              <div class="mc-body">Post recorded delivery to the SRA HQ. Slow — only if email is not possible.</div>
+              <div class="mc-meta">The Cube, 199 Wharfside Street, Birmingham B1 1RN</div>
+            </div>
+            <div class="method-card">
+              <div class="mc-head"><span class="mc-title">Phone + follow-up</span></div>
+              <div class="mc-body">Phone first for urgent matters. Always follow up with the written report.</div>
+              <div class="mc-meta">0370 606 2555</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4>Email composition</h4>
+          <div class="form-row">
+            <div class="field"><label>From</label><input type="text" value="sarah.mitchell@aldridge-hayward.co.uk" disabled></div>
+            <div class="field"><label>To</label><input type="text" value="report@sra.org.uk" disabled></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Cc</label><input type="text" value="james.obrien@aldridge-hayward.co.uk (COFA) · breach-log@aldridge-hayward.co.uk"></div>
+            <div class="field"><label>Bcc<span class="opt">PII broker</span></label><input type="text" value="aldridge-hayward@marsh.com (PII broker)"></div>
+          </div>
+          <div class="form-row full">
+            <div class="field"><label>Subject</label><input type="text" value="Notification under Code for Firms paragraph 3.9 — Aldridge &amp; Hayward Solicitors LLP (SRA 624891) — BR-2026-0042"></div>
+          </div>
+          <div class="form-row full">
+            <div class="field"><label>Message body</label>
+              <textarea style="min-height:120px">Dear SRA,
+
+Please find attached a report under SRA Code of Conduct for Firms paragraph 3.9 in relation to a matter affecting Aldridge &amp; Hayward Solicitors LLP (SRA number 624891). The matter was detected on 30 May 2026 and the report is being submitted within the SRA's "prompt" expectation.
+
+We are happy to provide any further information you require. Please direct all correspondence to me as the firm's COLP.
+
+Yours faithfully,
+
+Sarah Mitchell
+COLP — Aldridge &amp; Hayward Solicitors LLP
+SRA Number 521408</textarea>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Attachment</label>
+              <input type="text" value="BR-2026-0042_SRA_Report_signed.pdf · 412 KB · hash sha256:7f3a…c102" disabled>
+            </div>
+            <div class="field" style="display:flex;align-items:flex-end;gap:8px">
+              <button class="btn">Preview PDF</button>
+              <button class="btn btn-success">Send to SRA</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4>Post-submission record</h4>
+          <p class="section-help">Captured automatically when you send. Becomes evidence in the audit trail.</p>
+          <div class="form-row three">
+            <div class="field"><label>Submitted at</label><input type="text" value="(populates on send)" disabled></div>
+            <div class="field"><label>Message-ID</label><input type="text" value="(populates from Exchange)" disabled></div>
+            <div class="field"><label>PDF hash</label><input type="text" value="sha256:7f3a…c102" disabled></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHASE 7 -->
+      <div class="phase" data-phase="7" hidden>
+        <h3>Phase 7 · SRA response &amp; remediation (weeks to months)</h3>
+        <p class="phase-sub">Track the SRA's response thread. Run the remediation plan in parallel — most outcomes turn on whether remediation was prompt and credible.</p>
+
+        <div class="section">
+          <h4>SRA response tracker</h4>
+          <div class="timeline">
+            <div class="timeline-item done"><div class="ts">Pending — awaiting SRA acknowledgement</div><div class="what">Report submitted</div><div class="who">Sarah Mitchell · expected ack within 5 working days</div></div>
+            <div class="timeline-item"><div class="ts">Awaiting</div><div class="what">SRA acknowledgement &amp; case officer assigned</div><div class="who">Reference will be recorded here</div></div>
+            <div class="timeline-item"><div class="ts">Awaiting</div><div class="what">SRA decision: no further action / informal action / disciplinary referral / SDT referral</div><div class="who">Typical timeline 2–6 months for non-complex matters</div></div>
+          </div>
+          <div class="form-row" style="margin-top:14px">
+            <div class="field"><label>SRA acknowledgement date</label><input type="date"></div>
+            <div class="field"><label>SRA reference number</label><input type="text" placeholder="e.g. CRN/2026/XXXXX"></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Case officer name</label><input type="text"></div>
+            <div class="field"><label>Outcome</label>
+              <select><option>Awaiting</option><option>No further action</option><option>Informal advice / warning</option><option>Disciplinary investigation</option><option>SDT referral</option></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4>SRA correspondence log</h4>
+          <p class="section-help">Each SRA query response should reference the matter, your initial report, and include a clear factual answer. Late or evasive responses make things worse.</p>
+          <table class="data" style="background:#fff;border:1px solid #E5E7EB;border-radius:6px">
+            <thead><tr><th>Direction</th><th>Date</th><th>Subject</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <tr><td colspan="5" style="text-align:center;color:#6B7280;font-style:italic;padding:20px">No correspondence yet — SRA acknowledgement awaited</td></tr>
+            </tbody>
+          </table>
+          <button class="btn btn-sm" style="margin-top:10px">+ Log correspondence</button>
+        </div>
+
+        <div class="section">
+          <h4>Remediation plan</h4>
+          <p class="section-help">Auto-creates rows in <a href="#">/remediation</a>. Status here mirrors there.</p>
+          <table class="data" style="background:#fff;border:1px solid #E5E7EB;border-radius:6px">
+            <thead><tr><th>Action</th><th>Owner</th><th>Deadline</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Disable Outlook external-contact autocomplete firm-wide</td><td>D. Murphy (IT)</td><td>14 Jun 2026</td><td><span class="pill pill-investigating">In progress</span></td></tr>
+              <tr><td>Update outbound email policy — second-pair review for special category data</td><td>Sarah Mitchell</td><td>7 Jun 2026</td><td><span class="pill pill-investigating">Draft for review</span></td></tr>
+              <tr><td>Refresh confidentiality training (all fee-earners)</td><td>Priya Patel</td><td>30 Jun 2026</td><td><span class="pill pill-draft">Scheduled</span></td></tr>
+              <tr><td>Add external-recipient warning banner</td><td>D. Murphy (IT)</td><td>14 Jun 2026</td><td><span class="pill pill-draft">Pending</span></td></tr>
+              <tr><td>12-month monitoring for recurrence</td><td>Sarah Mitchell</td><td>30 May 2027</td><td><span class="pill pill-closed">Scheduled review</span></td></tr>
+            </tbody>
+          </table>
+          <button class="btn btn-sm" style="margin-top:10px">+ Add remediation action</button>
+        </div>
+      </div>
+
+      <!-- PHASE 8 -->
+      <div class="phase" data-phase="8" hidden>
+        <h3>Phase 8 · Close and learn</h3>
+        <p class="phase-sub">Only close once the SRA has finished, remediation is delivered, and the lessons have been captured for the quarterly COLP review pack.</p>
+
+        <div class="section">
+          <h4>Closure prerequisites</h4>
+          <div class="checklist">
+            <label class="check"><input type="checkbox"><div class="text">SRA outcome confirmed and recorded</div></label>
+            <label class="check"><input type="checkbox"><div class="text">All remediation actions completed</div></label>
+            <label class="check"><input type="checkbox"><div class="text">ICO partner outcome recorded (Sentinel)</div></label>
+            <label class="check"><input type="checkbox"><div class="text">PII broker file closed</div></label>
+            <label class="check"><input type="checkbox"><div class="text">Affected client final communication sent</div></label>
+            <label class="check"><input type="checkbox"><div class="text">Lessons learned documented (below)</div></label>
+            <label class="check"><input type="checkbox"><div class="text">Added to next COLP quarterly review pack</div></label>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4>Lessons learned</h4>
+          <div class="form-row full">
+            <div class="field"><label>What worked well</label>
+              <textarea placeholder="e.g. fast detection, prompt containment, clear COLP escalation path."></textarea>
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="field"><label>What we will do differently</label>
+              <textarea placeholder="e.g. eliminate autocomplete risk firm-wide; second-pair review for special category data; staff training refresh schedule."></textarea>
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="field"><label>Policies / controls updated as a result</label>
+              <textarea placeholder="List policies updated and dates."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4>Final sign-off and retention</h4>
+          <div class="form-row three">
+            <div class="field"><label>Closure outcome</label>
+              <select><option>No further action by SRA</option><option>Informal warning</option><option>Disciplinary outcome</option></select>
+            </div>
+            <div class="field"><label>Closed by</label><input type="text" value="Sarah Mitchell · COLP"></div>
+            <div class="field"><label>Retention end date</label><input type="date" value="2032-05-30" disabled><p class="hint">Closure + 6 years</p></div>
+          </div>
+          <div class="signoff-confirm" style="background:#F5F3FF;border:1px solid #DDD6FE;color:#5B21B6">
+            <input type="checkbox" id="closeConfirm">
+            <label for="closeConfirm" style="color:#5B21B6">I confirm closure of breach record BR-2026-0042. All retention and audit requirements are met. The record will remain on the breach log for inspection.</label>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn">Export full record</button>
+            <button class="btn btn-success">Close breach</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-foot">
+      <div class="ft-status">Auto-saved at <span class="saved">14:08</span> · All changes recorded in audit trail</div>
+      <div class="ft-actions">
+        <button class="btn" onclick="goPrev()">← Back</button>
+        <button class="btn">Save draft and close</button>
+        <button class="btn btn-primary" onclick="goNext()">Continue →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let currentPhase = 5;
+
+function openWizard(){
+  document.getElementById('wizard').hidden = false;
+  goToPhase(currentPhase);
+  document.body.style.overflow = 'hidden';
+}
+function closeWizard(){
+  document.getElementById('wizard').hidden = true;
+  document.body.style.overflow = '';
+}
+function goToPhase(n){
+  currentPhase = n;
+  document.querySelectorAll('.phase').forEach(p => {
+    p.hidden = parseInt(p.dataset.phase) !== n;
+  });
+  document.querySelectorAll('.phase-btn').forEach(b => {
+    const i = parseInt(b.dataset.phase);
+    b.classList.toggle('active', i === n);
+  });
+  const content = document.getElementById('phaseContent');
+  if (content) content.scrollTop = 0;
+}
+function goNext(){ if (currentPhase < 8) goToPhase(currentPhase + 1); }
+function goPrev(){ if (currentPhase > 1) goToPhase(currentPhase - 1); }
+
+function openDetail(){
+  document.getElementById('detail').hidden = false;
+}
+function closeDetail(){
+  document.getElementById('detail').hidden = true;
+}
+
+// Toggle checks visual state
+document.addEventListener('change', e => {
+  if (e.target.matches('.check input[type=checkbox]')){
+    e.target.closest('.check').classList.toggle('checked', e.target.checked);
+  }
+});
+
+// Tab pseudo-routing
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+  });
+});
+
+// Detail tab routing
+document.querySelectorAll('.detail-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.detail-tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+  });
+});
+
+// Method-card selection
+document.querySelectorAll('.method-card').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.method-card').forEach(x => x.classList.remove('selected'));
+    c.classList.add('selected');
+  });
+});
+</script>
+
+</body>
+</html>

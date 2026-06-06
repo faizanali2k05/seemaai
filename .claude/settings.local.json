@@ -1,7 +1,20 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new root@69.62.110.2 \"echo connected && uname -a\")"
+      "Bash(ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=accept-new root@69.62.110.2 \"echo connected && uname -a\")",
+      "Bash(ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 root@69.62.110.2 \"echo connected && uname -a && whoami\")",
+      "PowerShell(if \\(-not \\(Test-Path \"$env:USERPROFILE\\\\.ssh\"\\)\\) { New-Item -ItemType Directory -Path \"$env:USERPROFILE\\\\.ssh\" | Out-Null }; ssh-keygen -t ed25519 -C \"seemaai-deploy\" -f \"$env:USERPROFILE\\\\.ssh\\\\id_ed25519\" -N '\"\"')",
+      "PowerShell(Get-Content \"$env:USERPROFILE\\\\.ssh\\\\id_ed25519.pub\" | ssh -o StrictHostKeyChecking=accept-new root@69.62.110.2 \"mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys && chmod 700 ~/.ssh && echo KEY_INSTALLED\")",
+      "PowerShell(Get-Content \"$env:USERPROFILE\\\\.ssh\\\\id_ed25519.pub\")",
+      "Bash(ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ConnectTimeout=15 root@69.62.110.2 \"echo CONNECTED && hostname && lsb_release -d && free -h | head -2 && df -h / | tail -1\")",
+      "Bash(ssh root@69.62.110.2 \"export DEBIAN_FRONTEND=noninteractive && apt-get update -qq && apt-get install -y -qq git curl ufw fail2ban unattended-upgrades ca-certificates 2>&1 | tail -20 && echo APT_DONE\")",
+      "Bash(ssh root@69.62.110.2 \"ufw allow OpenSSH && ufw allow 80/tcp && ufw allow 443/tcp && ufw --force enable && echo --- && ufw status\")",
+      "Bash(ssh root@69.62.110.2 \"if command -v docker >/dev/null 2>&1; then echo DOCKER_PRESENT; docker --version; docker compose version; else curl -fsSL https://get.docker.com | sh 2>&1 | tail -10 && docker --version && docker compose version; fi\")",
+      "Bash(ssh root@69.62.110.2 \"if [ -d /opt/seema/.git ]; then echo ALREADY_CLONED; cd /opt/seema && git remote -v && git pull --ff-only; else mkdir -p /opt && cd /opt && git clone https://github.com/faizanali2k05/seemaai.git seema && cd seema && git log -1 --oneline; fi\")",
+      "Bash(ssh root@69.62.110.2 \"cd /opt/seema && ls -la && echo --- && cat docker-compose.yml\")",
+      "Bash(ssh root@69.62.110.2 \"cd /opt/seema && echo === nginx.conf === && cat nginx/nginx.conf && echo === local.conf === && ls nginx/ && echo === seema-api/.env.example === && cat seema-api/.env.example && echo === seema-node/.env.example === && cat seema-node/.env.example && echo === seema-web/Dockerfile head === && head -50 seema-web/Dockerfile\")",
+      "Bash(ssh root@69.62.110.2 \"cd /opt/seema && ls seema-marketing/ | head -10 && echo === seemaai.conf existing === && head -30 nginx/seemaai.conf && echo === local.conf === && head -20 nginx/local.conf\")",
+      "Bash(ssh root@69.62.110.2 *)"
     ]
   }
 }

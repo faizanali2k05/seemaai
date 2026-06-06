@@ -1,6 +1,6 @@
 # Seema database schema workflow
 
-**Source of truth: Alembic + SQLAlchemy (Python side, `seema-api/`).**
+**Source of truth: Alembic + SQLAlchemy (Python side, `backend/`).**
 
 Prisma schema in `seema-node/prisma/schema.prisma` is a **generated client** —
 do not hand-edit it. It is regenerated from the live database via
@@ -18,12 +18,12 @@ to a pure AI middleware layer (no longer touching tenant-scoped tables).
 
 ## The workflow for adding / changing columns
 
-1. Edit the SQLAlchemy model in `seema-api/models/<table>.py`.
+1. Edit the SQLAlchemy model in `backend/models/<table>.py`.
 2. Generate an Alembic migration:
    ```bash
    docker compose exec -T api alembic revision -m "add foo column" --autogenerate
    ```
-   Review the generated `seema-api/alembic/versions/<rev>_add_foo.py` file.
+   Review the generated `backend/alembic/versions/<rev>_add_foo.py` file.
    `--autogenerate` is opportunistic; always check the output by hand.
 3. Apply the migration in dev:
    ```bash
@@ -43,7 +43,7 @@ to a pure AI middleware layer (no longer touching tenant-scoped tables).
    docker compose build node-api node-workers
    docker compose up -d node-api node-workers
    ```
-6. Commit `seema-api/alembic/versions/<rev>_*.py` AND
+6. Commit `backend/alembic/versions/<rev>_*.py` AND
    `seema-node/prisma/schema.prisma` together in one atomic commit.
 
 ## What is forbidden
@@ -54,7 +54,7 @@ to a pure AI middleware layer (no longer touching tenant-scoped tables).
   and almost certainly destroy your RLS policies. Don't.
 * Hand-editing `seema-node/prisma/schema.prisma`. Always regenerate via
   `prisma db pull`.
-* Editing models in `seema-api/models/*.py` without writing the matching
+* Editing models in `backend/models/*.py` without writing the matching
   Alembic migration. The DB will silently lag behind and queries will fail
   at runtime.
 

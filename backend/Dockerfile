@@ -14,14 +14,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+# Normalise line endings on shell scripts (repo may be checked out on Windows
+# with CRLF, which breaks /bin/bash) and make the entrypoint executable.
+RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
+
 # Expose port
 EXPOSE 8000
 
-# Run with gunicorn + uvicorn workers
-CMD ["gunicorn", "main:app", \
-     "--worker-class", "uvicorn.workers.UvicornWorker", \
-     "--workers", "2", \
-     "--bind", "0.0.0.0:8000", \
-     "--timeout", "300", \
-     "--graceful-timeout", "30", \
-     "--access-logfile", "-"]
+# Default command (the `api` service): migrate -> apply RLS -> serve.
+# The celery worker/beat services override this with their own command.
+CMD ["bash", "entrypoint.sh"]
