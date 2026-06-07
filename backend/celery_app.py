@@ -101,9 +101,15 @@ celery_app.conf.update(
     worker_prefetch_multiplier=1,
 )
 
-# Scheduled tasks
+# Scheduled tasks.
+#
+# Every entry below MUST reference a task name that is actually registered by a
+# module in `conf.include`. (A previous version of this schedule pointed at
+# several task names that did not exist — e.g. `run_auto_chase`,
+# `check_overdue_*`, `check_policy_reviews` — which raised NotRegistered when
+# beat fired them. They have been mapped to the real task names.)
 celery_app.conf.beat_schedule = {
-    # Scrape regulatory feeds every 4 hours
+    # ── Regulatory feed scrapers (every 4 hours, staggered) ──
     "scrape-sra-feed": {
         "task": "tasks.regulatory_tasks.scrape_sra",
         "schedule": crontab(minute=0, hour="*/4"),
@@ -121,69 +127,109 @@ celery_app.conf.beat_schedule = {
         "schedule": crontab(minute=45, hour="*/4"),
     },
 
-    # Daily auto-chase for overdue items (9am UK time)
+    # ── Email automation ──
+    # Daily auto-chase for overdue items (9am UK time) — drives ChaseEngine.
     "daily-auto-chase": {
         "task": "tasks.email_tasks.run_auto_chase",
         "schedule": crontab(minute=0, hour=9),
     },
-
-    # Weekly compliance digest (Monday 8am)
+    # Every 15 min: actually deliver anything sitting in the email queue.
+    "process-email-queue": {
+        "task": "tasks.email_tasks.process_email_queue",
+        "schedule": crontab(minute="*/15"),
+    },
+    # Daily digest of open alerts (8am).
+    "daily-digest": {
+        "task": "tasks.email_tasks.send_daily_digest",
+        "schedule": crontab(minute=0, hour=8),
+    },
+    # Weekly compliance digest (Monday 8am).
     "weekly-digest": {
         "task": "tasks.email_tasks.send_weekly_digest",
         "schedule": crontab(minute=0, hour=8, day_of_week=1),
     },
-
-    # Daily deadline check (8am)
-    "deadline-check": {
-        "task": "tasks.email_tasks.check_upcoming_deadlines",
-        "schedule": crontab(minute=0, hour=8),
+    # Hourly: retry transiently-failed emails.
+    "retry-failed-emails": {
+        "task": "tasks.email_tasks.retry_failed_emails",
+        "schedule": crontab(minute=20, hour="*"),
     },
 
-    # ── Compliance Automation ──
-
-    # Daily: flag overdue training with alerts (7:30am)
-    "overdue-training-check": {
-        "task": "tasks.compliance_tasks.check_overdue_training",
+    # ── Compliance automation ──
+    # Daily compliance scan across all firms (6:30am).
+    "daily-compliance-scan": {
+        "task": "tasks.compliance_tasks.run_daily_compliance_scan",
+        "schedule": crontab(minute=30, hour=6),
+    },
+    # Daily: flag training due/overdue (7:30am).
+    "training-due-check": {
+        "task": "tasks.compliance_tasks.check_training_due",
         "schedule": crontab(minute=30, hour=7),
     },
-
-    # Hourly: check breach ICO 72-hour deadlines
+    # Daily: alert on deadlines due within 7 days (7:45am).
+    "deadline-check": {
+        "task": "tasks.compliance_tasks.check_upcoming_deadlines",
+        "schedule": crontab(minute=45, hour=7),
+    },
+    # Daily: alert on undertakings approaching their deadline (8:15am).
+    "undertaking-expiry-check": {
+        "task": "tasks.compliance_tasks.check_undertaking_expiry",
+        "schedule": crontab(minute=15, hour=8),
+    },
+    # Hourly: check breach ICO 72-hour deadlines.
     "ico-deadline-check": {
         "task": "tasks.compliance_tasks.check_breach_ico_deadlines",
         "schedule": crontab(minute=0, hour="*"),
     },
-
-    # Daily: auto-escalate overdue compliance deadlines (7:45am)
-    "overdue-deadline-escalation": {
-        "task": "tasks.compliance_tasks.check_overdue_deadlines",
-        "schedule": crontab(minute=45, hour=7),
+    # Weekly: AML risk reassessment (Sunday 2am).
+    "weekly-aml-reassessment": {
+        "task": "tasks.compliance_tasks.reassess_aml_risk",
+        "schedule": crontab(minute=0, hour=2, day_of_week=0),
     },
 
-    # Daily: flag overdue supervision (8:15am)
-    "overdue-supervision-check": {
-        "task": "tasks.compliance_tasks.check_overdue_supervision",
-        "schedule": crontab(minute=15, hour=8),
-    },
-
-    # Daily: flag policies due for review (8:30am)
-    "policy-review-check": {
-        "task": "tasks.compliance_tasks.check_policy_reviews",
+    # ── Reporting ──
+    # Daily: flag evidence documents due for review (8:30am).
+    "evidence-review-check": {
+        "task": "tasks.reporting_tasks.check_evidence_review_dates",
         "schedule": crontab(minute=30, hour=8),
     },
+    # Daily: flag policies due for review (8:45am).
+    "policy-review-check": {
+        "task": "tasks.reporting_tasks.check_policy_review_dates",
+        "schedule": crontab(minute=45, hour=8),
+    },
+    # Monthly: generate compliance report PDFs (1st of month, 3am).
+    "monthly-compliance-report": {
+        "task": "tasks.reporting_tasks.generate_monthly_compliance_report",
+        "schedule": crontab(minute=0, hour=3, day_of_month=1),
+    },
 
-    # ── Clio PMS Integration ──
+    # ── Billing ──
+    # Daily: warn firms about upcoming renewals (6am).
+    "subscription-renewal-check": {
+        "task": "tasks.billing_tasks.check_subscription_renewals",
+        "schedule": crontab(minute=0, hour=6),
+    },
+    # Every 6 hours: reconcile subscription status with Stripe.
+    "stripe-status-sync": {
+        "task": "tasks.billing_tasks.sync_stripe_subscription_status",
+        "schedule": crontab(minute=10, hour="*/6"),
+    },
 
-    # Every 8 hours: sync matters, contacts, and staff from Clio
+    # ── Clio PMS integration ──
+    # Three times a day: sync matters, contacts, and staff from Clio.
     "clio-sync-all-firms": {
         "task": "tasks.integration_tasks.sync_all_clio_firms",
         "schedule": crontab(minute=0, hour="1,9,17"),
     },
 }
 
-# Register task modules explicitly
+# Register task modules explicitly. Every module that defines @app.task MUST be
+# listed here or its tasks won't be registered with the worker.
 celery_app.conf.include = [
     "tasks.email_tasks",
     "tasks.regulatory_tasks",
     "tasks.compliance_tasks",
     "tasks.integration_tasks",
+    "tasks.billing_tasks",
+    "tasks.reporting_tasks",
 ]

@@ -132,7 +132,7 @@ class ChaseEngine:
         ).isoformat()
 
         rows = conn.execute(text("""
-            SELECT st.id, st.title, st.due_date,
+            SELECT st.id, st.course_name, st.due_date,
                    sm.name, sm.email, sm.id as staff_id
             FROM staff_training st
             JOIN staff_members sm ON sm.id = st.staff_id AND sm.firm_id = st.firm_id
@@ -244,10 +244,10 @@ class ChaseEngine:
         ).isoformat()
 
         rows = conn.execute(text("""
-            SELECT ci.id, ci.client_name, ci.created_at, ci.assessed_by,
+            SELECT ci.id, ci.client_name, ci.created_at, ci.assigned_to,
                    sm.name, sm.email
-            FROM client_intake ci
-            LEFT JOIN staff_members sm ON sm.id = ci.assessed_by AND sm.firm_id = ci.firm_id
+            FROM client_intakes ci
+            LEFT JOIN staff_members sm ON sm.id = ci.assigned_to AND sm.firm_id = ci.firm_id
             WHERE ci.firm_id = :fid
               AND ci.status IN ('pending', 'in_progress')
               AND ci.cdd_status IN ('pending', 'in_progress')
@@ -348,7 +348,7 @@ class ChaseEngine:
     ) -> bool:
         """Check if we've already sent a chase for this item recently."""
         result = conn.execute(text("""
-            SELECT COUNT(*) FROM chaser_log
+            SELECT COUNT(*) FROM chaser_logs
             WHERE firm_id = :fid
               AND chaser_type = :ctype
               AND subject LIKE :entity_ref
@@ -366,24 +366,20 @@ class ChaseEngine:
         staff_id: str, email: str, name: str,
         subject: str, days_overdue: int, escalated: bool,
     ):
-        """Record the chase in the chaser_log table."""
+        """Record the chase in the canonical `chaser_logs` table."""
         import uuid
 
         conn.execute(text("""
-            INSERT INTO chaser_log (id, firm_id, chaser_type, recipient_staff_id,
-                                     recipient_email, recipient_name, subject,
-                                     message, escalated)
-            VALUES (:id, :fid, :ctype, :sid, :email, :name, :subject, :msg, :esc)
+            INSERT INTO chaser_logs (id, firm_id, chaser_type, recipient,
+                                     subject, status, sent_at, attempts)
+            VALUES (:id, :fid, :ctype, :recipient, :subject, :status, now(), 1)
         """), {
             "id": str(uuid.uuid4()),
             "fid": firm_id,
             "ctype": chaser_type,
-            "sid": staff_id,
-            "email": email,
-            "name": name,
+            "recipient": email,
             "subject": subject,
-            "msg": f"Auto-chase sent. {days_overdue} days overdue.",
-            "esc": escalated,
+            "status": "escalated" if escalated else "sent",
         })
 
     def _escalate_to_colp(

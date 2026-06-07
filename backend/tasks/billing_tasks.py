@@ -45,8 +45,21 @@ def check_subscription_renewals():
 
 @app.task(name="tasks.billing_tasks.sync_stripe_subscription_status")
 def sync_stripe_subscription_status():
-    """Sync subscription status from Stripe for all firms with Stripe IDs."""
+    """Sync subscription status from Stripe for all firms with Stripe IDs.
+
+    Skips entirely when no STRIPE_SECRET_KEY is configured (billing disabled).
+    A failure on one firm (e.g. a deleted subscription) does not abort the rest.
+    """
     from models.firm import Firm
+    from config import get_settings
+
+    settings = get_settings()
+    if not settings.STRIPE_SECRET_KEY:
+        logger.info("Stripe sync skipped — STRIPE_SECRET_KEY not configured")
+        return {"firms_synced": 0, "skipped": True}
+
+    import stripe
+    stripe.api_key = settings.STRIPE_SECRET_KEY
 
     logger.info("Syncing Stripe subscription statuses")
     session = get_sync_session()
@@ -55,16 +68,25 @@ def sync_stripe_subscription_status():
             Firm.stripe_subscription_id.isnot(None),
         ).all()
         synced = 0
+        errors = 0
         for firm in firms:
-            # TODO: call Stripe API to check subscription status
-            # import stripe
-            # stripe.api_key = settings.STRIPE_SECRET_KEY
-            # sub = stripe.Subscription.retrieve(firm.stripe_subscription_id)
-            # firm.subscription_status = sub.status
-            synced += 1
+            try:
+                sub = stripe.Subscription.retrieve(firm.stripe_subscription_id)
+                firm.subscription_status = sub.status
+                synced += 1
+            except stripe.error.InvalidRequestError:
+                # Subscription no longer exists on Stripe — mark cancelled.
+                firm.subscription_status = "cancelled"
+                firm.stripe_subscription_id = None
+                synced += 1
+            except Exception as firm_err:
+                errors += 1
+                logger.error(
+                    f"Stripe sync failed for firm {firm.id}: {firm_err}"
+                )
         session.commit()
-        logger.info(f"Stripe sync complete: {synced} firms synced")
-        return {"firms_synced": synced}
+        logger.info(f"Stripe sync complete: {synced} synced, {errors} errors")
+        return {"firms_synced": synced, "errors": errors}
     except Exception as e:
         session.rollback()
         logger.error(f"Stripe sync failed: {e}")

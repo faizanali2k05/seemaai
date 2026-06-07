@@ -275,7 +275,7 @@ class EmailService:
 
         # Pending intakes (CDD incomplete)
         result = conn.execute(text("""
-            SELECT COUNT(*) FROM client_intake
+            SELECT COUNT(*) FROM client_intakes
             WHERE firm_id = :fid AND status IN ('pending', 'in_progress')
         """), {"fid": firm_id})
         stats["pending_intakes"] = result.scalar() or 0

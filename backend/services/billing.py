@@ -821,6 +821,7 @@ class BillingService:
                         amount = invoice.get("amount_due", 0) / 100  # Stripe uses pence
                         email_svc.send(
                             to_email=firm.email or "",
+                            to_name=firm.name,
                             subject=f"Seema — Payment Failed for {firm.name}",
                             body=(
                                 f"<p>A payment of <strong>£{amount:.2f}</strong> for your Seema subscription "
@@ -830,7 +831,6 @@ class BillingService:
                                 f"service interruption.</p>"
                                 f"<p>If you need assistance, contact support@seemaai.co.uk.</p>"
                             ),
-                            firm_name=firm.name,
                         )
                         logger.info(f"Payment failure alert sent to firm {firm.id}")
                     except Exception as email_err:

@@ -1,0 +1,27 @@
+# ============================================================================
+# LOCAL laptop testing override (no domain, no HTTPS, no Caddy).
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+#
+# Then open:  http://localhost:3000   (the app)
+#             http://localhost:8000/health   (the API health check)
+#
+# This exposes the API + frontend directly on localhost and skips the Caddy
+# reverse proxy (which is only for the real domain + Let's Encrypt in prod).
+# ============================================================================
+services:
+  api:
+    ports:
+      - "8000:8000"          # API reachable at http://localhost:8000
+
+  web:
+    build:
+      args:
+        # Point the browser bundle at the local API instead of the live domain.
+        NEXT_PUBLIC_API_URL: http://localhost:8000/api
+    ports:
+      - "3000:3000"          # App reachable at http://localhost:3000
+
+  caddy:
+    profiles: ["prod-only"]  # not started locally (only with --profile prod-only)
