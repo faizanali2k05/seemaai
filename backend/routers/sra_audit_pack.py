@@ -300,7 +300,7 @@ async def generate_audit_pack(
     )
 
     # Return pack metadata (PDF generation handled by service layer)
-    generated_at = datetime.now(timezone.utc)
+    generated_at = datetime.utcnow()
     return {
         "status": "success",
         "filename": f"SRA_Visit_Pack_{firm.sra_number or 'DRAFT'}_{generated_at.strftime('%Y%m%d')}.pdf",

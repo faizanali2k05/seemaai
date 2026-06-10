@@ -28,7 +28,11 @@ settings = get_settings()
 CLIO_AUTH_URL = f"{settings.CLIO_API_BASE}/oauth/authorize"
 CLIO_TOKEN_URL = f"{settings.CLIO_API_BASE}/oauth/token"
 CLIO_DEAUTH_URL = f"{settings.CLIO_API_BASE}/oauth/deauthorize"
-CLIO_API_URL = f"https://app.clio.com/api/{settings.CLIO_API_VERSION}"
+# Data-region aware: the API host MUST match the firm's Clio data region (e.g.
+# eu.app.clio.com for UK/EU firms). Driven by the same CLIO_API_BASE used for
+# OAuth so both stay in the same region. Hardcoding app.clio.com here silently
+# breaks sync for EU-resident firms even after a successful OAuth handshake.
+CLIO_API_URL = f"{settings.CLIO_API_BASE}/api/{settings.CLIO_API_VERSION}"
 
 
 def get_clio_auth_url(state: str) -> str:

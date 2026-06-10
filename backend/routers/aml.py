@@ -406,7 +406,7 @@ async def create_sar(
         suspicion_type=sar.suspicion_type,
         amount=sar.amount,
         grounds_for_suspicion=sar.grounds_for_suspicion,
-        report_date=datetime.now(timezone.utc),
+        report_date=datetime.utcnow(),
         status="submitted",
         nca_filed=False,
     )

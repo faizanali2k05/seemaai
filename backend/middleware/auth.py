@@ -1,6 +1,7 @@
 """Authentication middleware — JWT tokens, password hashing, CurrentUser."""
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+import uuid
 import jwt
 import bcrypt
 from fastapi import HTTPException, status, Request
@@ -34,7 +35,7 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 def create_access_token(user_id: str, firm_id: str, role: str) -> str:
     """Create a JWT access token (expires in 15 minutes)."""
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     expire = now + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
     payload = {
@@ -42,6 +43,7 @@ def create_access_token(user_id: str, firm_id: str, role: str) -> str:
         "firm_id": firm_id,
         "role": role,
         "type": "access",
+        "jti": uuid.uuid4().hex,  # nonce → guarantees a unique token string even within the same second
         "iat": now,
         "exp": expire,
     }
@@ -52,13 +54,14 @@ def create_access_token(user_id: str, firm_id: str, role: str) -> str:
 
 def create_refresh_token(user_id: str, firm_id: str) -> str:
     """Create a JWT refresh token (expires in 7 days)."""
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     expire = now + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
     payload = {
         "sub": user_id,
         "firm_id": firm_id,
         "type": "refresh",
+        "jti": uuid.uuid4().hex,  # nonce → guarantees a unique token string even within the same second
         "iat": now,
         "exp": expire,
     }

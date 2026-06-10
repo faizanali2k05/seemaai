@@ -59,7 +59,7 @@ async def save_email_settings(settings: EmailSettings, current_user: CurrentUser
         except:
             prefs = {}
     prefs["email_settings"] = settings.dict()
-    await db.execute(update(Firm).where(Firm.id == current_user.firm_id).values(firm_preferences=json.dumps(prefs), updated_at=datetime.now(timezone.utc)))
+    await db.execute(update(Firm).where(Firm.id == current_user.firm_id).values(firm_preferences=json.dumps(prefs), updated_at=datetime.utcnow()))
     await db.flush()
     await log_audit(db=db, firm_id=current_user.firm_id, action="email_settings_updated", entity_type="firm", entity_id=current_user.firm_id, user_id=current_user.user_id, details=json.dumps(settings.dict()))
     return {"message": "Email settings saved", "settings": settings.dict()}
@@ -104,7 +104,7 @@ async def send_all_pending(current_user: CurrentUser = Depends(get_current_user)
     pending_items = result.scalars().all()
     sent_count = 0
     for item in pending_items:
-        await db.execute(update(EmailQueueItem).where(EmailQueueItem.id == item.id).values(status="sent", sent_at=datetime.now(timezone.utc)))
+        await db.execute(update(EmailQueueItem).where(EmailQueueItem.id == item.id).values(status="sent", sent_at=datetime.utcnow()))
         sent_count += 1
     await db.flush()
     await log_audit(db=db, firm_id=current_user.firm_id, action="email_batch_send", entity_type="email_queue", user_id=current_user.user_id, details=json.dumps({"count": sent_count}))
@@ -117,7 +117,7 @@ async def send_single_email(item_id: str, current_user: CurrentUser = Depends(ge
     item = result.scalar_one_or_none()
     if not item:
         raise HTTPException(status_code=404, detail="Email queue item not found")
-    await db.execute(update(EmailQueueItem).where(EmailQueueItem.id == item_id).values(status="sent", sent_at=datetime.now(timezone.utc)))
+    await db.execute(update(EmailQueueItem).where(EmailQueueItem.id == item_id).values(status="sent", sent_at=datetime.utcnow()))
     await db.flush()
     await log_audit(db=db, firm_id=current_user.firm_id, action="email_send", entity_type="email_queue", entity_id=item_id, user_id=current_user.user_id, details=json.dumps({"recipient": item.recipient}))
     return {"message": "Email marked as sent", "item_id": item_id}

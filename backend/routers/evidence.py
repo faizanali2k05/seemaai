@@ -109,7 +109,7 @@ async def verify_evidence(
     if not doc:
         raise HTTPException(status_code=404, detail="Not found")
     doc.status = "reviewed"
-    doc.review_date = datetime.now(timezone.utc)
+    doc.review_date = datetime.utcnow()
     await db.flush()
     await log_audit(
         db=db,

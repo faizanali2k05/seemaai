@@ -233,7 +233,7 @@ async def resolve_complaint(
         .values(
             status="resolved",
             resolution=data.resolution,
-            closed_date=datetime.now(timezone.utc),
+            closed_date=datetime.utcnow(),
         )
         .returning(Complaint)
     )

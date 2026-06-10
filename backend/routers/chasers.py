@@ -125,7 +125,7 @@ async def send_chaser(
         recipient=to_email,
         subject=chaser.subject,
         status=email_status,
-        sent_at=datetime.now(timezone.utc),
+        sent_at=datetime.utcnow(),
         attempts=1,
     )
 
@@ -251,7 +251,7 @@ async def resend_chaser(
         .where(ChaserLog.id == chaser_id)
         .values(
             attempts=chaser.attempts + 1,
-            sent_at=datetime.now(timezone.utc),
+            sent_at=datetime.utcnow(),
             status=resend_status,
         )
         .returning(ChaserLog)
@@ -375,7 +375,7 @@ async def bulk_chase_training(
             recipient=recipient_email,
             subject=subject,
             status=status,
-            sent_at=datetime.now(timezone.utc),
+            sent_at=datetime.utcnow(),
             attempts=1,
         )
         db.add(new_chaser)
@@ -445,7 +445,7 @@ async def bulk_chase_reviews(
             recipient=recipient_email,
             subject=subject,
             status=status,
-            sent_at=datetime.now(timezone.utc),
+            sent_at=datetime.utcnow(),
             attempts=1,
         )
         db.add(new_chaser)

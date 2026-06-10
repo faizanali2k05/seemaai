@@ -149,5 +149,5 @@ async def mark_plan_resolved(
     return {
         "id": plan.id,
         "status": plan.status,
-        "completed_at": datetime.now(timezone.utc),
+        "completed_at": datetime.utcnow(),
     }

@@ -32,3 +32,12 @@
 	# Access logs go to stdout — view with `docker compose logs -f caddy`.
 	log
 }
+
+# n8n — preserved from the previous setup so it keeps HTTPS at n8n.seemaai.co.uk.
+# n8n runs as a standalone container (not part of this compose project) on the
+# host docker bridge, port 5678. We reach it through the host gateway exactly
+# like the old nginx did (proxy_pass http://172.17.0.1:5678).
+n8n.seemaai.co.uk {
+	encode gzip zstd
+	reverse_proxy 172.17.0.1:5678
+}

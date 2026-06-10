@@ -105,5 +105,5 @@ async def generate_audit_report(
         "title": payload.title,
         "period_start": payload.period_start,
         "period_end": payload.period_end,
-        "generated_at": datetime.now(timezone.utc),
+        "generated_at": datetime.utcnow(),
     }

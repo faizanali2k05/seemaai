@@ -68,7 +68,7 @@ async def create_breach_report(
     db: AsyncSession = Depends(tenant_db_from_jwt),
 ):
     """Create breach report with auto-calculated ICO deadline and alert generation."""
-    reported = req.reported_date or datetime.now(timezone.utc)
+    reported = req.reported_date or datetime.utcnow()
     # Auto-calculate ICO 72-hour deadline if not provided
     ico_deadline = req.ico_deadline or (reported + timedelta(hours=72))
 

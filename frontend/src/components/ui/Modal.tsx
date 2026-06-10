@@ -67,13 +67,13 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-200 ${
+      className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-200 animate-fadeIn ${
         isOpen ? 'opacity-100' : 'opacity-0'
       }`}
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-lg shadow-lg w-full ${sizeClass || (className.includes('max-w-') ? '' : 'max-w-md')} mx-4 transform transition-all duration-200 ${
+        className={`bg-white rounded-xl shadow-2xl ring-1 ring-black/5 w-full ${sizeClass || (className.includes('max-w-') ? '' : 'max-w-md')} mx-4 transform transition-all duration-200 animate-slideUp ${
           isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         } ${className}`}
         onClick={(e) => e.stopPropagation()}

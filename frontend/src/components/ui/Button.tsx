@@ -39,27 +39,30 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     as: _as, // ignored — accepted for compat with polymorphic callers
     ...props
   }, ref) => {
+    // transition-all + a subtle press (active:scale) and keyboard focus ring give
+    // the whole app a more tactile feel without changing any colours. Solid
+    // variants carry a soft shadow that lifts on hover and settles on press.
     const baseStyles =
-      'font-medium rounded-lg transition-colors duration-200 inline-flex items-center justify-center gap-2 whitespace-nowrap';
+      'font-medium rounded-lg transition-all duration-200 inline-flex items-center justify-center gap-2 whitespace-nowrap select-none active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#2563eb] disabled:active:scale-100 disabled:shadow-none';
 
     const variantStyles: Record<ButtonVariant, string> = {
       primary:
-        'bg-[#2563eb] text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed',
+        'bg-[#2563eb] text-white shadow-sm hover:bg-blue-700 hover:shadow-md disabled:bg-gray-300 disabled:cursor-not-allowed',
       secondary:
         'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed',
       success:
-        'bg-[#059669] text-white hover:bg-emerald-700 disabled:bg-gray-300 disabled:cursor-not-allowed',
+        'bg-[#059669] text-white shadow-sm hover:bg-emerald-700 hover:shadow-md disabled:bg-gray-300 disabled:cursor-not-allowed',
       danger:
-        'bg-[#dc2626] text-white hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed',
+        'bg-[#dc2626] text-white shadow-sm hover:bg-red-700 hover:shadow-md disabled:bg-gray-300 disabled:cursor-not-allowed',
       outline:
         'border-2 border-[#2563eb] text-[#2563eb] hover:bg-blue-50 disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed',
       ghost:
         'text-[#2563eb] hover:bg-blue-50 disabled:text-gray-300 disabled:cursor-not-allowed',
       // Legacy aliases
       warning:
-        'bg-[#d97706] text-white hover:bg-amber-700 disabled:bg-gray-300 disabled:cursor-not-allowed',
+        'bg-[#d97706] text-white shadow-sm hover:bg-amber-700 hover:shadow-md disabled:bg-gray-300 disabled:cursor-not-allowed',
       destructive:
-        'bg-[#dc2626] text-white hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed',
+        'bg-[#dc2626] text-white shadow-sm hover:bg-red-700 hover:shadow-md disabled:bg-gray-300 disabled:cursor-not-allowed',
     };
 
     const sizeStyles = {

@@ -25,7 +25,7 @@ export const Card: React.FC<CardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`bg-white border border-[#e2e5ed] rounded-xl shadow-sm transition-all duration-200 ${paddingStyles[padding]} ${className}`}
+      className={`bg-white border border-[#e2e5ed] rounded-xl shadow-sm transition-all duration-200 hover:shadow-md ${onClick ? 'cursor-pointer hover:border-blue-200 hover:-translate-y-0.5 active:translate-y-0' : ''} ${paddingStyles[padding]} ${className}`}
     >
       {title && (
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>

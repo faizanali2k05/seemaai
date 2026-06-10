@@ -76,7 +76,7 @@ def _gather_firm_compliance_data(session, firm_id: str) -> dict:
     from models.complaints import Complaint
     from sqlalchemy import select, func
 
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
 
     def _count(model, *filters):
         result = session.execute(
@@ -116,7 +116,7 @@ async def _gather_firm_compliance_data_async(db, firm_id: str) -> dict:
     from models.remediation import RemediationPlan
     from sqlalchemy import select, func
 
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
 
     async def _count(model, *filters):
         result = await db.execute(
@@ -214,7 +214,7 @@ Return valid JSON only."""
         result["ai_generated"] = True
         result["model"] = _ai_model
         result["question"] = question
-        result["answered_at"] = datetime.now(timezone.utc).isoformat()
+        result["answered_at"] = datetime.utcnow().isoformat()
         return result
 
     except Exception as e:
@@ -287,7 +287,7 @@ def _fallback_answer(question: str) -> dict:
         "disclaimer": "This is general guidance only. For specific legal advice, consult a compliance specialist.",
         "ai_generated": False,
         "question": question,
-        "answered_at": datetime.now(timezone.utc).isoformat(),
+        "answered_at": datetime.utcnow().isoformat(),
     }
 
 

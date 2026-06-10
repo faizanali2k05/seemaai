@@ -63,7 +63,7 @@ async def get_dashboard_stats(
         select(func.count(StaffTraining.id)).where(
             StaffTraining.firm_id == user.firm_id,
             StaffTraining.status == "pending",
-            StaffTraining.due_date <= datetime.now(timezone.utc)
+            StaffTraining.due_date <= datetime.utcnow()
         )
     )
     overdue_training = training_result.scalar() or 0
@@ -120,14 +120,14 @@ async def get_daily_briefing(
     db: AsyncSession = Depends(tenant_db_from_jwt),
 ):
     """Get today's alerts, overdue items, and upcoming deadlines."""
-    today = datetime.now(timezone.utc).date()
+    today = datetime.utcnow().date()
     tomorrow = today + timedelta(days=1)
 
     # Today's alerts (last 24 hours)
     alerts_result = await db.execute(
         select(ComplianceAlert).where(
             ComplianceAlert.firm_id == user.firm_id,
-            ComplianceAlert.created_at >= datetime(today.year, today.month, today.day, tzinfo=timezone.utc)
+            ComplianceAlert.created_at >= datetime(today.year, today.month, today.day)
         ).order_by(ComplianceAlert.created_at.desc())
     )
     today_alerts = alerts_result.scalars().all()
@@ -137,7 +137,7 @@ async def get_daily_briefing(
         select(StaffTraining).where(
             StaffTraining.firm_id == user.firm_id,
             StaffTraining.status == "pending",
-            StaffTraining.due_date <= datetime.now(timezone.utc)
+            StaffTraining.due_date <= datetime.utcnow()
         ).order_by(StaffTraining.due_date)
     )
     overdue_items = overdue_result.scalars().all()
@@ -148,8 +148,8 @@ async def get_daily_briefing(
         select(StaffTraining).where(
             StaffTraining.firm_id == user.firm_id,
             StaffTraining.status == "pending",
-            StaffTraining.due_date > datetime.now(timezone.utc),
-            StaffTraining.due_date <= datetime(next_week.year, next_week.month, next_week.day, 23, 59, 59, tzinfo=timezone.utc)
+            StaffTraining.due_date > datetime.utcnow(),
+            StaffTraining.due_date <= datetime(next_week.year, next_week.month, next_week.day, 23, 59, 59)
         ).order_by(StaffTraining.due_date)
     )
     upcoming_deadlines = upcoming_result.scalars().all()

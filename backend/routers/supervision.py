@@ -80,7 +80,7 @@ async def list_overdue_sessions(
     db: AsyncSession = Depends(tenant_db_from_jwt),
 ):
     """List overdue supervision sessions."""
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     stmt = (
         select(SupervisionRecord)
         .where(
@@ -185,7 +185,7 @@ async def complete_supervision(
     # Calculate next due date based on frequency
     from dateutil.relativedelta import relativedelta
 
-    last_session = datetime.now(timezone.utc)
+    last_session = datetime.utcnow()
     frequency_map = {
         "monthly": relativedelta(months=1),
         "quarterly": relativedelta(months=3),

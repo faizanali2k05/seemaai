@@ -217,6 +217,7 @@ async def create_training(
         staff_id=req.staff_id,
         staff_name=staff.name,
         title=req.title,
+        course_name=req.title,  # keep course_name populated for chase_engine / SRA audit pack
         training_type=req.training_type,
         due_date=req.due_date,
         cpd_hours=req.cpd_hours,
@@ -261,7 +262,7 @@ async def complete_training(
         raise HTTPException(status_code=404, detail="Training record not found")
 
     training.status = "completed"
-    training.completed_at = datetime.now(timezone.utc)
+    training.completed_at = datetime.utcnow()
     await db.flush()
 
     await log_audit(
@@ -307,6 +308,6 @@ async def export_staff_csv(
 
     return {
         "content_type": "text/csv",
-        "filename": f"staff_export_{datetime.now(timezone.utc).strftime('%Y%m%d')}.csv",
+        "filename": f"staff_export_{datetime.utcnow().strftime('%Y%m%d')}.csv",
         "data": csv_content,
     }

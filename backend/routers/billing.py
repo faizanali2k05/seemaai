@@ -79,8 +79,8 @@ def _get_stripe_price_id(plan: str, period: str) -> str:
 
 async def _get_firm(db: AsyncSession, firm_id: str) -> Firm:
     """Fetch firm or raise 404."""
-    tq = TenantQuery(firm_id)
-    result = await db.execute(tq.select(Firm, Firm.id == firm_id))
+    # Firm is the tenant root (PK = id), so it is NOT tenant-scoped via firm_id.
+    result = await db.execute(select(Firm).where(Firm.id == firm_id))
     firm = result.scalar_one_or_none()
     if not firm:
         raise HTTPException(status_code=404, detail="Firm not found")
@@ -196,8 +196,8 @@ async def subscribe(
         firm.subscription_tier = req.plan
         firm.subscription_plan = req.plan
         firm.subscription_status = "active"
-        firm.next_billing_date = datetime.now(timezone.utc).replace(
-            year=datetime.now(timezone.utc).year + 1
+        firm.next_billing_date = datetime.utcnow().replace(
+            year=datetime.utcnow().year + 1
         ).isoformat()
 
     await db.flush()
@@ -370,7 +370,7 @@ async def get_billing_history(
             cost = pricing.get("monthly", 0)
             records.append({
                 "id": f"demo_inv_{firm.id[:8]}",
-                "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+                "date": datetime.utcnow().strftime("%Y-%m-%d"),
                 "description": f"Seema {firm.subscription_tier.title()} Plan",
                 "amount": cost,
                 "status": "paid",

@@ -140,7 +140,7 @@ async def fulfil_undertaking(
         )
         .values(
             status="fulfilled",
-            completed_at=datetime.now(timezone.utc),
+            completed_at=datetime.utcnow(),
         )
         .returning(Undertaking)
     )

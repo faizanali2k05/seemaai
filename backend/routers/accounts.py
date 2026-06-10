@@ -351,7 +351,7 @@ async def sign_off_reconciliation(
         .values(
             status="complete",
             reconciled_by=current_user.user_id,
-            completed_at=datetime.now(timezone.utc),
+            completed_at=datetime.utcnow(),
         )
         .returning(Reconciliation)
     )

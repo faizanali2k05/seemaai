@@ -19,8 +19,11 @@ class ComplianceAlert(Base):
     regulation_ref = Column(String(100))
     action_required = Column(Text)
     created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     acknowledged_at = Column(DateTime)
+    acknowledged_by = Column(String(36), ForeignKey("user_accounts.id"))
     resolved_at = Column(DateTime)
+    resolved_by = Column(String(36), ForeignKey("user_accounts.id"))
     status = Column(String(20), default="open")
 
     # Human override — COLP/COFA can correct AI-generated alerts

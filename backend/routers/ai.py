@@ -241,7 +241,7 @@ async def ai_scan_compliance(
     scan = ComplianceScanResult(
         id=str(uuid.uuid4()),
         firm_id=current_user.firm_id,
-        scan_date=datetime.now(timezone.utc),
+        scan_date=datetime.utcnow(),
         category="ai_comprehensive_scan",
         check_name="AI Compliance Scan",
         status=result.get("overall_rating", "unknown"),
@@ -376,18 +376,18 @@ def _matter_to_dict(matter) -> dict:
     if open_date:
         try:
             od = datetime.fromisoformat(str(open_date).replace("Z", "+00:00"))
-            if od.tzinfo is None:
-                od = od.replace(tzinfo=timezone.utc)
-            age_days = (datetime.now(timezone.utc) - od).days
+            if od.tzinfo is not None:
+                od = od.replace(tzinfo=None)  # normalise to naive UTC to match datetime.utcnow()
+            age_days = (datetime.utcnow() - od).days
         except Exception:
             age_days = None
     if age_days is None:
         created = getattr(matter, "created_at", None)
         if created:
             try:
-                if created.tzinfo is None:
-                    created = created.replace(tzinfo=timezone.utc)
-                age_days = (datetime.now(timezone.utc) - created).days
+                if created.tzinfo is not None:
+                    created = created.replace(tzinfo=None)  # normalise to naive UTC to match datetime.utcnow()
+                age_days = (datetime.utcnow() - created).days
             except Exception:
                 age_days = None
 
@@ -587,11 +587,11 @@ async def ai_draft_ico_notification(
 @router.get("/ai/status")
 async def ai_status():
     """Check whether AI features are available (API key configured)."""
-    from services.ai_analysis import _get_client
-    client = _get_client()
+    from services import ai_analysis
+    client = ai_analysis._get_client()  # populates ai_analysis._ai_model as a side effect
     return {
         "ai_available": client is not None,
-        "model": _ai_model if client else None,
+        "model": ai_analysis._ai_model if client else None,
         "features": [
             "regulatory_analysis",
             "breach_analysis",

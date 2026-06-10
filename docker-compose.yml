@@ -27,10 +27,14 @@ x-backend-env: &backend-env
   CLIO_CLIENT_ID: ${CLIO_CLIENT_ID:-}
   CLIO_CLIENT_SECRET: ${CLIO_CLIENT_SECRET:-}
   CLIO_REDIRECT_URI: ${CLIO_REDIRECT_URI:-https://app.seemaai.co.uk/api/integrations/clio/callback}
+  # Data-region host — MUST match the firm's Clio region (eu.app.clio.com for
+  # UK/EU firms). Without this the API defaults to the US region and sync fails.
+  CLIO_API_BASE: ${CLIO_API_BASE:-https://app.clio.com}
   # --- Optional integrations (features stay disabled while blank) ---
   SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
   EMAIL_FROM: ${EMAIL_FROM:-noreply@seemaai.co.uk}
   STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+  STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
   STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
   SENTRY_DSN: ${SENTRY_DSN:-}
 

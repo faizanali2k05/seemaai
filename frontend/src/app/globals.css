@@ -29,8 +29,17 @@ html {
 
 body {
   background-color: #f5f6fa;
+  /* Barely-there tint of the brand blue/purple at the page corners adds depth
+     without departing from the flat light-grey background. */
+  background-image:
+    radial-gradient(1200px 600px at 100% 0%, rgba(37, 99, 235, 0.04), transparent 60%),
+    radial-gradient(1000px 500px at 0% 100%, rgba(124, 58, 237, 0.035), transparent 55%);
+  background-attachment: fixed;
   color: #1a2233;
   font-family: Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* Custom utility classes */
@@ -56,15 +65,15 @@ body {
   }
 
   .btn-primary {
-    @apply px-4 py-2 bg-seema-primary text-white rounded-lg font-medium hover:bg-seema-primary-hover transition-colors;
+    @apply px-4 py-2 bg-seema-primary text-white rounded-lg font-medium shadow-sm hover:bg-seema-primary-hover hover:shadow-md transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-seema-primary;
   }
 
   .btn-secondary {
-    @apply px-4 py-2 bg-gray-100 text-seema-text-primary rounded-lg font-medium hover:bg-gray-200 transition-colors;
+    @apply px-4 py-2 bg-gray-100 text-seema-text-primary rounded-lg font-medium hover:bg-gray-200 transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-seema-primary;
   }
 
   .input-base {
-    @apply w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-seema-primary focus:border-transparent;
+    @apply w-full px-4 py-2 border border-gray-200 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-seema-primary focus:border-transparent hover:border-gray-300;
   }
 
   .card {

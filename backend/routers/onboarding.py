@@ -55,9 +55,9 @@ async def complete_onboarding(
     await db.execute(
         update(Firm).where(Firm.id == current_user.firm_id).values(
             onboarding_status="completed",
-            onboarding_completed_at=datetime.now(timezone.utc),
+            onboarding_completed_at=datetime.utcnow(),
             practice_areas=json.dumps(request.practice_areas),
-            updated_at=datetime.now(timezone.utc),
+            updated_at=datetime.utcnow(),
         )
     )
     await db.flush()

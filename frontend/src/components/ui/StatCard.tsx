@@ -56,7 +56,7 @@ export const StatCard: React.FC<StatCardProps> = ({
 
   return (
     <div
-      className={`bg-white border border-[#e2e5ed] rounded-xl p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:border-gray-300 ${onClick ? 'cursor-pointer' : ''} ${className}`}
+      className={`bg-white border border-[#e2e5ed] rounded-xl p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:border-gray-300 hover:-translate-y-0.5 ${onClick ? 'cursor-pointer active:translate-y-0' : ''} ${className}`}
       onClick={onClick}
       onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); } : undefined}
       role={onClick ? 'button' : undefined}
@@ -91,7 +91,7 @@ export const StatCard: React.FC<StatCardProps> = ({
         <div className="flex flex-col items-end gap-2 ml-3">
           {icon && (
             <div
-              className={`flex items-center justify-center w-10 h-10 rounded-lg ${colors.bg} ${colors.text} ${colors.border} border`}
+              className={`flex items-center justify-center w-10 h-10 rounded-lg shadow-sm ${colors.bg} ${colors.text} ${colors.border} border`}
             >
               {React.isValidElement(icon)
                 ? icon

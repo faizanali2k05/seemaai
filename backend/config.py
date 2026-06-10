@@ -53,6 +53,7 @@ class Settings(BaseSettings):
     # Billing (optional — billing features disabled without these)
     # Two-tier pricing legacy fields (kept for backward compat):
     STRIPE_SECRET_KEY: str = ""
+    STRIPE_PUBLISHABLE_KEY: str = ""
     STRIPE_WEBHOOK_SECRET: str = ""
     STRIPE_ESSENTIALS_PRICE_ID: str = ""      # £200/mo – 2-10 solicitors
     STRIPE_PROFESSIONAL_PRICE_ID: str = ""    # £700/mo – 10-50 solicitors

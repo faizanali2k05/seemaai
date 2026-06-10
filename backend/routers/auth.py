@@ -87,7 +87,7 @@ async def register(req: RegisterRequest, request: Request, db: AsyncSession = De
         onboarding_status="pending",
         subscription_status="trial",
         subscription_plan="professional",
-        trial_ends_at=datetime.now(timezone.utc) + timedelta(days=14),
+        trial_ends_at=datetime.utcnow() + timedelta(days=14),
     )
     db.add(firm)
 

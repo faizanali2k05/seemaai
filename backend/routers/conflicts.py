@@ -162,7 +162,7 @@ async def resolve_conflict(
 
     check.status = "clear"
     check.resolution = req.resolution_text or "Resolved"
-    check.resolved_at = datetime.now(timezone.utc)
+    check.resolved_at = datetime.utcnow()
     await db.flush()
 
     await log_audit(

@@ -51,7 +51,7 @@ async def complete_training(
     training = result.scalar_one_or_none()
     if not training:
         raise HTTPException(status_code=404, detail="Training not found")
-    await db.execute(update(StaffTraining).where(StaffTraining.id == training_id).values(status="completed", completed_at=datetime.now(timezone.utc)))
+    await db.execute(update(StaffTraining).where(StaffTraining.id == training_id).values(status="completed", completed_at=datetime.utcnow()))
     await db.flush()
     await log_audit(db=db, firm_id=current_user.firm_id, action="training_completed", entity_type="training", entity_id=training_id, user_id=current_user.user_id, details=json.dumps({"title": training.title}))
     return {"message": "Training marked complete", "training_id": training_id}

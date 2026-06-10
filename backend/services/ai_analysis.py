@@ -219,7 +219,7 @@ async def analyze_regulatory_impact(
 
 --- REGULATORY UPDATE ---
 Source: {regulatory_source}
-Date: {datetime.now(timezone.utc).strftime('%d %B %Y')}
+Date: {datetime.utcnow().strftime('%d %B %Y')}
 
 {regulatory_text}
 
@@ -778,7 +778,7 @@ and regulatory deadlines. Return valid JSON only."""
     result = _parse_json_response(text)
     result["ai_generated"] = True
     result["model"] = _ai_model
-    result["scanned_at"] = datetime.now(timezone.utc).isoformat()
+    result["scanned_at"] = datetime.utcnow().isoformat()
     return result
 
 
@@ -884,7 +884,7 @@ def _fallback_scan(data: dict) -> dict:
         "urgent_actions": urgent,
         "summary": f"Compliance scan completed with an average risk score of {avg_score}/100 ({rating}).",
         "ai_generated": False,
-        "scanned_at": datetime.now(timezone.utc).isoformat(),
+        "scanned_at": datetime.utcnow().isoformat(),
     }
 
 
@@ -1033,7 +1033,7 @@ Return valid JSON only."""
     result = _parse_json_response(text)
     result["ai_generated"] = True
     result["model"] = _ai_model
-    result["generated_at"] = datetime.now(timezone.utc).isoformat()
+    result["generated_at"] = datetime.utcnow().isoformat()
     return result
 
 
@@ -1366,5 +1366,5 @@ def _fallback_summary(data: dict) -> dict:
         "recommended_focus": concerns[0] if concerns else "Continue routine compliance monitoring",
         "briefing": f"Your firm currently has {data.get('open_alerts', 0)} open alerts and {data.get('overdue_deadlines', 0)} overdue deadlines. {'Immediate attention required.' if risk == 'red' else 'Situation is manageable but monitor closely.' if risk == 'amber' else 'Compliance posture is healthy.'}",
         "ai_generated": False,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.utcnow().isoformat(),
     }

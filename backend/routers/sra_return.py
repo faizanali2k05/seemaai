@@ -126,7 +126,7 @@ async def export_sra_return(
     return {
         "status": "success",
         "format": format,
-        "filename": f"sra_return_{firm.sra_number}_{datetime.now(timezone.utc).isoformat()}.{format}",
+        "filename": f"sra_return_{firm.sra_number}_{datetime.utcnow().isoformat()}.{format}",
     }
 
 @router.post("/compliance/sra-return/export-pdf")
@@ -181,6 +181,6 @@ async def submit_sra_return(
     
     return {
         "status": "submitted",
-        "submitted_at": datetime.now(timezone.utc),
+        "submitted_at": datetime.utcnow(),
         "firm_id": firm.id,
     }

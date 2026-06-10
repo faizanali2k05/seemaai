@@ -67,7 +67,7 @@ async def create_limitation(
         "description": payload.description,
         "expiry_date": payload.expiry_date,
         "matter_id": payload.matter_id,
-        "created_at": datetime.now(timezone.utc),
+        "created_at": datetime.utcnow(),
     }
 
 @router.post("/compliance/key-dates/cpr")
@@ -94,7 +94,7 @@ async def create_cpr_deadline(
         "description": payload.description,
         "deadline": payload.deadline,
         "case_reference": payload.case_reference,
-        "created_at": datetime.now(timezone.utc),
+        "created_at": datetime.utcnow(),
     }
 
 @router.post("/compliance/key-dates/pre-action")
@@ -121,5 +121,5 @@ async def create_pre_action(
         "description": payload.description,
         "deadline": payload.deadline,
         "status": payload.status,
-        "created_at": datetime.now(timezone.utc),
+        "created_at": datetime.utcnow(),
     }
