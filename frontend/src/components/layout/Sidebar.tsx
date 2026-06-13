@@ -75,6 +75,9 @@ const primaryItems: MenuItem[] = [
   { label: 'Compliance Scan', icon: <Scan size={18} />, href: '/compliance-scan', minRole: 30 },
   { label: 'Breach Log', icon: <Shield size={18} />, href: '/breaches' },
   { label: 'Reconciliation', icon: <Calculator size={18} />, href: '/reconciliation' },
+  // Undertakings sits directly under Reconciliation — both are COFA-owned
+  // financial-compliance tasks the same person works day to day.
+  { label: 'Undertakings', icon: <ScrollText size={18} />, href: '/undertakings' },
 ];
 
 // ── "More" items (collapsible) ──
@@ -87,9 +90,8 @@ const moreItems: MenuItem[] = [
   { label: 'Regulatory Updates', icon: <AlertCircle size={18} />, href: '/regulatory' },
   { label: 'AML / CDD', icon: <Fingerprint size={18} />, href: '/aml' },
   { label: 'Conflict Check', icon: <Search size={18} />, href: '/conflicts' },
-  { label: 'Matter Compliance Review', icon: <Clipboard size={18} />, href: '/matters' },
+  { label: 'File Review', icon: <Clipboard size={18} />, href: '/matters' },
   { label: 'Compliance Deadlines', icon: <Calendar size={18} />, href: '/deadlines' },
-  { label: 'Undertakings', icon: <ScrollText size={18} />, href: '/undertakings' },
   // Chasers now lives alongside Complaints (it chases complaint/intake follow-ups).
   { label: 'Complaints', icon: <MessageCircle size={18} />, href: '/complaints' },
   { label: 'Chasers', icon: <Zap size={18} />, href: '/chasers' },

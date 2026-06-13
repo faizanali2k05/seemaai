@@ -327,8 +327,8 @@ export default function MattersPage() {
   return (
     <div className="space-y-6 pb-12">
       <PageHeader
-        title="Matter Compliance Review"
-        description="AI-assisted compliance review across the firm's matters. Flags missing CDD, overdue checklist items, and regulatory gaps — synced from your PMS where connected."
+        title="File Review"
+        description="AI-assisted file review across the firm's matters. Flags missing CDD, overdue checklist items, and regulatory gaps — synced from your PMS where connected. Generate a per-matter File Review Form from any matter's checklist."
       />
 
       {error && (
@@ -388,6 +388,12 @@ export default function MattersPage() {
               <p className="text-sm text-gray-600 line-clamp-2">{selectedMatter.client_name}</p>
             </div>
             <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                onClick={() => downloadFileReviewForm(selectedMatter.id)}
+              >
+                File Review Form (PDF)
+              </Button>
               <Button
                 variant="destructive"
                 onClick={() => setConfirmClose(selectedMatter.id)}

@@ -171,6 +171,7 @@ from routers.ai import router as ai_router  # noqa: E402
 from routers.tier import router as tier_router  # noqa: E402
 from routers.sra_audit_pack import router as sra_audit_pack_router  # noqa: E402
 from routers.file_review import router as file_review_router  # noqa: E402
+from routers.reconciliation import router as reconciliation_router  # noqa: E402
 
 API_PREFIX = "/api"
 
@@ -207,6 +208,7 @@ app.include_router(ai_router, prefix=API_PREFIX)
 app.include_router(tier_router, prefix=API_PREFIX)
 app.include_router(sra_audit_pack_router, prefix=API_PREFIX)
 app.include_router(file_review_router, prefix=API_PREFIX)
+app.include_router(reconciliation_router, prefix=API_PREFIX)
 
 
 # ---------------------------------------------------------------------------

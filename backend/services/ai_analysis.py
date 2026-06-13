@@ -1437,3 +1437,200 @@ def _fallback_summary(data: dict) -> dict:
         "ai_generated": False,
         "generated_at": datetime.utcnow().isoformat(),
     }
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 7. RECONCILIATION — SRA ACCOUNTS RULES REPORT DRAFT
+# ═══════════════════════════════════════════════════════════════════
+
+RECONCILIATION_REPORT_SYSTEM_PROMPT = """You are Seema AI, a UK legal compliance expert specialising in the
+SRA Accounts Rules 2019 and client-account reconciliation for solicitors' firms.
+
+You are drafting the narrative reconciliation report that the COFA (Compliance
+Officer for Finance and Administration) reviews and signs. It records the
+firm's compliance with the SRA Accounts Rules for the period — in particular
+Rule 8.3 (reconciliation at least every five weeks, three-way agreement of
+bank statement, cashbook and client-ledger totals), Rule 5.1 (no residual
+client balances), and Rule 13 (six-year retention of records).
+
+Return ONLY the report as markdown. Do NOT wrap your response in JSON or code
+fences. Start directly with a markdown H1 title.
+
+The report MUST include, as clearly headed markdown sections:
+1. Period and scope (which client/designated accounts were reconciled)
+2. Three-way reconciliation result (whether bank, cashbook and client-ledger
+   totals agree; state the variance for each account)
+3. Exceptions and how they were resolved
+4. Aged / residual balances (Rule 5.1) and the action taken
+5. Breach assessment — whether any matter must be reported to the SRA, and a
+   clear statement if a Rule 8.3 breach has occurred (e.g. reconciliation late)
+6. COFA declaration block for sign-off
+
+Be specific to UK law and cite the relevant SRA Accounts Rule by number. Where
+a figure shows a non-zero variance or an aged residual, flag it explicitly as a
+compliance concern rather than glossing over it. Do not invent figures — work
+only from the data provided; if a figure is missing, say so."""
+
+
+def _reconciliation_context(reconciliation: dict) -> str:
+    """Build a plain-text block describing a reconciliation run for the prompt."""
+    accounts = reconciliation.get("accounts") or []
+    if isinstance(accounts, str):
+        try:
+            accounts = json.loads(accounts)
+        except (json.JSONDecodeError, TypeError):
+            accounts = []
+
+    acct_lines = []
+    for a in accounts:
+        acct_lines.append(
+            f"  - {a.get('name', 'Account')} ({a.get('number', 'n/a')}): "
+            f"bank {a.get('bank', 'n/a')}, cashbook {a.get('cashbook', 'n/a')}, "
+            f"ledger {a.get('ledger', 'n/a')}, variance {a.get('variance', 'n/a')}, "
+            f"status {a.get('status', 'n/a')}"
+        )
+    acct_block = "\n".join(acct_lines) if acct_lines else "  (no per-account lines recorded)"
+
+    return (
+        f"Period: {reconciliation.get('period_label') or reconciliation.get('period') or 'n/a'}\n"
+        f"Status: {reconciliation.get('status') or 'in_progress'}\n"
+        f"Current phase: {reconciliation.get('phase') or 'n/a'} of 8\n"
+        f"Client money held: {reconciliation.get('client_money_held') or 'n/a'}\n"
+        f"Total variance across in-scope accounts: {reconciliation.get('variance_total') or '0'}\n"
+        f"Open exceptions: {reconciliation.get('open_exceptions') or 0}\n"
+        f"Aged residual balances (Rule 5.1): {reconciliation.get('aged_residuals') or '0'}\n"
+        f"COFA notes: {reconciliation.get('notes') or '(none)'}\n"
+        f"\nIn-scope accounts:\n{acct_block}\n"
+    )
+
+
+async def draft_reconciliation_sra_report(reconciliation: dict, firm) -> dict:
+    """Draft the SRA Accounts Rules reconciliation report for a reconciliation run.
+
+    Args:
+        reconciliation: Serialized dict of the Reconciliation row (period_label,
+            status, phase, accounts, variance_total, open_exceptions,
+            aged_residuals, client_money_held, notes).
+        firm: Firm ORM object with profile data.
+
+    Returns:
+        dict with `title`, `content` (markdown), `ai_generated`, `model`,
+        `generated_at`. Falls back to a structured template when AI is
+        unavailable.
+    """
+    firm_context = _build_firm_context(firm)
+    recon_context = _reconciliation_context(reconciliation)
+
+    user_prompt = f"""Draft the client-account reconciliation report for this firm and period.
+
+--- FIRM PROFILE ---
+{firm_context}
+
+--- RECONCILIATION DATA ---
+{recon_context}
+
+--- INSTRUCTIONS ---
+Produce the COFA's narrative reconciliation report for this period as markdown.
+Assess three-way agreement, exceptions, aged balances, and whether any SRA
+report or breach record is required. Cite SRA Accounts Rules by number. Work
+only from the figures above — do not fabricate amounts."""
+
+    text = _call_claude(RECONCILIATION_REPORT_SYSTEM_PROMPT, user_prompt, max_tokens=4096)
+    if text is None:
+        return _fallback_reconciliation_report(reconciliation, firm)
+
+    content = text.strip()
+    if content.startswith("```"):
+        lines = content.split("\n")
+        lines = [l for l in lines if not l.strip().startswith("```")]
+        content = "\n".join(lines).strip()
+
+    derived_title = f"Client Account Reconciliation — {reconciliation.get('period_label') or 'Report'}"
+    for line in content.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            derived_title = stripped.lstrip("# ").strip()
+            break
+
+    return {
+        "title": derived_title,
+        "content": content,
+        "ai_generated": True,
+        "model": _ai_model,
+        "generated_at": datetime.utcnow().isoformat(),
+    }
+
+
+def _fallback_reconciliation_report(reconciliation: dict, firm) -> dict:
+    """Rule-based reconciliation report when AI is unavailable."""
+    period = reconciliation.get("period_label") or reconciliation.get("period") or "the current period"
+    firm_name = getattr(firm, "name", "the firm") if firm else "the firm"
+    cofa = getattr(firm, "cofa_name", None) if firm else None
+
+    try:
+        variance = float(reconciliation.get("variance_total") or 0)
+    except (TypeError, ValueError):
+        variance = 0.0
+    try:
+        aged = float(reconciliation.get("aged_residuals") or 0)
+    except (TypeError, ValueError):
+        aged = 0.0
+    exceptions = reconciliation.get("open_exceptions") or 0
+
+    variance_line = (
+        "All in-scope accounts reconciled to a **zero variance**; bank statement, "
+        "cashbook and client-ledger totals agree (three-way agreement satisfied "
+        "under SRA Accounts Rule 8.3)."
+        if variance == 0 else
+        f"A non-zero variance of **{variance:.2f}** remains across in-scope accounts. "
+        f"This MUST be investigated and cleared before COFA sign-off — a persisting "
+        f"variance is a breach of SRA Accounts Rule 8.3 (three-way agreement)."
+    )
+    aged_line = (
+        "No residual client balances were identified (SRA Accounts Rule 5.1 satisfied)."
+        if aged == 0 else
+        f"Aged residual balances totalling **{aged:.2f}** remain on the client ledger. "
+        f"Under SRA Accounts Rule 5.1 these must be returned promptly; document the "
+        f"tracing effort or charity-payment decision for each item."
+    )
+
+    content = f"""# Client Account Reconciliation — {period}
+
+## 1. Period and scope
+This report records the reconciliation of {firm_name}'s client and designated
+deposit accounts for {period}, prepared under the SRA Accounts Rules 2019.
+
+## 2. Three-way reconciliation result
+{variance_line}
+
+## 3. Exceptions
+{exceptions} exception(s) were identified during matching. Each unmatched item
+should be recorded with a documented reason (timing difference, bank charge,
+unidentified receipt, etc.) before sign-off.
+
+## 4. Aged / residual balances (Rule 5.1)
+{aged_line}
+
+## 5. Breach assessment
+The COFA must consider whether any matter in this period requires a report to
+the SRA under the Accounts Rules or a record in the firm's breach register —
+for example a reconciliation completed later than the five-weekly maximum
+(Rule 8.3) or a shortfall on the client account.
+
+## 6. COFA declaration
+I, {cofa or '[COFA name]'}, COFA of {firm_name}, confirm that I have reviewed
+this reconciliation for {period} and that, to the best of my knowledge, the
+records are accurate and the requirements of the SRA Accounts Rules have been
+met for the in-scope accounts.
+
+---
+*Generated without AI (no provider configured) — verify every figure against
+the working papers before relying on this draft. Records must be retained for
+six years (SRA Accounts Rule 13).*"""
+
+    return {
+        "title": f"Client Account Reconciliation — {period}",
+        "content": content,
+        "ai_generated": False,
+        "generated_at": datetime.utcnow().isoformat(),
+    }
