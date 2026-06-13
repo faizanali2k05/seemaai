@@ -27,6 +27,8 @@ import {
   Plus,
   Eye,
   ChevronRight,
+  Check,
+  X,
 } from 'lucide-react';
 
 interface ComplaintStats {
@@ -370,7 +372,12 @@ export default function ComplaintsPage() {
       header: 'Acknowledged',
       accessor: 'acknowledged_date',
       sortable: true,
-      render: (value: string) => (value ? '✓' : '✗'),
+      render: (value: string) =>
+        value ? (
+          <Check className="h-4 w-4 text-green-600" />
+        ) : (
+          <X className="h-4 w-4 text-gray-400" />
+        ),
     },
     {
       header: 'Status',

@@ -119,11 +119,17 @@ class ApiClient {
             return Promise.reject(error);
           }
 
-          // Attempt token refresh
+          // Attempt token refresh.
+          // NOTE: the backend /auth/refresh returns snake_case
+          // (access_token / refresh_token), not camelCase. Reading the wrong
+          // case here is what silently broke every refresh and logged users
+          // out the moment their access token expired. Accept both shapes.
           return this.client
             .post('/auth/refresh', { refresh_token: refreshToken })
             .then((res) => {
-              const { accessToken, refreshToken: newRefreshToken } = res.data?.data || res.data || {};
+              const body = res.data?.data || res.data || {};
+              const accessToken = body.access_token || body.accessToken;
+              const newRefreshToken = body.refresh_token || body.refreshToken;
 
               if (accessToken) {
                 localStorage.setItem('accessToken', accessToken);

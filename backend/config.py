@@ -19,14 +19,20 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: str = "redis://redis:6379/0"
 
+    # Onboarding — when False (default) a new firm starts with a clean slate
+    # (no sample compliance checks/alerts/tasks). Real data then comes from
+    # Clio sync and the firm's own entries. Set AUTO_SEED_FIRMS=true to seed a
+    # starter SRA compliance framework on first login.
+    AUTO_SEED_FIRMS: bool = False
+
     # Auth — JWT_SECRET_KEY has NO default. The app refuses to start if the
     # env var is missing in production (see get_settings() below). In dev a
     # fallback is generated per-process so local boot still works without a
     # `.env` file — but those tokens won't validate after restart.
     JWT_SECRET_KEY: str = ""
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
     # CORS
     CORS_ORIGINS: list[str] = [
@@ -36,7 +42,15 @@ class Settings(BaseSettings):
     ]
 
     # AI (optional — gracefully degrades without it)
+    # AI_PROVIDER selects the backend: "openai" or "anthropic". When set to
+    # "openai" (and OPENAI_API_KEY is present) the AI service uses OpenAI;
+    # otherwise it falls back to Anthropic if ANTHROPIC_API_KEY is set, and to
+    # rule-based responses if neither key is configured.
+    AI_PROVIDER: str = "openai"
+    OPENAI_API_KEY: str = ""
+    OPENAI_MODEL: str = "gpt-4o"
     ANTHROPIC_API_KEY: str = ""
+    AI_MODEL: str = "claude-sonnet-4-6"
 
     # Email (optional — logs emails in dev mode without it)
     SENDGRID_API_KEY: str = ""

@@ -22,6 +22,9 @@ x-backend-env: &backend-env
   JWT_SECRET_KEY: ${JWT_SECRET_KEY}
   CORS_ORIGINS: '["https://${DOMAIN:-app.seemaai.co.uk}","http://localhost:3000"]'
   # --- AI (required) ---
+  AI_PROVIDER: ${AI_PROVIDER:-openai}
+  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+  OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o}
   ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
   # --- Clio PMS (required for integration) ---
   CLIO_CLIENT_ID: ${CLIO_CLIENT_ID:-}

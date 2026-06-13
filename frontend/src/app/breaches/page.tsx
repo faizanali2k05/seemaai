@@ -13,7 +13,7 @@ import {
   ConfirmDialog,
   LoadingSpinner,
 } from '@/components/ui';
-import { Download, ChevronRight, Clock, AlertTriangle, Copy, FileText } from 'lucide-react';
+import { Download, ChevronRight, Clock, AlertTriangle, Copy, FileText, Check, X } from 'lucide-react';
 import { useRequireAuth } from '@/lib/hooks';
 import { formatDate } from '@/lib/utils/format';
 import apiClient from '@/lib/api';
@@ -253,6 +253,7 @@ function IcoCountdownWidget({ breach, nowMs, onDraft, compact = false }: IcoCoun
 export default function BreachesPage() {
   useRequireAuth();
   const [breaches, setBreaches] = useState<Breach[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedBreach, setSelectedBreach] = useState<Breach | null>(null);
   const [showReportModal, setShowReportModal] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<{ [key: string]: string }>({});
@@ -786,7 +787,12 @@ export default function BreachesPage() {
     {
       accessor: 'notification_status',
       header: 'NOTIFIED',
-      render: (_value: any, row: any) => (row.notification_status === 'notified' ? '✓ Yes' : '✗ No'),
+      render: (_value: any, row: any) =>
+        row.notification_status === 'notified' ? (
+          <span className="inline-flex items-center gap-1 text-green-600"><Check className="h-4 w-4" /> Yes</span>
+        ) : (
+          <span className="inline-flex items-center gap-1 text-gray-400"><X className="h-4 w-4" /> No</span>
+        ),
     },
     {
       accessor: 'id',
@@ -866,6 +872,43 @@ export default function BreachesPage() {
         </div>
       )}
 
+      {/* Status filter tabs */}
+      {(() => {
+        const norm = (s: string) => (s || '').toLowerCase();
+        const statusOptions = Array.from(
+          new Set(breaches.map((b) => norm(b.status)).filter(Boolean))
+        );
+        const tabs = [
+          { id: 'all', label: 'All', count: breaches.length },
+          ...statusOptions.map((s) => ({
+            id: s,
+            label: s.charAt(0).toUpperCase() + s.slice(1),
+            count: breaches.filter((b) => norm(b.status) === s).length,
+          })),
+        ];
+        if (tabs.length <= 1) return null;
+        return (
+          <div className="flex gap-1 border-b border-gray-200 overflow-x-auto">
+            {tabs.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setStatusFilter(t.id)}
+                className={`px-3.5 py-2 text-sm whitespace-nowrap border-b-2 -mb-px transition-colors flex items-center gap-2 ${
+                  statusFilter === t.id
+                    ? 'border-seema-primary text-seema-primary font-semibold'
+                    : 'border-transparent text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                {t.label}
+                <span className="text-[11px] bg-gray-100 text-gray-600 rounded-full px-2 py-0.5 font-semibold">
+                  {t.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        );
+      })()}
+
       <Card className="rounded-xl">
         <div className="p-6 space-y-4">
           <div className="flex justify-end gap-3 border-b pb-4">
@@ -876,18 +919,27 @@ export default function BreachesPage() {
             <Button onClick={() => setShowReportModal(true)} className="rounded-xl">Report Breach</Button>
           </div>
 
-          {breaches.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No breaches found. Click "Report Breach" to create one.
-            </div>
-          ) : (
-            <DataTable
-              columns={columns}
-              data={breaches}
-              onRowClick={(row) => setSelectedBreach(row as Breach)}
-              className="group hover:bg-gray-50 transition-colors"
-            />
-          )}
+          {(() => {
+            const visible =
+              statusFilter === 'all'
+                ? breaches
+                : breaches.filter((b) => (b.status || '').toLowerCase() === statusFilter);
+            if (breaches.length === 0) {
+              return (
+                <div className="text-center py-8 text-gray-500">
+                  No breaches found. Click "Report Breach" to create one.
+                </div>
+              );
+            }
+            return (
+              <DataTable
+                columns={columns}
+                data={visible}
+                onRowClick={(row) => setSelectedBreach(row as Breach)}
+                className="group hover:bg-gray-50 transition-colors"
+              />
+            );
+          })()}
         </div>
       </Card>
 
@@ -983,7 +1035,11 @@ export default function BreachesPage() {
 
                 {/* ICO Notification Assessment */}
                 <div className={`p-3 rounded-lg border ${breachAnalysis[selectedBreach.id].ico_notification_required ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
-                  <p className="text-xs uppercase tracking-wide font-bold mb-1">{breachAnalysis[selectedBreach.id].ico_notification_required ? '⚠ ICO Notification Required' : '✓ ICO Notification Not Required'}</p>
+                  <p className="text-xs uppercase tracking-wide font-bold mb-1 inline-flex items-center gap-1.5">
+                    {breachAnalysis[selectedBreach.id].ico_notification_required
+                      ? (<><AlertTriangle className="h-4 w-4 text-red-600" /> ICO Notification Required</>)
+                      : (<><Check className="h-4 w-4 text-green-600" /> ICO Notification Not Required</>)}
+                  </p>
                   <p className="text-sm text-gray-700">{breachAnalysis[selectedBreach.id].ico_notification_reasoning}</p>
                 </div>
 

@@ -17,7 +17,12 @@ import logging
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 
-from services.ai_analysis import _get_client, _ai_model, _parse_json_response, _build_firm_context
+from services.ai_analysis import (
+    _call_ai_messages,
+    _parse_json_response,
+    _build_firm_context,
+    get_active_model,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -164,10 +169,6 @@ async def ask_compliance_question(
     Returns:
         dict with structured answer.
     """
-    client = _get_client()
-    if client is None:
-        return _fallback_answer(question)
-
     firm_context = _build_firm_context(firm)
 
     # Gather compliance data if DB provided
@@ -203,16 +204,12 @@ Return valid JSON only."""
     messages.append({"role": "user", "content": user_content})
 
     try:
-        response = client.messages.create(
-            model=_ai_model,
-            max_tokens=2048,
-            system=KNOWLEDGE_SYSTEM_PROMPT,
-            messages=messages,
-        )
-        text = response.content[0].text
+        text = _call_ai_messages(KNOWLEDGE_SYSTEM_PROMPT, messages, max_tokens=2048)
+        if not text:
+            return _fallback_answer(question)
         result = _parse_json_response(text)
         result["ai_generated"] = True
-        result["model"] = _ai_model
+        result["model"] = get_active_model()
         result["question"] = question
         result["answered_at"] = datetime.utcnow().isoformat()
         return result

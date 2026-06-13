@@ -63,12 +63,8 @@ export default function LoginPage() {
 
       toast.success('Welcome back');
 
-      const onboardingStatus = user?.onboarding_status;
-      if (onboardingStatus && onboardingStatus !== 'complete') {
-        router.push('/onboarding');
-      } else {
-        router.push('/dashboard');
-      }
+      // Always land on the dashboard after login.
+      router.push('/dashboard');
     } catch (err: any) {
       const message =
         err?.response?.data?.detail || err?.message || 'Login failed. Please try again.';
@@ -102,38 +98,6 @@ export default function LoginPage() {
             <p className="mt-2 text-seema-text-secondary">
               Welcome back. Sign in to manage your firm's compliance.
             </p>
-          </div>
-
-          {/* SSO buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-            <button
-              type="button"
-              disabled={isLoading}
-              onClick={() => toast('SSO coming soon')}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-seema-text-primary hover:bg-gray-50 hover:border-gray-300 transition-colors disabled:opacity-50"
-            >
-              <GoogleIcon />
-              Google
-            </button>
-            <button
-              type="button"
-              disabled={isLoading}
-              onClick={() => toast('SSO coming soon')}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-seema-text-primary hover:bg-gray-50 hover:border-gray-300 transition-colors disabled:opacity-50"
-            >
-              <MicrosoftIcon />
-              Microsoft
-            </button>
-          </div>
-
-          {/* Divider */}
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase tracking-wider">
-              <span className="bg-white px-3 text-seema-text-muted">or sign in with email</span>
-            </div>
           </div>
 
           {error && (
@@ -351,29 +315,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  );
-}
-
-/* ---------- Inline brand icons ---------- */
-
-function GoogleIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="#EA4335"
-        d="M12 10.2v3.84h5.36c-.23 1.39-1.66 4.08-5.36 4.08-3.23 0-5.86-2.67-5.86-5.96s2.63-5.96 5.86-5.96c1.84 0 3.07.78 3.78 1.46l2.58-2.49C16.74 3.62 14.6 2.7 12 2.7 6.94 2.7 2.84 6.8 2.84 11.86s4.1 9.16 9.16 9.16c5.29 0 8.79-3.72 8.79-8.95 0-.6-.07-1.06-.15-1.51H12z"
-      />
-    </svg>
-  );
-}
-
-function MicrosoftIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="#F25022" d="M2 2h9.5v9.5H2z" />
-      <path fill="#7FBA00" d="M12.5 2H22v9.5h-9.5z" />
-      <path fill="#00A4EF" d="M2 12.5h9.5V22H2z" />
-      <path fill="#FFB900" d="M12.5 12.5H22V22h-9.5z" />
-    </svg>
   );
 }

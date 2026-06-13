@@ -286,6 +286,27 @@ export default function MattersPage() {
     }
   };
 
+  const downloadFileReviewForm = async (matterId?: string) => {
+    try {
+      const url = matterId
+        ? `/compliance/matters/${matterId}/file-review-form`
+        : '/compliance/file-review-form/blank';
+      const res = await apiClient.get(url, { responseType: 'blob' });
+      const blobUrl = window.URL.createObjectURL(
+        new Blob([res.data], { type: 'application/pdf' })
+      );
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = 'File-Review-Form.pdf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err: any) {
+      showToast('Could not generate the File Review Form', 'error');
+    }
+  };
+
   const handleCompleteItem = async (itemId: string) => {
     try {
       await apiClient.post(`/compliance/matter-items/${itemId}/complete`);
@@ -333,9 +354,14 @@ export default function MattersPage() {
             activeTab={activeTab}
             onChange={(value) => setActiveTab(value as MatterType)}
           />
-          <Button onClick={() => setShowCreateModal(true)}>
-            Create Checklist
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={() => downloadFileReviewForm()}>
+              File Review Form (PDF)
+            </Button>
+            <Button onClick={() => setShowCreateModal(true)}>
+              Create Checklist
+            </Button>
+          </div>
         </div>
 
         <div className="p-6 border-b border-gray-100">

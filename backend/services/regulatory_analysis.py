@@ -168,25 +168,24 @@ def interpret(session: Session, update_id: str, firm_id: str) -> dict:
         subscription_tier=firm.subscription_tier or "essentials",
     )
 
-    # Call the Anthropic API
-    if not settings.ANTHROPIC_API_KEY:
-        # No API key — produce a fallback interpretation
+    # Call the active AI provider (OpenAI or Anthropic — see services.ai_analysis).
+    from services.ai_analysis import _call_ai, get_active_model
+    if _call_ai is None or get_active_model() is None:
+        # No AI provider configured — produce a fallback interpretation
         return _fallback_interpretation(session, interp, update)
 
     try:
-        import anthropic
-        client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-
         start_time = time.time()
-        response = client.messages.create(
-            model="claude-sonnet-4-5-20250929",
+        raw_text = _call_ai(
+            "You are a UK legal compliance analyst. Return valid JSON only.",
+            prompt,
             max_tokens=1024,
-            messages=[{"role": "user", "content": prompt}],
         )
         elapsed_ms = int((time.time() - start_time) * 1000)
 
-        # Parse the response
-        raw_text = response.content[0].text.strip()
+        if not raw_text:
+            return _fallback_interpretation(session, interp, update)
+        raw_text = raw_text.strip()
 
         # Strip markdown fences if present
         if raw_text.startswith("```"):
@@ -205,9 +204,7 @@ def interpret(session: Session, update_id: str, firm_id: str) -> dict:
         interp.source_citation = data.get("source_citation", "")
         interp.confidence_score = float(data.get("confidence_score", 0.5))
         interp.confidence_label = data.get("confidence_label", "medium")
-        interp.model_used = "claude-sonnet-4-5-20250929"
-        interp.prompt_tokens = response.usage.input_tokens
-        interp.completion_tokens = response.usage.output_tokens
+        interp.model_used = get_active_model()
         interp.processing_time_ms = elapsed_ms
         interp.status = "completed"
 

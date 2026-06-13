@@ -72,9 +72,9 @@ const getUserRoleLevel = (role: string): number => {
 // inspection pack is occasional (every 5–10 years), not daily.
 const primaryItems: MenuItem[] = [
   { label: 'Dashboard', icon: <LayoutDashboard size={18} />, href: '/dashboard' },
-  { label: 'Regulatory Updates', icon: <AlertCircle size={18} />, href: '/regulatory' },
-  { label: 'AML / CDD', icon: <Fingerprint size={18} />, href: '/aml' },
-  { label: 'Chasers', icon: <Zap size={18} />, href: '/chasers' },
+  { label: 'Compliance Scan', icon: <Scan size={18} />, href: '/compliance-scan', minRole: 30 },
+  { label: 'Breach Log', icon: <Shield size={18} />, href: '/breaches' },
+  { label: 'Reconciliation', icon: <Calculator size={18} />, href: '/reconciliation' },
 ];
 
 // ── "More" items (collapsible) ──
@@ -84,13 +84,15 @@ const primaryItems: MenuItem[] = [
 // Admin pages (Settings, Data Management, User Management, Audit Trail) are
 // grouped at the end with a header for visual separation.
 const moreItems: MenuItem[] = [
+  { label: 'Regulatory Updates', icon: <AlertCircle size={18} />, href: '/regulatory' },
+  { label: 'AML / CDD', icon: <Fingerprint size={18} />, href: '/aml' },
   { label: 'Conflict Check', icon: <Search size={18} />, href: '/conflicts' },
   { label: 'Matter Compliance Review', icon: <Clipboard size={18} />, href: '/matters' },
   { label: 'Compliance Deadlines', icon: <Calendar size={18} />, href: '/deadlines' },
   { label: 'Undertakings', icon: <ScrollText size={18} />, href: '/undertakings' },
-  { label: 'Compliance Scan', icon: <Scan size={18} />, href: '/compliance-scan', minRole: 30 },
+  // Chasers now lives alongside Complaints (it chases complaint/intake follow-ups).
   { label: 'Complaints', icon: <MessageCircle size={18} />, href: '/complaints' },
-  { label: 'Breach Log', icon: <Shield size={18} />, href: '/breaches' },
+  { label: 'Chasers', icon: <Zap size={18} />, href: '/chasers' },
   { label: 'Remediation', icon: <RotateCcw size={18} />, href: '/remediation' },
   { label: 'Policies', icon: <FileText size={18} />, href: '/policies' },
   { label: 'Alerts', icon: <AlertCircle size={18} />, href: '/alerts' },
@@ -128,7 +130,9 @@ const labItems: MenuItem[] = [
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(true);
+  // Start closed on mobile so the drawer doesn't cover the page on load.
+  // On desktop the sidebar is always shown via the `lg:translate-x-0` class.
+  const [isOpen, setIsOpen] = useState(false);
   const [moreExpanded, setMoreExpanded] = useState(false);
   const [labExpanded, setLabExpanded] = useState(false);
   // Read once on mount — toggling this in Settings reloads the page.
@@ -207,7 +211,9 @@ export default function Sidebar() {
         <nav className="flex-1 overflow-y-auto py-4 px-3">
           {/* ── Primary items ── */}
           <div className="space-y-1 mb-4">
-            {primaryItems.map((item) => {
+            {primaryItems
+              .filter(item => userLevel >= (item.minRole || 0))
+              .map((item) => {
               const isActive = isMenuItemActive(item.href);
               return (
                 <Link
@@ -348,9 +354,20 @@ export default function Sidebar() {
         {/* User section */}
         {!isLoading && user && (
           <div className="border-t border-seema-sidebar-hover p-4">
-            <div className="px-4 py-3 bg-seema-sidebar-hover rounded-lg mb-4">
-              <p className="text-sm font-semibold text-white">{user.name}</p>
-            </div>
+            {/* Firm profile — clickable card that opens the firm settings page */}
+            <Link
+              href="/settings"
+              onClick={() => setIsOpen(false)}
+              className="block px-4 py-3 bg-seema-sidebar-hover rounded-lg mb-3 hover:bg-seema-sidebar-active transition-colors"
+            >
+              <p className="text-sm font-semibold text-white truncate">
+                {(user as any).firm_name || (user as any).name || 'My firm'}
+              </p>
+              <p className="text-xs text-gray-400 truncate">{user.email}</p>
+              <p className="text-[11px] text-indigo-300 mt-1 flex items-center gap-1">
+                <Settings size={12} /> View firm profile
+              </p>
+            </Link>
 
             <button
               onClick={handleLogout}

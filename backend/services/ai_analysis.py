@@ -19,47 +19,76 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 # ── Lazy client initialisation ─────────────────────────────────────
+# Provider-agnostic: the service prefers OpenAI when AI_PROVIDER=openai and an
+# OPENAI_API_KEY is set, and falls back to Anthropic, then to rule-based
+# responses. All call sites go through `_call_ai()` so the rest of the file is
+# unaffected by which provider is active. (`_call_claude` kept as an alias.)
 _client = None
 _ai_model = None
+_ai_provider = None
 
 
 def _get_client():
-    """Lazily initialise the Anthropic client."""
-    global _client, _ai_model
+    """Lazily initialise the AI client (OpenAI or Anthropic)."""
+    global _client, _ai_model, _ai_provider
     if _client is not None:
         return _client
 
     from config import get_settings
     settings = get_settings()
 
-    if not settings.ANTHROPIC_API_KEY:
-        logger.warning("ANTHROPIC_API_KEY not set — AI features will return fallback responses")
-        return None
+    provider = (getattr(settings, "AI_PROVIDER", "openai") or "openai").lower()
 
-    try:
-        from anthropic import Anthropic
-        _client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-        # Model overridable via AI_MODEL env var. The previous default
-        # (`claude-sonnet-4-20250514`) was deprecated upstream; current model
-        # ids are `claude-sonnet-4-6`, `claude-opus-4-6`, `claude-haiku-4-5-20251001`.
-        _ai_model = getattr(settings, "AI_MODEL", "claude-sonnet-4-6")
-        logger.info("Anthropic client initialised (model: %s)", _ai_model)
-        return _client
-    except ImportError:
-        logger.error("anthropic package not installed — pip install anthropic")
-        return None
-    except Exception as e:
-        logger.error("Failed to initialise Anthropic client: %s", e)
-        return None
+    # ── OpenAI ──
+    if provider == "openai" and settings.OPENAI_API_KEY:
+        try:
+            from openai import OpenAI
+            _client = OpenAI(api_key=settings.OPENAI_API_KEY)
+            _ai_model = getattr(settings, "OPENAI_MODEL", "gpt-4o")
+            _ai_provider = "openai"
+            logger.info("OpenAI client initialised (model: %s)", _ai_model)
+            return _client
+        except ImportError:
+            logger.error("openai package not installed — pip install openai")
+        except Exception as e:
+            logger.error("Failed to initialise OpenAI client: %s", e)
+
+    # ── Anthropic (fallback) ──
+    if settings.ANTHROPIC_API_KEY:
+        try:
+            from anthropic import Anthropic
+            _client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+            _ai_model = getattr(settings, "AI_MODEL", "claude-sonnet-4-6")
+            _ai_provider = "anthropic"
+            logger.info("Anthropic client initialised (model: %s)", _ai_model)
+            return _client
+        except ImportError:
+            logger.error("anthropic package not installed — pip install anthropic")
+        except Exception as e:
+            logger.error("Failed to initialise Anthropic client: %s", e)
+
+    logger.warning("No AI provider configured — AI features will return fallback responses")
+    return None
 
 
-def _call_claude(system_prompt: str, user_prompt: str, max_tokens: int = 2048) -> Optional[str]:
-    """Send a message to Claude and return the text response."""
+def _call_ai(system_prompt: str, user_prompt: str, max_tokens: int = 2048) -> Optional[str]:
+    """Send a prompt to the active AI provider and return the text response."""
     client = _get_client()
     if client is None:
         return None
 
     try:
+        if _ai_provider == "openai":
+            response = client.chat.completions.create(
+                model=_ai_model,
+                max_tokens=max_tokens,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+            )
+            return response.choices[0].message.content
+        # Anthropic
         response = client.messages.create(
             model=_ai_model,
             max_tokens=max_tokens,
@@ -68,8 +97,48 @@ def _call_claude(system_prompt: str, user_prompt: str, max_tokens: int = 2048) -
         )
         return response.content[0].text
     except Exception as e:
-        logger.error("Claude API call failed: %s", e)
+        logger.error("AI API call failed (%s): %s", _ai_provider, e)
         return None
+
+
+# Backwards-compatible alias — existing call sites use `_call_claude`.
+_call_claude = _call_ai
+
+
+def _call_ai_messages(system_prompt: str, messages: list, max_tokens: int = 2048) -> Optional[str]:
+    """Multi-turn variant of _call_ai. `messages` is a list of
+    {"role": "user"|"assistant", "content": str}. The system prompt is applied
+    in the way each provider expects."""
+    client = _get_client()
+    if client is None:
+        return None
+
+    try:
+        if _ai_provider == "openai":
+            response = client.chat.completions.create(
+                model=_ai_model,
+                max_tokens=max_tokens,
+                messages=[{"role": "system", "content": system_prompt}, *messages],
+            )
+            return response.choices[0].message.content
+        # Anthropic
+        response = client.messages.create(
+            model=_ai_model,
+            max_tokens=max_tokens,
+            system=system_prompt,
+            messages=messages,
+        )
+        return response.content[0].text
+    except Exception as e:
+        logger.error("AI API call failed (%s): %s", _ai_provider, e)
+        return None
+
+
+def get_active_model() -> Optional[str]:
+    """Return the active model id (initialising the client if needed)."""
+    if _client is None:
+        _get_client()
+    return _ai_model
 
 
 def _parse_json_response(text: str) -> dict:

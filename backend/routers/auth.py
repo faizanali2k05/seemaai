@@ -214,12 +214,16 @@ async def login(req: LoginRequest, request: Request, db: AsyncSession = Depends(
     firm_result = await db.execute(select(Firm).where(Firm.id == user.firm_id))
     firm = firm_result.scalar_one_or_none()
 
-    # Auto-seed compliance data for firm on first login (idempotent — skips if already seeded)
-    try:
-        async with db.begin_nested():
-            await seed_firm_compliance(db, user.firm_id)
-    except Exception as e:
-        logging.getLogger("seema").warning(f"Auto-seed skipped for firm {user.firm_id}: {e}")
+    # Auto-seed a starter compliance framework on first login — OFF by default
+    # so firms start with a clean slate and only see their real data (Clio sync
+    # + their own entries). Toggle with AUTO_SEED_FIRMS=true.
+    from config import get_settings as _gs
+    if _gs().AUTO_SEED_FIRMS:
+        try:
+            async with db.begin_nested():
+                await seed_firm_compliance(db, user.firm_id)
+        except Exception as e:
+            logging.getLogger("seema").warning(f"Auto-seed skipped for firm {user.firm_id}: {e}")
 
     return LoginResponse(
         access_token=access_token,

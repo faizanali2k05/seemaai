@@ -13,7 +13,7 @@ import {
   showToast,
   ConfirmDialog,
 } from '@/components/ui';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Check } from 'lucide-react';
 import { useRequireAuth } from '@/lib/hooks';
 import apiClient from '@/lib/api';
 import { formatDate, riskBadgeColor } from '@/lib/utils/format';
@@ -638,7 +638,7 @@ export default function IntakePage() {
                         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                         .join(' ')}
                     </span>
-                    {value && <span className="text-green-600">✓</span>}
+                    {value && <Check className="h-4 w-4 text-green-600" />}
                   </label>
                 ))}
               </div>

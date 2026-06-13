@@ -5,7 +5,7 @@ import { PageHeader, Card, Button, Modal, Tabs, EmptyState, showToast, ConfirmDi
 import { useRequireAuth } from '@/lib/hooks';
 import { formatDate } from '@/lib/utils/format';
 import apiClient from '@/lib/api';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Check } from 'lucide-react';
 import { SraReturnStepperModal } from './SraReturnStepperModal';
 
 interface Section {
@@ -330,7 +330,7 @@ export default function SraReturnPage() {
                       <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                         section.complete ? 'border-green-600 bg-green-600' : 'border-yellow-600'
                       }`}>
-                        {section.complete && <span className="text-white text-sm">✓</span>}
+                        {section.complete && <Check className="h-3.5 w-3.5 text-white" />}
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">{section.name}</h3>

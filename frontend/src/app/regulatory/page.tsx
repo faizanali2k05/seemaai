@@ -539,13 +539,11 @@ function ApplicabilityBadgeInline({ interp }: { interp: Interpretation }) {
     maybe: 'bg-amber-50 border-amber-200 text-amber-700',
   };
 
-  const checkMark = effectiveApplicability === 'yes' ? '✓' : effectiveApplicability === 'no' ? '✗' : '?';
-
   return (
     <div className="flex items-center gap-2 flex-wrap">
       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${badgeMap[effectiveApplicability] || badgeMap.maybe}`}>
         <Icon className="w-3.5 h-3.5" />
-        {checkMark} {config.label}
+        {config.label}
       </span>
       <span className="text-[11px] text-gray-400">
         Confidence: <span className={`font-medium ${pct >= 80 ? 'text-green-600' : pct >= 50 ? 'text-amber-600' : 'text-red-500'}`}>{interp.confidence_label} ({pct}%)</span>
