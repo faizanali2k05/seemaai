@@ -15,6 +15,7 @@ from .regulatory import (
     RegulatoryInterpretation,
     SRAReturnResponse,
     SRAReturnFinalisation,
+    RegulatoryAcknowledgement,
 )
 from .aml import CDDRecord, SARRecord
 from .breach import BreachReport
@@ -31,7 +32,7 @@ from .email import EmailTemplate, EmailQueueItem
 from .remediation import RemediationPlan
 from .data_mgmt import ImportHistory
 from .integrations import Integration, IntegrationSyncLog
-from .law import KeyDate, SupervisionRecord
+from .law import KeyDate, SupervisionRecord, SupervisionSession
 from .workflow import Deadline
 
 __all__ = [
@@ -52,6 +53,7 @@ __all__ = [
     'RegulatoryInterpretation',
     'SRAReturnResponse',
     'SRAReturnFinalisation',
+    'RegulatoryAcknowledgement',
     'CDDRecord',
     'SARRecord',
     'BreachReport',
@@ -74,5 +76,6 @@ __all__ = [
     'IntegrationSyncLog',
     'KeyDate',
     'SupervisionRecord',
+    'SupervisionSession',
     'Deadline',
 ]

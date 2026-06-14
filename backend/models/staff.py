@@ -45,4 +45,7 @@ class StaffTraining(Base):
     completed_at = Column(DateTime)
     certificate_ref = Column(String(100))
     cpd_hours = Column(Integer)
+    # CPD continuing-competence fields (added in migration 0004)
+    cpd_category = Column(String(50))      # regulatory, technical, ethics, business_skills, other
+    reflection_notes = Column(Text)        # SRA requires reflection, not just hours
     created_at = Column(DateTime, server_default=func.now())

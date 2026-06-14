@@ -99,3 +99,16 @@ class SRAReturnFinalisation(Base):
     finalised_by = Column(String(36), ForeignKey("user_accounts.id"))
     finalised_at = Column(DateTime, server_default=func.now())
     summary_json = Column(Text)
+
+
+class RegulatoryAcknowledgement(Base):
+    """A staff member's 'read & understood' acknowledgement of a regulatory
+    update (firm-scoped read-tracking). Created by migration 0004."""
+    __tablename__ = "regulatory_acknowledgements"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    firm_id = Column(String(36), nullable=False, index=True)
+    update_id = Column(String(36), nullable=False, index=True)  # regulatory_updates.id
+    user_id = Column(String(36))
+    staff_name = Column(String(255))
+    acknowledged_at = Column(DateTime, server_default=func.now())

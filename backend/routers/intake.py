@@ -13,6 +13,44 @@ from models.intake import ClientIntake
 
 router = APIRouter()
 
+
+class _AssessIntakeBody(BaseModel):
+    risk_assessment: str
+    notes: str | None = None
+
+
+@router.post("/compliance/intake/{intake_id}/assess")
+async def assess_intake(
+    intake_id: str,
+    body: _AssessIntakeBody,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """Record a CDD risk assessment on an intake (was 404)."""
+    res = await db.execute(
+        select(ClientIntake).where(
+            ClientIntake.id == intake_id,
+            ClientIntake.firm_id == current_user.firm_id,
+        )
+    )
+    intake = res.scalar_one_or_none()
+    if not intake:
+        raise HTTPException(status_code=404, detail="Intake not found")
+    intake.risk_level = body.risk_assessment
+    intake.risk_score = {"low": 20, "medium": 50, "high": 80}.get(body.risk_assessment, 50)
+    intake.status = "reviewed"
+    intake.cdd_status = "assessed"
+    if body.notes:
+        intake.conflict_check_details = body.notes
+    await db.flush()
+    await log_audit(
+        db=db, firm_id=current_user.firm_id, action="assessed",
+        entity_type="client_intake", entity_id=intake.id, user_id=current_user.user_id,
+        details=f"Risk assessed as {body.risk_assessment}",
+    )
+    return {"id": intake.id, "risk_level": intake.risk_level,
+            "risk_score": intake.risk_score, "status": intake.status}
+
 class CreateIntakeRequest(BaseModel):
     client_name: str
     client_email: str | None = None

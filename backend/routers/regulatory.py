@@ -1,5 +1,6 @@
 """Regulatory updates endpoints — feed, interpretation, history, acknowledgement, override."""
 import json
+import uuid
 import logging
 from datetime import datetime
 from typing import Optional, List
@@ -10,7 +11,8 @@ from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from middleware.tenant_rls import tenant_db_from_jwt, bypass_db
-from middleware.auth import get_current_user
+from middleware.auth import get_current_user, CurrentUser
+from services.audit_logger import log_audit
 
 logger = logging.getLogger(__name__)
 # NOTE: no prefix here — every route in this file already starts with
@@ -18,6 +20,83 @@ logger = logging.getLogger(__name__)
 # so `/compliance/regulatory-updates` becomes `/api/compliance/regulatory-updates`.
 # Adding `prefix="/compliance"` here double-prefixed every route.
 router = APIRouter(tags=["regulatory"])
+
+
+@router.get("/compliance/regulatory-updates/{update_id}/acknowledgements")
+async def get_update_acknowledgements(
+    update_id: str,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """Staff read-tracking for a regulatory update (was 404)."""
+    from models.staff import StaffMember
+    from models.regulatory import RegulatoryAcknowledgement
+
+    acks = (await db.execute(
+        select(RegulatoryAcknowledgement).where(
+            RegulatoryAcknowledgement.firm_id == current_user.firm_id,
+            RegulatoryAcknowledgement.update_id == update_id,
+        )
+    )).scalars().all()
+    staff = (await db.execute(
+        select(StaffMember).where(
+            StaffMember.firm_id == current_user.firm_id,
+            StaffMember.status == "active",
+        )
+    )).scalars().all()
+    ack_names = {a.staff_name for a in acks if a.staff_name}
+    acknowledged = [
+        {"id": a.user_id or a.id, "name": a.staff_name or "Staff",
+         "acknowledged_at": a.acknowledged_at.isoformat() if a.acknowledged_at else None}
+        for a in acks
+    ]
+    pending = [
+        {"id": s.id, "name": s.name, "acknowledged_at": None}
+        for s in staff if (s.name or "") not in ack_names
+    ]
+    return {
+        "total_staff": max(len(staff), len(acknowledged)),
+        "acknowledged_count": len(acknowledged),
+        "acknowledged": acknowledged,
+        "pending": pending,
+    }
+
+
+@router.post("/compliance/regulatory-updates/{update_id}/acknowledge-staff")
+async def acknowledge_update_staff(
+    update_id: str,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """Current user marks a regulatory update as read (was 404)."""
+    from models.regulatory import RegulatoryAcknowledgement
+    from models.auth import UserAccount
+
+    existing = (await db.execute(
+        select(RegulatoryAcknowledgement).where(
+            RegulatoryAcknowledgement.firm_id == current_user.firm_id,
+            RegulatoryAcknowledgement.update_id == update_id,
+            RegulatoryAcknowledgement.user_id == current_user.user_id,
+        )
+    )).scalar_one_or_none()
+    if not existing:
+        ua = (await db.execute(
+            select(UserAccount).where(UserAccount.id == current_user.user_id)
+        )).scalar_one_or_none()
+        name = (getattr(ua, "full_name", None) or getattr(ua, "name", None)
+                or (ua.email if ua else None) or "Staff")
+        db.add(RegulatoryAcknowledgement(
+            id=str(uuid.uuid4()), firm_id=current_user.firm_id, update_id=update_id,
+            user_id=current_user.user_id, staff_name=name,
+        ))
+        await db.flush()
+        await log_audit(
+            db=db, firm_id=current_user.firm_id, action="acknowledged",
+            entity_type="regulatory_update", entity_id=update_id,
+            user_id=current_user.user_id, details="Marked regulatory update as read",
+        )
+    return {"acknowledged": True}
+
 
 # ── Request schemas ─────────────────────────────────────────────────────
 

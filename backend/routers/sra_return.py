@@ -11,8 +11,104 @@ from middleware.tenant_rls import tenant_db_from_jwt, bypass_db
 from middleware.auth import get_current_user, CurrentUser
 from services.audit_logger import log_audit
 from models.firm import Firm
+from models.regulatory import SRAReturnResponse, SRAReturnFinalisation
 
 router = APIRouter()
+
+
+class _SectionResponseBody(BaseModel):
+    status: str
+    value: str | None = None
+    notes: str | None = None
+
+
+@router.get("/compliance/sra-return/{return_year}/responses")
+async def get_sra_return_responses(
+    return_year: int,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """The firm's saved per-section answers for a return year (was 404)."""
+    res = await db.execute(
+        select(SRAReturnResponse).where(
+            SRAReturnResponse.firm_id == current_user.firm_id,
+            SRAReturnResponse.return_year == return_year,
+        )
+    )
+    return {"responses": [
+        {"section_key": r.section_key, "status": r.status, "value": r.value, "notes": r.notes}
+        for r in res.scalars().all()
+    ]}
+
+
+@router.put("/compliance/sra-return/{return_year}/responses/{section_key}")
+async def save_sra_return_response(
+    return_year: int,
+    section_key: str,
+    body: _SectionResponseBody,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """Upsert one section answer (accept/override/skip) for the return year."""
+    res = await db.execute(
+        select(SRAReturnResponse).where(
+            SRAReturnResponse.firm_id == current_user.firm_id,
+            SRAReturnResponse.return_year == return_year,
+            SRAReturnResponse.section_key == section_key,
+        )
+    )
+    row = res.scalar_one_or_none()
+    if row:
+        row.status, row.value, row.notes = body.status, body.value, body.notes
+        row.completed_by = current_user.user_id
+    else:
+        db.add(SRAReturnResponse(
+            id=str(uuid.uuid4()), firm_id=current_user.firm_id, return_year=return_year,
+            section_key=section_key, status=body.status, value=body.value, notes=body.notes,
+            completed_by=current_user.user_id,
+        ))
+    await db.flush()
+    await log_audit(
+        db=db, firm_id=current_user.firm_id, action="updated",
+        entity_type="sra_return_response", entity_id=f"{return_year}:{section_key}",
+        user_id=current_user.user_id,
+        details=f"SRA return {return_year} section '{section_key}': {body.status}",
+    )
+    return {"section_key": section_key, "status": body.status}
+
+
+@router.post("/compliance/sra-return/{return_year}/finalise")
+async def finalise_sra_return(
+    return_year: int,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """Mark the return year final (records who/when)."""
+    now = datetime.utcnow()
+    res = await db.execute(
+        select(SRAReturnFinalisation).where(
+            SRAReturnFinalisation.firm_id == current_user.firm_id,
+            SRAReturnFinalisation.return_year == return_year,
+        )
+    )
+    fin = res.scalar_one_or_none()
+    if fin:
+        fin.finalised_at, fin.finalised_by = now, current_user.user_id
+    else:
+        db.add(SRAReturnFinalisation(
+            id=str(uuid.uuid4()), firm_id=current_user.firm_id, return_year=return_year,
+            finalised_by=current_user.user_id, finalised_at=now,
+        ))
+    await db.flush()
+    await log_audit(
+        db=db, firm_id=current_user.firm_id, action="finalised",
+        entity_type="sra_return", entity_id=str(return_year),
+        user_id=current_user.user_id, details=f"SRA Annual Return {return_year} finalised",
+    )
+    return {
+        "finalised_at": now.isoformat(),
+        "next_step_text": "Submit this to mySRA at https://my.sra.org.uk/",
+    }
 
 def _safe_json(val, default=None):
     """Safely parse JSON, returning default on failure."""

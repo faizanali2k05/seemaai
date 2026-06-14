@@ -60,6 +60,77 @@ async def cpd_targets(
     """CPD targets (previously 404'd). Firm default until targets are set."""
     return {"firm_target_hours": 16, "targets": []}
 
+
+@router.post("/compliance/staff/{staff_id}/deactivate")
+async def deactivate_staff(
+    staff_id: str,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """Mark a staff member inactive (was 404)."""
+    res = await db.execute(
+        select(StaffMember).where(
+            StaffMember.id == staff_id,
+            StaffMember.firm_id == current_user.firm_id,
+        )
+    )
+    s = res.scalar_one_or_none()
+    if not s:
+        raise HTTPException(status_code=404, detail="Staff member not found")
+    s.status = "inactive"
+    await db.flush()
+    await log_audit(
+        db=db, firm_id=current_user.firm_id, action="deactivated",
+        entity_type="staff_member", entity_id=s.id, user_id=current_user.user_id,
+        details=f"Staff member {s.name} deactivated",
+    )
+    return {"id": s.id, "status": s.status}
+
+
+class _TrainingPatchBody(BaseModel):
+    category: str | None = None
+    cpd_category: str | None = None
+    reflection_notes: str | None = None
+    cpd_hours: int | None = None
+    status: str | None = None
+
+
+@router.patch("/compliance/training/{training_id}")
+async def update_training_record(
+    training_id: str,
+    body: _TrainingPatchBody,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """Edit a CPD/training record — category, reflection, hours (was 404)."""
+    res = await db.execute(
+        select(StaffTraining).where(
+            StaffTraining.id == training_id,
+            StaffTraining.firm_id == current_user.firm_id,
+        )
+    )
+    t = res.scalar_one_or_none()
+    if not t:
+        raise HTTPException(status_code=404, detail="Training record not found")
+    if body.cpd_category is not None or body.category is not None:
+        t.cpd_category = body.cpd_category or body.category
+    if body.reflection_notes is not None:
+        t.reflection_notes = body.reflection_notes
+    if body.cpd_hours is not None:
+        t.cpd_hours = body.cpd_hours
+    if body.status is not None:
+        t.status = body.status
+    await db.flush()
+    await log_audit(
+        db=db, firm_id=current_user.firm_id, action="updated",
+        entity_type="staff_training", entity_id=t.id, user_id=current_user.user_id,
+        details="CPD/training record updated",
+    )
+    return {
+        "id": t.id, "cpd_category": t.cpd_category,
+        "reflection_notes": t.reflection_notes, "cpd_hours": t.cpd_hours, "status": t.status,
+    }
+
 class CreateStaffRequest(BaseModel):
     name: str
     email: str | None = None

@@ -9,9 +9,29 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from middleware.tenant_rls import tenant_db_from_jwt, bypass_db
 from middleware.auth import get_current_user, CurrentUser
 from services.audit_logger import log_audit
-from models.law import SupervisionRecord
+from models.law import SupervisionRecord, SupervisionSession
 
 router = APIRouter()
+
+
+def _ser_session(s: SupervisionSession) -> dict:
+    return {
+        "id": s.id,
+        "relationship_id": s.relationship_id,
+        "session_date": s.session_date,
+        "duration_minutes": s.duration_minutes,
+        "topics_discussed": s.topics_discussed,
+        "action_items": s.action_items,
+        "supervisee_acknowledged_at": s.supervisee_acknowledged_at,
+        "created_at": s.created_at,
+    }
+
+
+class _LogSessionBody(BaseModel):
+    session_date: datetime | None = None
+    duration_minutes: int | None = None
+    topics_discussed: str | None = None
+    action_items: str | None = None
 
 # Pydantic schemas
 class SupervisionSchedule(BaseModel):
@@ -79,12 +99,13 @@ async def list_supervision_session_log(
     current_user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(tenant_db_from_jwt),
 ):
-    """Individual supervision session log (frontend polls this on load).
-
-    Session-level records aren't persisted separately yet, so this returns an
-    empty log rather than 404ing. No demo data.
-    """
-    return []
+    """All logged supervision sessions for the firm."""
+    res = await db.execute(
+        select(SupervisionSession)
+        .where(SupervisionSession.firm_id == current_user.firm_id)
+        .order_by(SupervisionSession.session_date.desc())
+    )
+    return [_ser_session(s) for s in res.scalars().all()]
 
 
 @router.get("/compliance/supervision/relationships/{relationship_id}/sessions")
@@ -93,8 +114,78 @@ async def list_relationship_sessions(
     current_user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(tenant_db_from_jwt),
 ):
-    """Sessions for a single supervision relationship. Empty until recorded."""
-    return []
+    """Sessions logged for a single supervision relationship."""
+    res = await db.execute(
+        select(SupervisionSession)
+        .where(
+            SupervisionSession.firm_id == current_user.firm_id,
+            SupervisionSession.relationship_id == relationship_id,
+        )
+        .order_by(SupervisionSession.session_date.desc())
+    )
+    return [_ser_session(s) for s in res.scalars().all()]
+
+
+@router.post("/compliance/supervision/relationships/{relationship_id}/sessions")
+async def log_supervision_session(
+    relationship_id: str,
+    body: _LogSessionBody,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """Log a supervision meeting against a relationship (was 404)."""
+    session = SupervisionSession(
+        id=str(uuid.uuid4()), firm_id=current_user.firm_id, relationship_id=relationship_id,
+        session_date=body.session_date or datetime.utcnow(),
+        duration_minutes=body.duration_minutes, topics_discussed=body.topics_discussed,
+        action_items=body.action_items,
+    )
+    db.add(session)
+    rec = (await db.execute(
+        select(SupervisionRecord).where(
+            SupervisionRecord.id == relationship_id,
+            SupervisionRecord.firm_id == current_user.firm_id,
+        )
+    )).scalar_one_or_none()
+    if rec:
+        rec.last_session = session.session_date
+        rec.notes_count = (rec.notes_count or 0) + 1
+        rec.status = "completed"
+    await db.flush()
+    await log_audit(
+        db=db, firm_id=current_user.firm_id, action="created",
+        entity_type="supervision_session", entity_id=session.id,
+        user_id=current_user.user_id, details="Supervision session logged",
+    )
+    await db.refresh(session)
+    return _ser_session(session)
+
+
+@router.patch("/compliance/supervision/sessions/{session_id}/acknowledge")
+async def acknowledge_supervision_session(
+    session_id: str,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """Supervisee acknowledges a logged session (was 404)."""
+    res = await db.execute(
+        select(SupervisionSession).where(
+            SupervisionSession.id == session_id,
+            SupervisionSession.firm_id == current_user.firm_id,
+        )
+    )
+    session = res.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    session.supervisee_acknowledged_at = datetime.utcnow()
+    await db.flush()
+    await log_audit(
+        db=db, firm_id=current_user.firm_id, action="acknowledged",
+        entity_type="supervision_session", entity_id=session.id,
+        user_id=current_user.user_id, details="Supervision session acknowledged",
+    )
+    await db.refresh(session)
+    return _ser_session(session)
 
 
 @router.get("/compliance/supervision/overdue")
