@@ -300,7 +300,9 @@ class ClioSyncEngine:
             clio_matters = await self.client.get_all_pages(
                 "/matters.json",
                 {
-                    "fields": "id,display_number,description,status,practice_area,client,open_date,close_date,pending_date",
+                    # Clio v4: nested associations (client, practice_area) must
+                    # use brace syntax to return a structured object.
+                    "fields": "id,display_number,description,status,practice_area{name},client{id,name},open_date,close_date",
                     "status": "Open,Pending",
                     "order": "id(asc)",
                 },
@@ -358,8 +360,11 @@ class ClioSyncEngine:
             clio_contacts = await self.client.get_all_pages(
                 "/contacts.json",
                 {
-                    "fields": "id,name,first_name,last_name,type,company,email_addresses,phone_numbers,addresses",
-                    "type": "Person,Company",
+                    # Clio v4: nested associations need brace syntax. The `type`
+                    # filter accepts ONE value only — omit it to fetch both
+                    # People and Companies (type is read per-contact below).
+                    # (The old `type=Person,Company` + flat fields returned 422.)
+                    "fields": "id,name,first_name,last_name,type,company{name},email_addresses{address},phone_numbers{number}",
                     "order": "id(asc)",
                 },
             )
@@ -421,7 +426,9 @@ class ClioSyncEngine:
             clio_users = await self.client.get_all_pages(
                 "/users.json",
                 {
-                    "fields": "id,name,first_name,last_name,email,role,enabled",
+                    # `role` is not a valid Clio user field (returned 400) —
+                    # removed. Role/permissions aren't exposed on /users.
+                    "fields": "id,name,first_name,last_name,email,enabled",
                     "order": "id(asc)",
                 },
             )
