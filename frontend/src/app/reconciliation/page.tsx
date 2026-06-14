@@ -195,12 +195,12 @@ export default function ReconciliationPage() {
             <span className="text-purple-600 font-medium">Rule 13</span> (6-year retention)
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           {recons.length > 1 && (
             <select
               value={selected?.id || ''}
               onChange={(e) => setSelectedId(e.target.value)}
-              className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm font-medium"
+              className="w-full sm:w-auto px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm font-medium"
             >
               {recons.map((r) => (
                 <option key={r.id} value={r.id}>
@@ -211,7 +211,7 @@ export default function ReconciliationPage() {
           )}
           <button
             onClick={() => setCreateOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-seema-primary text-white text-sm font-medium hover:bg-seema-primary-hover"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-seema-primary text-white text-sm font-medium hover:bg-seema-primary-hover"
           >
             <Plus size={16} /> Run reconciliation
           </button>
@@ -651,14 +651,14 @@ function CreateModal({
           </div>
         </div>
 
-        <div className="px-6 py-3.5 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-2">
-          <button onClick={onClose} className="px-3.5 py-2 rounded-lg border border-gray-300 bg-white text-sm font-medium hover:bg-gray-50">
+        <div className="px-6 py-3.5 border-t border-gray-200 bg-gray-50 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2">
+          <button onClick={onClose} className="w-full sm:w-auto px-3.5 py-2 rounded-lg border border-gray-300 bg-white text-sm font-medium hover:bg-gray-50">
             Cancel
           </button>
           <button
             disabled={saving}
             onClick={submit}
-            className="px-4 py-2 rounded-lg bg-seema-primary text-white text-sm font-medium hover:bg-seema-primary-hover inline-flex items-center gap-2 disabled:opacity-60"
+            className="w-full sm:w-auto px-4 py-2 rounded-lg bg-seema-primary text-white text-sm font-medium hover:bg-seema-primary-hover inline-flex items-center justify-center gap-2 disabled:opacity-60"
           >
             {saving ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />} Start reconciliation
           </button>

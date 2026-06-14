@@ -341,7 +341,7 @@ export default function MattersPage() {
       )}
 
       <Card className="rounded-xl">
-        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+        <div className="p-6 border-b border-gray-200 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Tabs
             tabs={[
               { id: 'all', label: 'All' },
@@ -354,11 +354,11 @@ export default function MattersPage() {
             activeTab={activeTab}
             onChange={(value) => setActiveTab(value as MatterType)}
           />
-          <div className="flex items-center gap-2">
-            <Button variant="secondary" onClick={() => downloadFileReviewForm()}>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+            <Button variant="secondary" className="w-full sm:w-auto" onClick={() => downloadFileReviewForm()}>
               File Review Form (PDF)
             </Button>
-            <Button onClick={() => setShowCreateModal(true)}>
+            <Button className="w-full sm:w-auto" onClick={() => setShowCreateModal(true)}>
               Create Checklist
             </Button>
           </div>
@@ -382,26 +382,29 @@ export default function MattersPage() {
 
       {showChecklistView && selectedMatter && (
         <Card className="rounded-xl">
-          <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+          <div className="p-6 border-b border-gray-200 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">{selectedMatter.matter_ref}</h2>
               <p className="text-sm text-gray-600 line-clamp-2">{selectedMatter.client_name}</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Button
                 variant="secondary"
+                className="w-full sm:w-auto"
                 onClick={() => downloadFileReviewForm(selectedMatter.id)}
               >
                 File Review Form (PDF)
               </Button>
               <Button
                 variant="destructive"
+                className="w-full sm:w-auto"
                 onClick={() => setConfirmClose(selectedMatter.id)}
               >
                 Close Matter
               </Button>
               <Button
                 variant="secondary"
+                className="w-full sm:w-auto"
                 onClick={() => setShowChecklistView(false)}
               >
                 Close Checklist

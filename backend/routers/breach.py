@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from middleware.tenant_rls import tenant_db_from_jwt, bypass_db
 from middleware.auth import get_current_user, CurrentUser
 from services.audit_logger import log_audit
+from services.cross_module import build_breach_remediation
 from models.breach import BreachReport
 from models.compliance import ComplianceAlert
 
@@ -89,6 +90,18 @@ async def create_breach_report(
     )
     db.add(breach)
 
+    # Cross-module sync: every breach automatically spins up a linked
+    # remediation plan (visible in /remediation) so the corrective workflow is
+    # never forgotten. The breach points at the plan via remediation_plan_id.
+    remediation = build_breach_remediation(
+        firm_id=user.firm_id,
+        breach_title=req.title,
+        severity=req.severity,
+        due_date=ico_deadline,
+    )
+    breach.remediation_plan_id = remediation.id
+    db.add(remediation)
+
     # Auto-create a CRITICAL compliance alert for the COLP
     alert_severity = "critical" if req.severity in ("high", "critical") else "high"
     alert = ComplianceAlert(
@@ -154,5 +167,6 @@ async def create_breach_report(
         "status": breach.status,
         "ico_deadline": str(ico_deadline),
         "alert_id": alert.id,
+        "remediation_plan_id": breach.remediation_plan_id,
         "created_at": str(breach.created_at),
     }

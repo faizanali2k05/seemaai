@@ -244,6 +244,103 @@ def check_breach_ico_deadlines():
         session.close()
 
 
+@app.task(name="tasks.compliance_tasks.check_reconciliation_overdue")
+def check_reconciliation_overdue():
+    """Flag firms whose client-account reconciliation is overdue as a breach.
+
+    SRA Accounts Rule 8.3 requires reconciliation at least every five weeks
+    (35 days). If a firm has engaged with reconciliation but its most recent
+    COFA sign-off is more than 35 days old (or never happened), we auto-log a
+    breach to /breaches, a linked remediation plan, and a COLP alert. Idempotent
+    — an existing open breach of this kind is not duplicated on the next run.
+    """
+    from models.client_accounts import Reconciliation
+    from models.breach import BreachReport
+    from models.compliance import ComplianceAlert
+    from models.firm import Firm
+    from services.cross_module import build_breach_remediation
+
+    TITLE = "Client account reconciliation overdue (SRA Accounts Rule 8.3)"
+    logger.info("Checking reconciliation overdue (Rule 8.3)")
+    session = get_sync_session()
+    try:
+        now = datetime.utcnow()
+        threshold = now - timedelta(days=35)
+        firms = session.query(Firm).filter(Firm.is_active == True).all()
+        breaches_created = 0
+        for firm in firms:
+            recons = session.query(Reconciliation).filter(
+                Reconciliation.firm_id == firm.id
+            ).all()
+            if not recons:
+                # Firm hasn't started reconciling yet — the daily compliance
+                # scan already raises a "no reconciliation records" warning;
+                # we don't escalate that to a breach automatically.
+                continue
+            signoffs = [r.signed_off_at for r in recons if r.signed_off_at]
+            last_signoff = max(signoffs) if signoffs else None
+            overdue = (last_signoff is None) or (last_signoff < threshold)
+            if not overdue:
+                continue
+            # Idempotency: don't pile up a fresh breach every day it stays overdue.
+            existing = session.query(BreachReport).filter(
+                BreachReport.firm_id == firm.id,
+                BreachReport.breach_type == "accounts",
+                BreachReport.status == "open",
+                BreachReport.title == TITLE,
+            ).first()
+            if existing:
+                continue
+            days = (now - last_signoff).days if last_signoff else None
+            desc = (
+                "No COFA reconciliation sign-off in over 35 days"
+                + (f" (last sign-off {days} days ago). " if days is not None
+                   else " (no sign-off on record). ")
+                + "Under SRA Accounts Rule 8.3, client-account reconciliation "
+                "must be performed at least every five weeks."
+            )
+            breach = BreachReport(
+                firm_id=firm.id,
+                title=TITLE,
+                description=desc,
+                breach_type="accounts",
+                severity="high",
+                status="open",
+                reported_date=now,
+                root_cause="Reconciliation cadence exceeded the five-weekly maximum.",
+                notification_status="pending",
+            )
+            session.add(breach)
+            # Cross-module: link a remediation plan to the breach.
+            remediation = build_breach_remediation(
+                firm.id, TITLE, "high", now + timedelta(days=7)
+            )
+            breach.remediation_plan_id = remediation.id
+            session.add(remediation)
+            session.add(ComplianceAlert(
+                firm_id=firm.id,
+                alert_type="reconciliation_overdue",
+                severity="high",
+                title="Reconciliation overdue — Rule 8.3 breach logged",
+                description=desc,
+                action_required=(
+                    "Complete the client-account reconciliation and COFA "
+                    "sign-off immediately; review the linked remediation plan."
+                ),
+                status="open",
+            ))
+            breaches_created += 1
+        session.commit()
+        logger.info(f"Reconciliation overdue check: {breaches_created} breaches created")
+        return {"firms_checked": len(firms), "breaches_created": breaches_created}
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Reconciliation overdue check failed: {e}")
+        raise
+    finally:
+        session.close()
+
+
 # ── Helper functions ──────────────────────────────────────────────────
 
 def _check_cdd_currency(session, firm_id):

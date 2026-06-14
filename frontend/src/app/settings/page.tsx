@@ -1130,6 +1130,30 @@ export default function SettingsPage() {
                     )}
                   </Button>
                 </Card>
+
+                {/* Plan / Upgrade — surfaced at the END of the firm profile so
+                    the current plan and upgrade path sit with the firm's
+                    details. Full billing management lives in the Billing tab. */}
+                <Card className="rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold uppercase tracking-wide text-gray-900">Your Plan</h3>
+                      <p className="text-sm text-gray-600 mt-1 max-w-md">
+                        You&apos;re on the{' '}
+                        <span className="font-semibold text-blue-900">{subscription?.planName || 'Essentials'}</span>{' '}
+                        plan. Upgrade for more users, training records and storage.
+                      </p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                      <Button variant="outline" className="w-full sm:w-auto" onClick={() => setActiveTab('billing')}>
+                        Manage billing
+                      </Button>
+                      <Button className="w-full sm:w-auto" onClick={() => setActiveTab('billing')}>
+                        Upgrade Plan
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
               </>
             )}
           </div>

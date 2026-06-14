@@ -165,6 +165,11 @@ celery_app.conf.beat_schedule = {
         "task": "tasks.compliance_tasks.check_training_due",
         "schedule": crontab(minute=30, hour=7),
     },
+    # Daily: flag firms overdue on client-account reconciliation (Rule 8.3, 6:45am).
+    "reconciliation-overdue-check": {
+        "task": "tasks.compliance_tasks.check_reconciliation_overdue",
+        "schedule": crontab(minute=45, hour=6),
+    },
     # Daily: alert on deadlines due within 7 days (7:45am).
     "deadline-check": {
         "task": "tasks.compliance_tasks.check_upcoming_deadlines",
