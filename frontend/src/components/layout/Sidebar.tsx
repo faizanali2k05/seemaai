@@ -73,7 +73,7 @@ const getUserRoleLevel = (role: string): number => {
 const primaryItems: MenuItem[] = [
   { label: 'Dashboard', icon: <LayoutDashboard size={18} />, href: '/dashboard' },
   { label: 'Compliance Scan', icon: <Scan size={18} />, href: '/compliance-scan', minRole: 30 },
-  { label: 'Breach Log', icon: <Shield size={18} />, href: '/breaches' },
+  { label: 'Breach Logs', icon: <Shield size={18} />, href: '/breaches' },
   { label: 'Reconciliation', icon: <Calculator size={18} />, href: '/reconciliation' },
   // Undertakings sits directly under Reconciliation — both are COFA-owned
   // financial-compliance tasks the same person works day to day.

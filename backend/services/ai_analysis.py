@@ -1634,3 +1634,206 @@ six years (SRA Accounts Rule 13).*"""
         "ai_generated": False,
         "generated_at": datetime.utcnow().isoformat(),
     }
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 8. BREACH — SRA REPORT (Code for Firms para 3.9)
+# ═══════════════════════════════════════════════════════════════════
+
+BREACH_SRA_REPORT_SYSTEM_PROMPT = """You are Seema AI, a UK legal compliance expert specialising in the SRA
+Standards and Regulations. You draft the formal report a firm submits to the SRA
+about a serious breach under the SRA Code of Conduct for Firms paragraph 3.9.
+
+The COLP will review, edit and sign this before submission, so it must be
+factual, measured, and structured to the SRA's expectations.
+
+Return ONLY the report as markdown. Do NOT wrap it in JSON or code fences. Start
+directly with a markdown H1 title.
+
+Use this 15-section structure as markdown headings:
+1. Firm details & SRA number
+2. COLP / COFA details
+3. Date of breach and date of discovery
+4. How the matter was discovered
+5. Summary of the matter being reported
+6. Factual chronology (bullet the key timestamps)
+7. Regulatory provisions engaged (cite SRA Code paragraphs, UK GDPR articles, Accounts Rules as relevant)
+8. Persons affected
+9. Financial impact (state nil if none)
+10. Immediate actions taken
+11. Root cause
+12. Remediation plan
+13. Other regulators / parties notified
+14. Records retention statement (6-year retention)
+15. COLP declaration
+
+Be specific to UK law and cite authority by paragraph/article number. Work only
+from the facts provided — do not invent details; where a fact is missing, write
+'[TO BE CONFIRMED BY COLP]' rather than guessing."""
+
+
+def _breach_context(breach: dict) -> str:
+    """Plain-text block describing a breach + its workflow data for the prompt."""
+    wf = breach.get("workflow_data") or {}
+    if isinstance(wf, str):
+        try:
+            wf = json.loads(wf)
+        except (json.JSONDecodeError, TypeError):
+            wf = {}
+    tracks = breach.get("tracks") or []
+    if isinstance(tracks, str):
+        try:
+            tracks = json.loads(tracks)
+        except (json.JSONDecodeError, TypeError):
+            tracks = []
+
+    lines = [
+        f"Reference: {breach.get('breach_ref') or breach.get('id') or 'n/a'}",
+        f"Title: {breach.get('title') or 'n/a'}",
+        f"Type: {breach.get('breach_type') or 'n/a'}",
+        f"Severity: {breach.get('severity') or 'n/a'}",
+        f"Classification: {breach.get('classification') or 'n/a'}",
+        f"Tracks engaged: {', '.join(tracks) if tracks else 'none recorded'}",
+        f"Detected at: {breach.get('detected_at') or breach.get('reported_date') or 'n/a'}",
+        f"Affected records/subjects: {breach.get('affected_records') if breach.get('affected_records') is not None else 'n/a'}",
+        f"Root cause: {breach.get('root_cause') or 'under investigation'}",
+        f"Description: {breach.get('description') or '(none recorded)'}",
+    ]
+    if wf:
+        # Fold any captured phase data in as labelled key/value lines.
+        for key, val in wf.items():
+            if val in (None, "", [], {}):
+                continue
+            rendered = json.dumps(val, default=str) if isinstance(val, (dict, list)) else str(val)
+            lines.append(f"{key}: {rendered[:500]}")
+    return "\n".join(lines)
+
+
+async def draft_breach_sra_report(breach: dict, firm) -> dict:
+    """Draft the SRA report (Code for Firms para 3.9) for a serious breach.
+
+    Args:
+        breach: Serialized dict of the BreachReport row (incl. workflow_data,
+            tracks, classification, breach_ref).
+        firm: Firm ORM object.
+
+    Returns:
+        dict with `title`, `content` (markdown), `ai_generated`, `model`,
+        `generated_at`. Falls back to a structured template when AI is
+        unavailable.
+    """
+    firm_context = _build_firm_context(firm)
+    breach_context = _breach_context(breach)
+
+    user_prompt = f"""Draft the SRA report for this breach.
+
+--- FIRM PROFILE ---
+{firm_context}
+
+--- BREACH RECORD ---
+{breach_context}
+
+--- INSTRUCTIONS ---
+Produce the COLP's report to the SRA under SRA Code of Conduct for Firms
+paragraph 3.9, as markdown, following the 15-section structure. Cite authority
+by paragraph/article. Work only from the facts above; mark anything missing as
+'[TO BE CONFIRMED BY COLP]'."""
+
+    text = _call_claude(BREACH_SRA_REPORT_SYSTEM_PROMPT, user_prompt, max_tokens=4096)
+    if text is None:
+        return _fallback_breach_sra_report(breach, firm)
+
+    content = text.strip()
+    if content.startswith("```"):
+        lines = content.split("\n")
+        lines = [l for l in lines if not l.strip().startswith("```")]
+        content = "\n".join(lines).strip()
+
+    derived_title = f"SRA Report — {breach.get('breach_ref') or breach.get('title') or 'Breach'}"
+    for line in content.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            derived_title = stripped.lstrip("# ").strip()
+            break
+
+    return {
+        "title": derived_title,
+        "content": content,
+        "ai_generated": True,
+        "model": _ai_model,
+        "generated_at": datetime.utcnow().isoformat(),
+    }
+
+
+def _fallback_breach_sra_report(breach: dict, firm) -> dict:
+    """Rule-based SRA report template when AI is unavailable."""
+    ref = breach.get("breach_ref") or breach.get("id") or "this breach"
+    firm_name = getattr(firm, "name", "the firm") if firm else "the firm"
+    sra_number = getattr(firm, "sra_number", "[SRA number]") if firm else "[SRA number]"
+    colp = getattr(firm, "colp_name", None) if firm else None
+    title = breach.get("title") or "Reported breach"
+    desc = breach.get("description") or "[TO BE CONFIRMED BY COLP]"
+    detected = breach.get("detected_at") or breach.get("reported_date") or "[TO BE CONFIRMED BY COLP]"
+
+    content = f"""# SRA Report — {ref}
+
+## 1. Firm details & SRA number
+{firm_name}, SRA number {sra_number}.
+
+## 2. COLP / COFA details
+COLP: {colp or '[COLP name]'}.
+
+## 3. Date of breach and date of discovery
+Discovered: {detected}.
+
+## 4. How the matter was discovered
+[TO BE CONFIRMED BY COLP]
+
+## 5. Summary of the matter being reported
+{desc}
+
+## 6. Factual chronology
+- {detected} — matter detected. [Add the full chronology before submission.]
+
+## 7. Regulatory provisions engaged
+- SRA Code of Conduct for Firms paragraph 3.9 (reporting obligation)
+- SRA Code for Solicitors paragraph 6.3 (confidentiality), where applicable
+- UK GDPR Articles 5(1)(f), 32, 33, where personal data is involved
+
+## 8. Persons affected
+[TO BE CONFIRMED BY COLP]
+
+## 9. Financial impact
+{('Affected records: ' + str(breach.get('affected_records'))) if breach.get('affected_records') else 'Nil / [TO BE CONFIRMED BY COLP].'}
+
+## 10. Immediate actions taken
+[TO BE CONFIRMED BY COLP]
+
+## 11. Root cause
+{breach.get('root_cause') or '[TO BE CONFIRMED BY COLP]'}
+
+## 12. Remediation plan
+See the linked remediation plan in /remediation.
+
+## 13. Other regulators / parties notified
+[TO BE CONFIRMED BY COLP]
+
+## 14. Records retention statement
+All records relating to this breach will be retained for a minimum of six years
+from closure, in accordance with SRA expectations and the firm's retention policy.
+
+## 15. COLP declaration
+I, {colp or '[COLP name]'}, COLP of {firm_name}, confirm that I have reviewed
+this report and that the facts stated are true to the best of my knowledge and
+belief.
+
+---
+*Generated without AI (no provider configured) — the COLP must complete every
+'[TO BE CONFIRMED BY COLP]' field and verify all facts before submitting to the SRA.*"""
+
+    return {
+        "title": f"SRA Report — {ref}",
+        "content": content,
+        "ai_generated": False,
+        "generated_at": datetime.utcnow().isoformat(),
+    }

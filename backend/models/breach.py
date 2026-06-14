@@ -30,5 +30,23 @@ class BreachReport(Base):
     ico_notification_draft = Column(Text, nullable=True)
     ico_notification_drafted_at = Column(DateTime, nullable=True)
     ico_notified_at = Column(DateTime, nullable=True)
+
+    # ── Full breach-workflow columns (added in migration 0003) ──
+    # The 8-phase breach register (initial response → triage/classify →
+    # notifications → investigation → SRA report → submission → response &
+    # remediation → close). Most of the rich per-phase form state lives in the
+    # workflow_data JSON blob; the columns below are the few fields we query or
+    # display directly.
+    breach_ref = Column(String(40))            # human reference, e.g. "BR-2026-0042"
+    phase = Column(Integer, default=1)          # current workflow phase 1..8
+    classification = Column(String(50))         # minor, serious, not_breach
+    tracks = Column(Text)                        # JSON array, e.g. ["ICO", "SRA"]
+    detected_at = Column(DateTime)
+    workflow_data = Column(Text)                 # JSON object — full per-phase state
+    sra_report_draft = Column(Text)             # AI-drafted SRA report (markdown)
+    sra_report_drafted_at = Column(DateTime)
+    signed_off_by = Column(String(255))         # COLP name captured at sign-off
+    signed_off_at = Column(DateTime)
+
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
