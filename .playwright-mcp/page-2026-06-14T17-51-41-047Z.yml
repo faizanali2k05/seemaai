@@ -1,0 +1,88 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - heading "Seema" [level=1] [ref=e6]
+          - generic [ref=e7]: Essentials
+        - paragraph [ref=e8]: Compliance Platform
+      - navigation [ref=e9]:
+        - generic [ref=e10]:
+          - link "Dashboard" [ref=e11] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e12]
+            - generic [ref=e17]: Dashboard
+          - link "Compliance Scan" [ref=e18] [cursor=pointer]:
+            - /url: /compliance-scan
+            - img [ref=e19]
+            - generic [ref=e24]: Compliance Scan
+          - link "Breach Logs" [ref=e25] [cursor=pointer]:
+            - /url: /breaches
+            - img [ref=e26]
+            - generic [ref=e28]: Breach Logs
+          - link "Reconciliation" [ref=e29] [cursor=pointer]:
+            - /url: /reconciliation
+            - img [ref=e30]
+            - generic [ref=e32]: Reconciliation
+          - link "Undertakings" [ref=e33] [cursor=pointer]:
+            - /url: /undertakings
+            - img [ref=e34]
+            - generic [ref=e37]: Undertakings
+        - button "More" [ref=e39] [cursor=pointer]:
+          - generic [ref=e40]: More
+          - img [ref=e41]
+      - generic [ref=e43]:
+        - link "Test test@mail.com View firm profile" [ref=e44] [cursor=pointer]:
+          - /url: /settings
+          - paragraph [ref=e45]: Test
+          - paragraph [ref=e46]: test@mail.com
+          - paragraph [ref=e47]:
+            - img [ref=e48]
+            - text: View firm profile
+        - button "Logout" [ref=e51] [cursor=pointer]:
+          - img [ref=e52]
+          - generic [ref=e55]: Logout
+    - main [ref=e56]:
+      - button "Notifications (0)" [ref=e60] [cursor=pointer]:
+        - img [ref=e61]
+      - generic [ref=e65]:
+        - generic [ref=e67]:
+          - heading "Audit Trail" [level=1] [ref=e68]
+          - paragraph [ref=e69]: Immutable log of all system activities and user actions for compliance and security
+        - generic [ref=e70]:
+          - generic [ref=e71]:
+            - generic [ref=e72]:
+              - textbox "Search by user, entity, or details..." [ref=e73]
+              - generic [ref=e74]:
+                - button "Table View" [ref=e75] [cursor=pointer]
+                - button "Timeline View" [ref=e76] [cursor=pointer]
+                - button "Export CSV" [ref=e77] [cursor=pointer]
+            - generic [ref=e78]:
+              - combobox [ref=e79]:
+                - option "All Actions" [selected]
+                - option "Create"
+                - option "Update"
+                - option "Delete"
+                - option "Login"
+                - option "Export"
+                - option "View"
+              - combobox [ref=e80]:
+                - option "All Users" [selected]
+              - combobox [ref=e81]:
+                - option "All Entity Types" [selected]
+              - textbox [ref=e82]
+              - textbox [ref=e83]
+          - paragraph [ref=e88]: Loading audit trail data...
+        - generic [ref=e89]:
+          - heading "Audit Trail Information" [level=2] [ref=e91]
+          - generic [ref=e92]:
+            - paragraph [ref=e93]: "This audit trail provides an immutable record of all system activities and user actions. All events are logged with:"
+            - list [ref=e94]:
+              - listitem [ref=e95]: Precise timestamp of the action
+              - listitem [ref=e96]: User who performed the action
+              - listitem [ref=e97]: Type of action (create, update, delete, login, export, view)
+              - listitem [ref=e98]: Entity affected by the action
+              - listitem [ref=e99]: IP address of the user
+              - listitem [ref=e100]: Detailed description of what was done
+            - paragraph [ref=e101]: This log cannot be edited or deleted, ensuring full compliance with regulatory requirements and maintaining data integrity.
+  - alert [ref=e102]

@@ -1,0 +1,112 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - heading "Seema" [level=1] [ref=e6]
+          - generic [ref=e7]: Essentials
+        - paragraph [ref=e8]: Compliance Platform
+      - navigation [ref=e9]:
+        - generic [ref=e10]:
+          - link "Dashboard" [ref=e11] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e12]
+            - generic [ref=e17]: Dashboard
+          - link "Compliance Scan" [ref=e18] [cursor=pointer]:
+            - /url: /compliance-scan
+            - img [ref=e19]
+            - generic [ref=e24]: Compliance Scan
+          - link "Breach Logs" [ref=e25] [cursor=pointer]:
+            - /url: /breaches
+            - img [ref=e26]
+            - generic [ref=e28]: Breach Logs
+          - link "Reconciliation" [ref=e29] [cursor=pointer]:
+            - /url: /reconciliation
+            - img [ref=e30]
+            - generic [ref=e32]: Reconciliation
+          - link "Undertakings" [ref=e33] [cursor=pointer]:
+            - /url: /undertakings
+            - img [ref=e34]
+            - generic [ref=e37]: Undertakings
+        - button "More" [ref=e39] [cursor=pointer]:
+          - generic [ref=e40]: More
+          - img [ref=e41]
+      - generic [ref=e43]:
+        - link "Test test@mail.com View firm profile" [ref=e44] [cursor=pointer]:
+          - /url: /settings
+          - paragraph [ref=e45]: Test
+          - paragraph [ref=e46]: test@mail.com
+          - paragraph [ref=e47]:
+            - img [ref=e48]
+            - text: View firm profile
+        - button "Logout" [ref=e51] [cursor=pointer]:
+          - img [ref=e52]
+          - generic [ref=e55]: Logout
+    - main [ref=e56]:
+      - button "Notifications (0)" [ref=e60] [cursor=pointer]:
+        - img [ref=e61]
+      - generic [ref=e65]:
+        - generic [ref=e66]:
+          - generic [ref=e67]:
+            - heading "Breach Logs" [level=1] [ref=e68]:
+              - img [ref=e69]
+              - text: Breach Logs
+            - paragraph [ref=e71]: SRA reporting and internal log · Code for Firms para 3.9 · Code for Solicitors para 7.7
+          - generic [ref=e72]:
+            - button "Export log (CSV)" [ref=e73] [cursor=pointer]:
+              - img [ref=e74]
+              - text: Export log (CSV)
+            - button "Log new breach" [ref=e77] [cursor=pointer]:
+              - img [ref=e78]
+              - text: Log new breach
+        - generic [ref=e79]:
+          - generic [ref=e80]:
+            - paragraph [ref=e81]: Open breaches
+            - paragraph [ref=e82]: "0"
+          - generic [ref=e83]:
+            - paragraph [ref=e84]: Pending triage
+            - paragraph [ref=e85]: "0"
+          - generic [ref=e86]:
+            - paragraph [ref=e87]: Serious — open
+            - paragraph [ref=e88]: "0"
+          - generic [ref=e89]:
+            - paragraph [ref=e90]: ICO clock running
+            - paragraph [ref=e91]: "0"
+          - generic [ref=e92]:
+            - paragraph [ref=e93]: Reported YTD
+            - paragraph [ref=e94]: "0"
+          - generic [ref=e95]:
+            - paragraph [ref=e96]: Total logged
+            - paragraph [ref=e97]: "0"
+        - generic [ref=e98]:
+          - button "All 0" [ref=e99] [cursor=pointer]:
+            - text: All
+            - generic [ref=e100]: "0"
+          - button "Pending triage 0" [ref=e101] [cursor=pointer]:
+            - text: Pending triage
+            - generic [ref=e102]: "0"
+          - button "Investigating 0" [ref=e103] [cursor=pointer]:
+            - text: Investigating
+            - generic [ref=e104]: "0"
+          - button "Serious → SRA 0" [ref=e105] [cursor=pointer]:
+            - text: Serious → SRA
+            - generic [ref=e106]: "0"
+          - button "Reported 0" [ref=e107] [cursor=pointer]:
+            - text: Reported
+            - generic [ref=e108]: "0"
+          - button "Closed 0" [ref=e109] [cursor=pointer]:
+            - text: Closed
+            - generic [ref=e110]: "0"
+        - table [ref=e113]:
+          - rowgroup [ref=e114]:
+            - row "Ref / Source Detected Summary Tracks Severity Status" [ref=e115]:
+              - columnheader "Ref / Source" [ref=e116]
+              - columnheader "Detected" [ref=e117]
+              - columnheader "Summary" [ref=e118]
+              - columnheader "Tracks" [ref=e119]
+              - columnheader "Severity" [ref=e120]
+              - columnheader "Status" [ref=e121]
+          - rowgroup [ref=e122]:
+            - row "Loading breaches…" [ref=e123]:
+              - cell "Loading breaches…" [ref=e124]
+  - alert [ref=e125]

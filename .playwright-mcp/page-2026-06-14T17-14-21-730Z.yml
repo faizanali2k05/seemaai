@@ -1,0 +1,72 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e6]: S
+        - generic [ref=e7]: Seema
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - heading "Sign in to Seema" [level=1] [ref=e10]
+          - paragraph [ref=e11]: Welcome back. Sign in to manage your firm's compliance.
+        - generic [ref=e12]:
+          - generic [ref=e13]:
+            - generic [ref=e14]: Email address
+            - generic [ref=e15]:
+              - img
+              - textbox "Email address" [ref=e16]:
+                - /placeholder: you@lawfirm.co.uk
+          - generic [ref=e17]:
+            - generic [ref=e18]:
+              - generic [ref=e19]: Password
+              - link "Forgot password?" [ref=e20] [cursor=pointer]:
+                - /url: "#"
+            - generic [ref=e21]:
+              - img
+              - textbox "Password" [ref=e22]:
+                - /placeholder: ••••••••
+              - button "Show password" [ref=e23] [cursor=pointer]:
+                - img [ref=e24]
+          - generic [ref=e27] [cursor=pointer]:
+            - checkbox "Keep me signed in" [checked] [ref=e28]
+            - generic [ref=e29]: Keep me signed in
+          - button "Sign in" [ref=e30] [cursor=pointer]
+        - paragraph [ref=e31]:
+          - text: New firm?
+          - link "Register your firm" [ref=e32] [cursor=pointer]:
+            - /url: /register
+      - generic [ref=e33]:
+        - generic [ref=e34]:
+          - img [ref=e35]
+          - generic [ref=e38]: SRA-aligned · ISO 27001 controls · UK GDPR
+        - generic [ref=e39]:
+          - link "Privacy" [ref=e40] [cursor=pointer]:
+            - /url: "#"
+          - link "Terms" [ref=e41] [cursor=pointer]:
+            - /url: "#"
+          - link "Support" [ref=e42] [cursor=pointer]:
+            - /url: "#"
+    - generic [ref=e48]:
+      - generic [ref=e51]: Trusted by COLPs across England & Wales
+      - generic [ref=e52]:
+        - heading "Your COLP's Operating System." [level=2] [ref=e53]:
+          - text: Your COLP's
+          - text: Operating System.
+        - paragraph [ref=e54]: SRA returns, breaches, undertakings, AML, and audit evidence — one platform, always inspection-ready.
+        - list [ref=e55]:
+          - listitem [ref=e56]:
+            - img [ref=e58]
+            - generic [ref=e60]: Automated SRA reporting & key-date tracking
+          - listitem [ref=e61]:
+            - img [ref=e63]
+            - generic [ref=e65]: Breach register with regulator-ready exports
+          - listitem [ref=e66]:
+            - img [ref=e68]
+            - generic [ref=e70]: Evidence vault with full audit trail
+      - figure "SC Sarah Chen COLP · Harrison Morgan Solicitors LLP" [ref=e71]:
+        - blockquote [ref=e72]: “Cut our SRA return prep from three weeks to two days. The audit trail alone has paid for itself.”
+        - generic [ref=e73]:
+          - generic [ref=e74]: SC
+          - generic [ref=e75]:
+            - generic [ref=e76]: Sarah Chen
+            - generic [ref=e77]: COLP · Harrison Morgan Solicitors LLP
+  - alert [ref=e78]

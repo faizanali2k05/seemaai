@@ -1,0 +1,163 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - heading "Seema" [level=1] [ref=e6]
+          - generic [ref=e7]: Essentials
+        - paragraph [ref=e8]: Compliance Platform
+      - navigation [ref=e9]:
+        - generic [ref=e10]:
+          - link "Dashboard" [ref=e11] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e12]
+            - generic [ref=e17]: Dashboard
+          - link "Compliance Scan" [ref=e18] [cursor=pointer]:
+            - /url: /compliance-scan
+            - img [ref=e19]
+            - generic [ref=e24]: Compliance Scan
+          - link "Breach Logs" [ref=e25] [cursor=pointer]:
+            - /url: /breaches
+            - img [ref=e26]
+            - generic [ref=e28]: Breach Logs
+          - link "Reconciliation" [ref=e29] [cursor=pointer]:
+            - /url: /reconciliation
+            - img [ref=e30]
+            - generic [ref=e32]: Reconciliation
+          - link "Undertakings" [ref=e33] [cursor=pointer]:
+            - /url: /undertakings
+            - img [ref=e34]
+            - generic [ref=e37]: Undertakings
+        - generic [ref=e38]:
+          - button "More" [ref=e39] [cursor=pointer]:
+            - generic [ref=e40]: More
+            - img [ref=e41]
+          - generic [ref=e43]:
+            - link "Regulatory Updates" [ref=e44] [cursor=pointer]:
+              - /url: /regulatory
+              - img [ref=e45]
+              - generic [ref=e47]: Regulatory Updates
+            - link "AML / CDD" [ref=e48] [cursor=pointer]:
+              - /url: /aml
+              - img [ref=e49]
+              - generic [ref=e58]: AML / CDD
+            - link "Conflict Check" [ref=e59] [cursor=pointer]:
+              - /url: /conflicts
+              - img [ref=e60]
+              - generic [ref=e63]: Conflict Check
+            - link "File Review" [ref=e64] [cursor=pointer]:
+              - /url: /matters
+              - img [ref=e65]
+              - generic [ref=e68]: File Review
+            - link "Compliance Deadlines" [ref=e69] [cursor=pointer]:
+              - /url: /deadlines
+              - img [ref=e70]
+              - generic [ref=e72]: Compliance Deadlines
+            - link "Complaints" [ref=e73] [cursor=pointer]:
+              - /url: /complaints
+              - img [ref=e74]
+              - generic [ref=e76]: Complaints
+            - link "Chasers" [ref=e77] [cursor=pointer]:
+              - /url: /chasers
+              - img [ref=e78]
+              - generic [ref=e80]: Chasers
+            - link "Remediation" [ref=e81] [cursor=pointer]:
+              - /url: /remediation
+              - img [ref=e82]
+              - generic [ref=e85]: Remediation
+            - link "Policies" [ref=e86] [cursor=pointer]:
+              - /url: /policies
+              - img [ref=e87]
+              - generic [ref=e90]: Policies
+            - link "Alerts" [ref=e91] [cursor=pointer]:
+              - /url: /alerts
+              - img [ref=e92]
+              - generic [ref=e94]: Alerts
+            - link "Staff & Training" [ref=e95] [cursor=pointer]:
+              - /url: /staff
+              - img [ref=e96]
+              - generic [ref=e101]: Staff & Training
+            - link "Supervision" [ref=e102] [cursor=pointer]:
+              - /url: /supervision
+              - img [ref=e103]
+              - generic [ref=e105]: Supervision
+            - link "SRA Inspection Pack" [ref=e106] [cursor=pointer]:
+              - /url: /sra-audit
+              - img [ref=e107]
+              - generic [ref=e110]: SRA Inspection Pack
+            - generic [ref=e111]:
+              - paragraph [ref=e112]: Admin
+              - link "Settings" [ref=e113] [cursor=pointer]:
+                - /url: /settings
+                - img [ref=e114]
+                - generic [ref=e117]: Settings
+              - link "User Management" [ref=e118] [cursor=pointer]:
+                - /url: /user-management
+                - img [ref=e119]
+                - generic [ref=e124]: User Management
+              - link "Data Management" [ref=e125] [cursor=pointer]:
+                - /url: /data-management
+                - img [ref=e126]
+                - generic [ref=e130]: Data Management
+      - generic [ref=e131]:
+        - link "Test test@mail.com View firm profile" [ref=e132] [cursor=pointer]:
+          - /url: /settings
+          - paragraph [ref=e133]: Test
+          - paragraph [ref=e134]: test@mail.com
+          - paragraph [ref=e135]:
+            - img [ref=e136]
+            - text: View firm profile
+        - button "Logout" [ref=e139] [cursor=pointer]:
+          - img [ref=e140]
+          - generic [ref=e143]: Logout
+    - main [ref=e144]:
+      - button "Notifications (0)" [ref=e148] [cursor=pointer]:
+        - img [ref=e149]
+      - generic [ref=e153]:
+        - generic [ref=e155]:
+          - heading "Regulatory Updates" [level=1] [ref=e156]
+          - paragraph [ref=e157]: Live feed from SRA, ICO, HMRC, GOV.UK & Law Society — with AI-powered firm-specific analysis and full audit trail
+        - navigation "Tabs" [ref=e159]:
+          - button "Regulatory Feed" [ref=e160] [cursor=pointer]
+          - button "Interpretation History" [ref=e161] [cursor=pointer]:
+            - img [ref=e162]
+            - text: Interpretation History
+        - generic [ref=e166]:
+          - generic [ref=e167]:
+            - img [ref=e168]
+            - text: Failed to load regulatory updates. Showing demo data.
+          - generic [ref=e170]:
+            - generic [ref=e171]:
+              - paragraph [ref=e172]: "0"
+              - paragraph [ref=e173]: Total Updates
+            - generic [ref=e174]:
+              - paragraph [ref=e175]: "0"
+              - paragraph [ref=e176]: AI Analysed
+            - generic [ref=e177]:
+              - paragraph [ref=e178]: "0"
+              - paragraph [ref=e179]: Applicable to You
+            - generic [ref=e180]:
+              - paragraph [ref=e181]: "0"
+              - paragraph [ref=e182]: High Impact
+          - generic [ref=e183]:
+            - generic [ref=e185]:
+              - generic:
+                - img
+              - textbox "Search regulatory updates…" [ref=e186]
+            - combobox [ref=e189] [cursor=pointer]:
+              - option "All Sources" [selected]
+              - option "SRA"
+              - option "ICO"
+              - option "HMRC"
+              - option "GOV.UK"
+              - option "Law Society"
+            - button "Refresh Feed" [ref=e190] [cursor=pointer]:
+              - img [ref=e191]
+              - text: Refresh Feed
+          - generic [ref=e196]:
+            - heading "No regulatory updates found" [level=3] [ref=e197]
+            - paragraph [ref=e198]: Click "Refresh Feed" to pull the latest updates.
+        - paragraph [ref=e200]:
+          - img [ref=e201]
+          - text: Seema provides regulatory interpretation to assist your compliance decisions. Final responsibility remains with your COLP.
+  - alert [ref=e203]
