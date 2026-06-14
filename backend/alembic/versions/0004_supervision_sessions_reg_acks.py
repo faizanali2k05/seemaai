@@ -12,7 +12,7 @@ from alembic import op
 import sqlalchemy as sa
 
 
-revision = "0004_supervision_sessions_reg_acks"
+revision = "0004_supervision_reg_acks"
 down_revision = "0003_extend_breach_reports"
 branch_labels = None
 depends_on = None
