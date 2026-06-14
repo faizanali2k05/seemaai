@@ -21,6 +21,7 @@ from middleware.tenant_rls import tenant_db_from_jwt, bypass_db
 from middleware.auth import get_current_user, CurrentUser
 from services.audit_logger import log_audit
 from models.firm import Firm
+from models.compliance import SRAauditItem
 
 router = APIRouter()
 
@@ -256,20 +257,46 @@ def _get_summary(items):
     partial = sum(1 for i in items if i["status"] == "partial")
     return {"total": len(items), "passing": passing, "failing": failing, "partial": partial}
 
+
+async def _firm_audit_items(db: AsyncSession, firm_id: str) -> list:
+    """Return the firm's REAL SRA audit items (no demo data). Empty if none."""
+    res = await db.execute(
+        select(SRAauditItem)
+        .where(SRAauditItem.firm_id == firm_id)
+        .order_by(SRAauditItem.category, SRAauditItem.item_name)
+    )
+    return [
+        {
+            "id": it.id,
+            "standard": it.category or "",
+            "title": it.item_name or "",
+            "description": it.description or "",
+            "status": it.status or "not_reviewed",
+            "category": it.category or "General",
+            "evidence_count": 1 if it.evidence_ref else 0,
+            "last_reviewed": it.last_reviewed,
+            "notes": it.notes or "",
+        }
+        for it in res.scalars().all()
+    ]
+
 @router.get("/compliance/sra-audit")
 async def list_sra_audit(
     current_user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(tenant_db_from_jwt),
 ):
-    """List SRA audit readiness items with summary score."""
-    items = DEMO_SRA_AUDIT_ITEMS
+    """List the firm's real SRA audit readiness items with summary score."""
+    items = await _firm_audit_items(db, current_user.firm_id)
     summary = _get_summary(items)
     score = _compute_score(items)
+    assessed_at = max(
+        (i["last_reviewed"] for i in items if i.get("last_reviewed")), default=None
+    )
 
     return {
         "score": score,
         "summary": summary,
-        "assessed_at": "2026-04-28T14:30:00Z",
+        "assessed_at": assessed_at,
         "items": items,
     }
 
@@ -285,7 +312,7 @@ async def generate_audit_pack(
     if not firm:
         raise HTTPException(status_code=404, detail="Firm not found")
 
-    items = DEMO_SRA_AUDIT_ITEMS
+    items = await _firm_audit_items(db, current_user.firm_id)
     summary = _get_summary(items)
     score = _compute_score(items)
 
