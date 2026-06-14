@@ -33,7 +33,6 @@ export const ROUTES = {
   REMEDIATION: '/remediation',
   POLICIES: '/policies',
   BREACH_LOG: '/breach-log',
-  AUDIT_REPORT: '/audit-report',
   CHASERS: '/chasers',
   EVIDENCE_LOCKER: '/evidence-locker',
   SUPERVISION: '/supervision',
