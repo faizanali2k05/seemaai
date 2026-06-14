@@ -16,8 +16,11 @@
 
 // ── Activation guard ─────────────────────────────────────────────────────────
 export function isDemoMode(): boolean {
-  if (typeof window === 'undefined') return false;
-  return localStorage.getItem('accessToken') === 'demo-token';
+  // Demo/sample data is permanently disabled. The app shows ONLY real data —
+  // records sourced from the firm's PMS (Clio) and processed by Seema's AI.
+  // Pages fall through to their real API calls + empty states instead of any
+  // mock data, regardless of the auth token.
+  return false;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

@@ -385,33 +385,6 @@ export default function DataManagementPage() {
               </div>
             </Card>
 
-            <Card className="rounded-xl border-yellow-200 bg-yellow-50 border-b border-gray-200 pb-6">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
-                <div className="flex-1">
-                  <h4 className="font-semibold text-yellow-900 mb-2 uppercase tracking-wide">
-                    Clear Demo Data
-                  </h4>
-                  <p className="text-sm text-yellow-800 mb-4">
-                    This will permanently delete all demo and test data from the system.
-                    This action cannot be undone.
-                  </p>
-                  {clearError && (
-                    <div className="mb-3 p-2 bg-red-100 border border-red-300 rounded text-sm text-red-800">
-                      {clearError}
-                    </div>
-                  )}
-                  <Button
-                    variant="destructive"
-                    onClick={() => setConfirmClear(true)}
-                    disabled={clearLoading}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    {clearLoading ? 'Clearing...' : 'Clear Demo Data'}
-                  </Button>
-                </div>
-              </div>
-            </Card>
           </div>
         )}
       </Tabs>
@@ -456,15 +429,6 @@ export default function DataManagementPage() {
         </Modal>
       )}
 
-      <ConfirmDialog
-        isOpen={confirmClear}
-        onConfirm={handleClearDemoData}
-        onCancel={() => setConfirmClear(false)}
-        title="Clear Demo Data"
-        message="This will permanently remove all demo and test data from the system. This action cannot be undone."
-        confirmLabel="Clear Data"
-        variant="danger"
-      />
     </div>
   );
 }
