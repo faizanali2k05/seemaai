@@ -15,6 +15,42 @@ from models.staff import StaffTraining
 
 router = APIRouter()
 
+
+@router.get("/dashboard/notifications")
+async def get_dashboard_notifications(
+    user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """Open compliance alerts surfaced as notification-bell items (real data).
+
+    The NotificationBell polls this; it previously 404'd because the endpoint
+    didn't exist. Returns the firm's open alerts mapped to the bell's shape;
+    empty list when there are none.
+    """
+    res = await db.execute(
+        select(ComplianceAlert)
+        .where(
+            ComplianceAlert.firm_id == user.firm_id,
+            ComplianceAlert.status == "open",
+        )
+        .order_by(ComplianceAlert.created_at.desc())
+        .limit(50)
+    )
+    notifications = [
+        {
+            "id": a.id,
+            "type": a.alert_type or "alert",
+            "severity": a.severity or "medium",
+            "title": a.title or "Compliance alert",
+            "entity_id": a.id,
+            "entity_type": "alert",
+            "created_at": a.created_at.isoformat() if a.created_at else None,
+        }
+        for a in res.scalars().all()
+    ]
+    return {"notifications": notifications, "total": len(notifications)}
+
+
 @router.get("/dashboard/stats")
 async def get_dashboard_stats(
     user: CurrentUser = Depends(get_current_user),

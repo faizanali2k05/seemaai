@@ -74,6 +74,29 @@ async def list_supervision_sessions(
         for s in sessions
     ]
 
+@router.get("/compliance/supervision/sessions")
+async def list_supervision_session_log(
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """Individual supervision session log (frontend polls this on load).
+
+    Session-level records aren't persisted separately yet, so this returns an
+    empty log rather than 404ing. No demo data.
+    """
+    return []
+
+
+@router.get("/compliance/supervision/relationships/{relationship_id}/sessions")
+async def list_relationship_sessions(
+    relationship_id: str,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """Sessions for a single supervision relationship. Empty until recorded."""
+    return []
+
+
 @router.get("/compliance/supervision/overdue")
 async def list_overdue_sessions(
     current_user: CurrentUser = Depends(get_current_user),
