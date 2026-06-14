@@ -552,9 +552,26 @@ async def run_clio_sync(db: AsyncSession, firm_id: str, sync_type: str = "full")
     if not integration or integration.status != "connected":
         raise ValueError("Clio is not connected for this firm")
 
-    async with ClioClient(integration, db) as client:
-        engine = ClioSyncEngine(client, firm_id, db)
-        return await engine.sync(sync_type, integration_id=integration.id)
+    # The sync performs MANY commits (OAuth token refresh + one per entity).
+    # Tenant RLS is enforced by a *transaction-local* GUC (app.current_firm_id)
+    # that Postgres clears on every COMMIT. On the request's tenant session the
+    # firm scope is therefore lost after the first commit, and RLS then blocks
+    # every subsequent query — surfacing as "Could not refresh instance
+    # '<IntegrationSyncLog ...>'". Run the whole sync on a BYPASSRLS admin
+    # session instead; every sync query is already explicitly scoped by firm_id,
+    # so bypassing RLS here is safe.
+    from middleware.tenant_rls import admin_session
+
+    if admin_session is None:
+        async with ClioClient(integration, db) as client:
+            engine = ClioSyncEngine(client, firm_id, db)
+            return await engine.sync(sync_type, integration_id=integration.id)
+
+    async with admin_session() as adb:
+        integ = await get_firm_integration(adb, firm_id)
+        async with ClioClient(integ, adb) as client:
+            engine = ClioSyncEngine(client, firm_id, adb)
+            return await engine.sync(sync_type, integration_id=integ.id)
 
 
 async def get_sync_history(db: AsyncSession, firm_id: str, limit: int = 20) -> list[IntegrationSyncLog]:

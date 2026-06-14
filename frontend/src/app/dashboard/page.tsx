@@ -54,25 +54,6 @@ interface RegulatoryUpdate {
   regulatory_body?: string;
 }
 
-// ── Mock trend data for charts (would come from API in production) ──
-const COMPLIANCE_TREND = [
-  { month: 'Nov', score: 72 },
-  { month: 'Dec', score: 68 },
-  { month: 'Jan', score: 75 },
-  { month: 'Feb', score: 78 },
-  { month: 'Mar', score: 82 },
-  { month: 'Apr', score: 85 },
-];
-
-const TASK_DISTRIBUTION = [
-  { category: 'Training', count: 12 },
-  { category: 'Reviews', count: 8 },
-  { category: 'Breaches', count: 3 },
-  { category: 'Intakes', count: 6 },
-  { category: 'Deadlines', count: 9 },
-  { category: 'Supervision', count: 5 },
-];
-
 export default function DashboardPage() {
   useRequireAuth();
   const router = useRouter();
@@ -261,14 +242,22 @@ export default function DashboardPage() {
     { name: 'Non-Compliant', value: Math.max(0, 100 - complianceHealth - 30), color: '#dc2626' },
   ].filter(d => d.value > 0);
 
-  // ── Activity timeline items ──
-  const recentActivity = [
-    { id: '1', title: 'Compliance scan completed', description: 'All checks passed', time: '2 hours ago', type: 'success' as const },
-    { id: '2', title: 'New regulatory update', description: 'SRA Practice Standards amendment', time: '4 hours ago', type: 'info' as const },
-    { id: '3', title: 'Breach report filed', description: 'Data protection incident logged', time: 'Yesterday', type: 'error' as const },
-    { id: '4', title: 'Staff training completed', description: 'AML refresher — 3 staff members', time: 'Yesterday', type: 'success' as const },
-    { id: '5', title: 'Chaser sent', description: 'Outstanding evidence request', time: '2 days ago', type: 'warning' as const },
-  ];
+  // ── Bar chart: open items by category, derived from REAL stats (no mock) ──
+  const taskDistribution = stats
+    ? [
+        { category: 'Alerts', count: stats.open_alerts ?? 0 },
+        { category: 'Tasks', count: stats.pending_tasks ?? 0 },
+        { category: 'Intakes', count: stats.pending_intake ?? 0 },
+        { category: 'Breaches', count: stats.open_breaches ?? 0 },
+        { category: 'Staff', count: stats.total_staff ?? 0 },
+      ].filter((d) => d.count > 0)
+    : [];
+
+  // ── Compliance score trend — fills in as scan history accrues (no mock data) ──
+  const complianceTrend: { month: string; score: number }[] = [];
+
+  // ── Activity timeline — real activity only (empty until there is any) ──
+  const recentActivity: { id: string; title: string; description: string; time: string; type: 'success' | 'info' | 'error' | 'warning' }[] = [];
 
   return (
     <div className="space-y-6">
@@ -388,7 +377,7 @@ export default function DashboardPage() {
       {/* ── Charts Row ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <TrendChart
-          data={COMPLIANCE_TREND}
+          data={complianceTrend}
           dataKey="score"
           xAxisKey="month"
           color="#059669"
@@ -396,7 +385,7 @@ export default function DashboardPage() {
           height={220}
         />
         <BarChartCard
-          data={TASK_DISTRIBUTION}
+          data={taskDistribution}
           dataKey="count"
           xAxisKey="category"
           color="#2563eb"
