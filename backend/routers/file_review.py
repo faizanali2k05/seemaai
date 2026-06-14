@@ -3,7 +3,7 @@ import io
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from middleware.tenant_rls import tenant_db_from_jwt
@@ -14,6 +14,27 @@ from models.staff import StaffMember
 from services.file_review_pdf import generate_file_review_form
 
 router = APIRouter()
+
+
+@router.get("/compliance/file-reviews")
+async def list_file_reviews(
+    user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """List the firm's staff file-review records (Staff & Training page).
+
+    Previously 404'd (no endpoint). Reads the staff_file_reviews helper table
+    (no ORM model) via RLS-scoped raw SQL; empty until reviews exist.
+    """
+    res = await db.execute(
+        text(
+            "SELECT id, staff_id, case_id, reviewer_id, status, due_date, "
+            "completed_at, findings, score FROM staff_file_reviews "
+            "WHERE firm_id = :fid ORDER BY due_date DESC NULLS LAST"
+        ),
+        {"fid": user.firm_id},
+    )
+    return [dict(r._mapping) for r in res]
 
 
 async def _get_firm(db: AsyncSession, firm_id: str) -> Firm:

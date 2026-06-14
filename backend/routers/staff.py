@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from middleware.tenant_rls import tenant_db_from_jwt, bypass_db
@@ -12,6 +12,53 @@ from services.audit_logger import log_audit
 from models.staff import StaffMember, StaffTraining
 
 router = APIRouter()
+
+
+@router.get("/compliance/training/cpd-dashboard")
+async def cpd_dashboard(
+    year: int | None = None,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """CPD dashboard for the Staff & Training page (previously 404'd).
+
+    Lists the firm's staff with their training-record counts. Hours aggregation
+    by category is a baseline (0) until CPD hours are captured — no demo data.
+    """
+    yr = year or datetime.utcnow().year
+    staff = (
+        await db.execute(select(StaffMember).where(StaffMember.firm_id == current_user.firm_id))
+    ).scalars().all()
+    rows = []
+    for s in staff:
+        cnt = (
+            await db.execute(
+                select(func.count(StaffTraining.id)).where(
+                    StaffTraining.firm_id == current_user.firm_id,
+                    StaffTraining.staff_id == s.id,
+                )
+            )
+        ).scalar() or 0
+        rows.append({
+            "staff_id": s.id, "staff_name": s.name, "role": getattr(s, "role", None),
+            "total_hours": 0, "hours_by_category": {}, "target_hours": 16, "gap_hours": 16,
+            "records_count": cnt, "missing_reflections": 0, "last_record_date": None,
+            "status": "no_records" if cnt == 0 else "at_risk",
+        })
+    return {
+        "year": yr, "firm_target_hours": 16, "uncategorised_records": 0,
+        "summary": {"total_hours": 0, "avg_per_fee_earner": 0, "on_track_pct": 0, "staff_count": len(staff)},
+        "staff": rows,
+    }
+
+
+@router.get("/compliance/training/cpd-targets")
+async def cpd_targets(
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """CPD targets (previously 404'd). Firm default until targets are set."""
+    return {"firm_target_hours": 16, "targets": []}
 
 class CreateStaffRequest(BaseModel):
     name: str

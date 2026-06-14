@@ -1293,9 +1293,8 @@ function HistoryTab() {
   const fetchHistory = useCallback(async () => {
     setIsLoading(true);
     if (isDemoMode()) {
-      const demo = getDemoHistory();
-      setHistory(demo.data);
-      setSummary(demo.summary);
+      setHistory([]);
+      setSummary(null);
       setIsLoading(false);
       return;
     }
@@ -1310,9 +1309,8 @@ function HistoryTab() {
       setHistory(response.data?.data || response.data || []);
       setSummary(response.data?.summary || null);
     } catch (_e) {
-      const demo = getDemoHistory();
-      setHistory(demo.data);
-      setSummary(demo.summary);
+      setHistory([]);
+      setSummary(null);
     } finally {
       setIsLoading(false);
     }
@@ -1475,7 +1473,7 @@ export default function RegulatoryPage() {
       setError(null);
 
       if (isDemoMode()) {
-        setUpdates(getDemoUpdates());
+        setUpdates([]);
         setIsLoading(false);
         return;
       }
@@ -1491,7 +1489,7 @@ export default function RegulatoryPage() {
       const list = Array.isArray(body) ? body : (Array.isArray(body?.data) ? body.data : []);
       setUpdates(list);
     } catch (_e) {
-      setUpdates(getDemoUpdates());
+      setUpdates([]);
       setError('Failed to load regulatory updates. Showing demo data.');
     } finally {
       setIsLoading(false);
