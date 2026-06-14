@@ -70,7 +70,7 @@ async def generate_pii_pack(
 
     rs = (await db.execute(
         select(RiskScore).where(RiskScore.firm_id == fid)
-        .order_by(RiskScore.created_at.desc())
+        .order_by(RiskScore.calculated_at.desc())
     )).scalars().first()
 
     pack = {
@@ -131,7 +131,7 @@ async def generate_pii_pack(
                 "sra_score": getattr(rs, "sra_score", None),
                 "aml_score": getattr(rs, "aml_score", None),
                 "gdpr_score": getattr(rs, "gdpr_score", None),
-                "calculated_at": _iso(getattr(rs, "created_at", None)),
+                "calculated_at": _iso(getattr(rs, "calculated_at", None)),
             } if rs else None),
         },
         "conflict_checks": {"total_last_12m": await _count(db, ConflictCheck, fid)},
