@@ -175,7 +175,23 @@ export default function AMLPage() {
         apiClient.get('/compliance/aml/sar'),
       ]);
 
-      setStats((statsRes.data as any) ?? null);
+      // Real API stats shape is { total_cdd, pending_cdd, approved_cdd, total_sars }.
+      // The cards read cdd_total / cdd_incomplete / cdd_verified / completion_rate /
+      // pep_flagged / sars_pending — normalize so they display real numbers.
+      const rawStats = (statsRes.data as any) ?? {};
+      const cddTotal = rawStats.cdd_total ?? rawStats.total_cdd ?? 0;
+      const cddVerified = rawStats.cdd_verified ?? rawStats.approved_cdd ?? 0;
+      const cddIncomplete = rawStats.cdd_incomplete ?? rawStats.pending_cdd ?? 0;
+      setStats({
+        ...rawStats,
+        cdd_total: cddTotal,
+        cdd_verified: cddVerified,
+        cdd_incomplete: cddIncomplete,
+        completion_rate:
+          rawStats.completion_rate ?? (cddTotal > 0 ? (cddVerified / cddTotal) * 100 : 0),
+        pep_flagged: rawStats.pep_flagged ?? 0,
+        sars_pending: rawStats.sars_pending ?? rawStats.sars_pending_mlro ?? 0,
+      });
       setCDDRecords(Array.isArray(cddRes.data) ? (cddRes.data as any) : []);
       setSARRecords(Array.isArray(sarRes.data) ? (sarRes.data as any) : []);
     } catch (err) {
@@ -466,8 +482,10 @@ export default function AMLPage() {
       case 'incomplete':
         return 'error';
       case 'pending_review':
+      case 'pending': // real API status
         return 'warning';
       case 'verified':
+      case 'approved': // real API status
         return 'success';
       case 'expired':
         return 'warning';

@@ -85,6 +85,28 @@ function truncateText(text: string, maxLength: number = 50): string {
   return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 }
 
+// Map the real undertakings API rows to the shape the table renders. The backend
+// model has no direction / risk_level / received_from / financial_value columns and
+// stores status as "pending" rather than "outstanding".
+function normalizeUndertakings(data: unknown): Undertaking[] {
+  if (!Array.isArray(data)) return [];
+  return data.map((u: any) => {
+    const status = u.status === 'pending' ? 'outstanding' : u.status;
+    return {
+      ...u,
+      direction: u.direction || (u.given_to ? 'given' : 'received'),
+      risk_level: u.risk_level || 'medium',
+      received_from: u.received_from ?? u.given_by ?? undefined,
+      client_name: u.client_name ?? undefined,
+      financial_value: u.financial_value ?? undefined,
+      status,
+      due_date: u.due_date || '',
+      created_at: u.created_at || '',
+      updated_at: u.updated_at || u.created_at || '',
+    } as Undertaking;
+  });
+}
+
 export default function UndertakingsPage() {
   useRequireAuth();
 
@@ -164,16 +186,19 @@ export default function UndertakingsPage() {
       const response = await apiClient.get(url);
       const responseData = response.data as any;
       if (responseData && responseData.stats) {
-        setData(responseData);
+        setData({ ...responseData, undertakings: normalizeUndertakings(responseData.undertakings) });
       } else if (Array.isArray(responseData)) {
+        // Real API returns a bare array with no direction/risk_level/received_from/
+        // financial_value, and status "pending" (page expects "outstanding").
+        const undertakings = normalizeUndertakings(responseData);
         const stats: UndertakingsStats = {
-          total: responseData.length,
-          outstanding: responseData.filter((u: any) => u.status === 'outstanding').length,
+          total: undertakings.length,
+          outstanding: undertakings.filter((u) => u.status === 'outstanding').length,
           overdue: 0,
-          breached: responseData.filter((u: any) => u.status === 'breached').length,
-          fulfilled: responseData.filter((u: any) => u.status === 'fulfilled').length,
+          breached: undertakings.filter((u) => u.status === 'breached').length,
+          fulfilled: undertakings.filter((u) => u.status === 'fulfilled').length,
         };
-        setData({ stats, undertakings: responseData });
+        setData({ stats, undertakings });
       } else {
         setData({ stats: { total: 0, outstanding: 0, overdue: 0, breached: 0, fulfilled: 0 }, undertakings: [] });
       }
@@ -607,6 +632,10 @@ export default function UndertakingsPage() {
         isOpen={showRegisterModal}
         onClose={() => setShowRegisterModal(false)}
         title="Register Undertaking"
+        actions={[
+          { label: 'Cancel', variant: 'outline', onClick: () => setShowRegisterModal(false), disabled: registerLoading },
+          { label: 'Register', variant: 'primary', onClick: handleRegisterUndertaking, loading: registerLoading },
+        ]}
       >
         <div className="space-y-4">
           <Select
@@ -772,33 +801,15 @@ export default function UndertakingsPage() {
         </div>
       </Modal>
 
-      {/* Register Modal Actions */}
-      {showRegisterModal && (
-        <div className="fixed inset-0 pointer-events-none flex items-center justify-center z-50">
-          <div className="pointer-events-auto flex gap-3 bg-white rounded-lg shadow-lg p-6 absolute bottom-0 left-0 right-0 mx-auto w-full max-w-md">
-            <Button
-              variant="outline"
-              onClick={() => setShowRegisterModal(false)}
-              disabled={registerLoading}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleRegisterUndertaking}
-              loading={registerLoading}
-            >
-              Register
-            </Button>
-          </div>
-        </div>
-      )}
-
       {/* Fulfil Modal */}
       <Modal
         isOpen={!!showFulfilModal}
         onClose={() => setShowFulfilModal(null)}
         title="Fulfil Undertaking"
+        actions={[
+          { label: 'Cancel', variant: 'outline', onClick: () => setShowFulfilModal(null), disabled: fulfilLoading },
+          { label: 'Fulfil', variant: 'success', onClick: () => { if (showFulfilModal) handleFulfilUndertaking(showFulfilModal); }, loading: fulfilLoading },
+        ]}
       >
         <div className="space-y-4">
           <Input
@@ -833,32 +844,6 @@ export default function UndertakingsPage() {
         </div>
       </Modal>
 
-      {/* Fulfil Modal Actions */}
-      {showFulfilModal && (
-        <div className="fixed inset-0 pointer-events-none flex items-center justify-center z-50">
-          <div className="pointer-events-auto flex gap-3 bg-white rounded-lg shadow-lg p-6 absolute bottom-0 left-0 right-0 mx-auto w-full max-w-md">
-            <Button
-              variant="outline"
-              onClick={() => setShowFulfilModal(null)}
-              disabled={fulfilLoading}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="success"
-              onClick={() => {
-                if (showFulfilModal) {
-                  handleFulfilUndertaking(showFulfilModal);
-                }
-              }}
-              loading={fulfilLoading}
-            >
-              Fulfil
-            </Button>
-          </div>
-        </div>
-      )}
-
       {/* Breach Confirmation Dialog */}
       <ConfirmDialog
         isOpen={!!breachConfirm}
@@ -880,6 +865,10 @@ export default function UndertakingsPage() {
         isOpen={!!breachConfirm}
         onClose={() => setBreachConfirm(null)}
         title="Report Breach"
+        actions={[
+          { label: 'Cancel', variant: 'outline', onClick: () => { setBreachConfirm(null); setBreaformState({ breach_notes: '', remediation_plan: '' }); }, disabled: breachLoading },
+          { label: 'Report Breach', variant: 'danger', onClick: () => { if (breachConfirm) handleReportBreach(breachConfirm); }, loading: breachLoading },
+        ]}
       >
         <div className="space-y-4">
           <div>
@@ -928,35 +917,6 @@ export default function UndertakingsPage() {
           </div>
         </div>
       </Modal>
-
-      {/* Breach Modal Actions */}
-      {breachConfirm && (
-        <div className="fixed inset-0 pointer-events-none flex items-center justify-center z-50">
-          <div className="pointer-events-auto flex gap-3 bg-white rounded-lg shadow-lg p-6 absolute bottom-0 left-0 right-0 mx-auto w-full max-w-md">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setBreachConfirm(null);
-                setBreaformState({ breach_notes: '', remediation_plan: '' });
-              }}
-              disabled={breachLoading}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              onClick={() => {
-                if (breachConfirm) {
-                  handleReportBreach(breachConfirm);
-                }
-              }}
-              loading={breachLoading}
-            >
-              Report Breach
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* Detail View Modal */}
       {selectedUndertaking && (

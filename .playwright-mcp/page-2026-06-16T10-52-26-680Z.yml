@@ -1,0 +1,49 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e81]:
+    - complementary [ref=e82]:
+      - generic [ref=e83]:
+        - generic [ref=e84]:
+          - heading "Seema" [level=1] [ref=e85]
+          - generic [ref=e86]: Essentials
+        - paragraph [ref=e87]: Compliance Platform
+      - navigation [ref=e88]:
+        - generic [ref=e89]:
+          - link "Dashboard" [ref=e90] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e91]
+            - generic [ref=e96]: Dashboard
+          - link "Compliance Scan" [ref=e97] [cursor=pointer]:
+            - /url: /compliance-scan
+            - img [ref=e98]
+            - generic [ref=e103]: Compliance Scan
+          - link "Breach Logs" [ref=e104] [cursor=pointer]:
+            - /url: /breaches
+            - img [ref=e105]
+            - generic [ref=e107]: Breach Logs
+          - link "Reconciliation" [ref=e108] [cursor=pointer]:
+            - /url: /reconciliation
+            - img [ref=e109]
+            - generic [ref=e111]: Reconciliation
+          - link "Undertakings" [ref=e112] [cursor=pointer]:
+            - /url: /undertakings
+            - img [ref=e113]
+            - generic [ref=e116]: Undertakings
+        - button "More" [ref=e118] [cursor=pointer]:
+          - generic [ref=e119]: More
+          - img [ref=e120]
+      - generic [ref=e122]:
+        - link "Omar Nawaz Solicitors LLP demo@seemaai.co.uk View firm profile" [ref=e123] [cursor=pointer]:
+          - /url: /settings
+          - paragraph [ref=e124]: Omar Nawaz Solicitors LLP
+          - paragraph [ref=e125]: demo@seemaai.co.uk
+          - paragraph [ref=e126]:
+            - img [ref=e127]
+            - text: View firm profile
+        - button "Logout" [ref=e130] [cursor=pointer]:
+          - img [ref=e131]
+          - generic [ref=e134]: Logout
+    - main [ref=e135]:
+      - button "Notifications (0)" [ref=e139] [cursor=pointer]:
+        - img [ref=e140]
+  - status [ref=e247]: Welcome back
+  - alert [ref=e4]

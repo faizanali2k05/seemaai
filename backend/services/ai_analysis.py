@@ -71,34 +71,88 @@ def _get_client():
     return None
 
 
-def _call_ai(system_prompt: str, user_prompt: str, max_tokens: int = 2048) -> Optional[str]:
-    """Send a prompt to the active AI provider and return the text response."""
-    client = _get_client()
-    if client is None:
+def _call_n8n(settings, system_prompt: str, user_prompt: str, max_tokens: int) -> Optional[str]:
+    """Route the prompt through the n8n webhook gateway (PII already redacted)."""
+    url = (getattr(settings, "N8N_AI_WEBHOOK_URL", "") or "").strip()
+    if not url:
+        logger.error("AI_PROVIDER=n8n but N8N_AI_WEBHOOK_URL is not set")
+        return None
+    import httpx
+
+    headers = {"Content-Type": "application/json"}
+    token = (getattr(settings, "N8N_AI_WEBHOOK_TOKEN", "") or "").strip()
+    if token:
+        headers["X-Seema-Token"] = token
+    payload = {"system": system_prompt, "user": user_prompt, "max_tokens": max_tokens}
+    try:
+        resp = httpx.post(url, json=payload, headers=headers,
+                          timeout=float(getattr(settings, "N8N_AI_TIMEOUT", 120)))
+        resp.raise_for_status()
+        data = resp.json()
+        if isinstance(data, str):
+            return data
+        if isinstance(data, list) and data:          # n8n often returns a list of items
+            data = data[0]
+        return (data.get("text") or data.get("content")
+                or data.get("output") or data.get("response") or "")
+    except Exception as e:
+        logger.error("n8n AI gateway call failed: %s", e)
         return None
 
-    try:
-        if _ai_provider == "openai":
-            response = client.chat.completions.create(
-                model=_ai_model,
-                max_tokens=max_tokens,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-            )
-            return response.choices[0].message.content
-        # Anthropic
-        response = client.messages.create(
-            model=_ai_model,
-            max_tokens=max_tokens,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_prompt}],
-        )
-        return response.content[0].text
-    except Exception as e:
-        logger.error("AI API call failed (%s): %s", _ai_provider, e)
-        return None
+
+def _call_ai(system_prompt: str, user_prompt: str, max_tokens: int = 2048,
+             pii_terms: Optional[list] = None) -> Optional[str]:
+    """Send a prompt to the active AI provider and return the text response.
+
+    When AI_REDACT_PII is on (default), direct identifiers — and any exact
+    `pii_terms` the caller passes (e.g. client names) — are tokenised before the
+    prompt leaves the process and restored in the reply, so the chat model never
+    sees real PII. When AI_PROVIDER="n8n", the (redacted) prompt is routed
+    through the n8n webhook gateway instead of OpenAI/Anthropic directly.
+    """
+    from config import get_settings
+    settings = get_settings()
+
+    mapping: dict = {}
+    if getattr(settings, "AI_REDACT_PII", True):
+        from services.pii_redaction import redact
+        user_prompt, mapping = redact(user_prompt, extra_terms=pii_terms)
+
+    provider = (getattr(settings, "AI_PROVIDER", "openai") or "openai").lower()
+
+    if provider == "n8n":
+        text = _call_n8n(settings, system_prompt, user_prompt, max_tokens)
+    else:
+        client = _get_client()
+        if client is None:
+            return None
+        try:
+            if _ai_provider == "openai":
+                response = client.chat.completions.create(
+                    model=_ai_model,
+                    max_tokens=max_tokens,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                )
+                text = response.choices[0].message.content
+            else:  # Anthropic
+                response = client.messages.create(
+                    model=_ai_model,
+                    max_tokens=max_tokens,
+                    system=system_prompt,
+                    messages=[{"role": "user", "content": user_prompt}],
+                )
+                text = response.content[0].text
+        except Exception as e:
+            logger.error("AI API call failed (%s): %s", _ai_provider, e)
+            return None
+
+    if mapping and text:
+        from services.pii_redaction import restore
+        text = restore(text, mapping)
+    return text
 
 
 # Backwards-compatible alias — existing call sites use `_call_claude`.
@@ -1261,7 +1315,15 @@ Identify compliance gaps specific to this matter. Consider:
 Be proportionate — a new low-risk matter with no findings should return overall_risk='low'
 and an empty findings array. Return valid JSON only (no markdown, no code fences)."""
 
-    text = _call_claude(MATTER_REVIEW_SYSTEM_PROMPT, user_prompt, max_tokens=2048)
+    # Exact PII to tokenise before the prompt leaves the process: the matter's
+    # client plus every named client/counterparty on related records.
+    pii_terms = [matter.get("client_name")]
+    pii_terms += [c.get("client_name") for c in cdd_records]
+    pii_terms += [c.get("client_name") for c in conflict_checks]
+    pii_terms += [u.get("given_to") for u in undertakings]
+
+    text = _call_claude(MATTER_REVIEW_SYSTEM_PROMPT, user_prompt, max_tokens=2048,
+                        pii_terms=pii_terms)
     if text is None:
         return _fallback_matter_review(matter, related)
 

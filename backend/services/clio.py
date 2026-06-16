@@ -323,6 +323,11 @@ class ClioSyncEngine:
                         "firm_id": self.firm_id,
                         "external_ref": clio_id,
                         "title": cm.get("display_number") or cm.get("description", "Untitled"),
+                        # The app (File Review, dashboard) reads reference / matter_type /
+                        # client_name — populate them from Clio so synced matters render.
+                        "reference": cm.get("display_number"),
+                        "matter_type": (cm.get("practice_area") or {}).get("name"),
+                        "client_name": (cm.get("client") or {}).get("name"),
                         "description": cm.get("description"),
                         "status": (cm.get("status") or "open").lower(),
                         "practice_area": (cm.get("practice_area") or {}).get("name"),

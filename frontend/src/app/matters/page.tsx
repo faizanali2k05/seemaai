@@ -81,7 +81,14 @@ export default function MattersPage() {
         }
 
         const response = await apiClient.get('/compliance/matters');
-        setMatters(Array.isArray(response.data) ? response.data : []);
+        const rows = Array.isArray(response.data) ? response.data : [];
+        // Normalise real API fields to the keys this page renders (page was
+        // written against demo-data shapes: matter_ref / fee_earner).
+        setMatters(rows.map((m: any) => ({
+          ...m,
+          matter_ref: m.matter_ref || m.reference || '—',
+          fee_earner: m.fee_earner || m.assigned_to || '',
+        })));
       } catch (err: any) {
         console.error('Error fetching matters:', err);
         // Fallback to demo data on error only if in demo mode
@@ -128,7 +135,7 @@ export default function MattersPage() {
       criminal: 'Criminal',
       commercial: 'Commercial',
     };
-    return labels[type];
+    return labels[type] || type || '—';
   };
 
   const formatMatterData = (matters: Matter[]) =>

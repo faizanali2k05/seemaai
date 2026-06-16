@@ -1,0 +1,100 @@
+{
+  "name": "Seema Compliance Scan (automated)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "aaaaaaaa-0000-0000-0000-000000000001",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [200, 320],
+      "notes": "Swap this for a Schedule Trigger (e.g. daily 06:00, cron 0 6 * * *) to run it automatically."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://app.seemaai.co.uk/api/auth/login",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ email: 'REPLACE_WITH_FIRM_USER_EMAIL', password: 'REPLACE_WITH_FIRM_USER_PASSWORD' }) }}",
+        "options": {}
+      },
+      "id": "aaaaaaaa-0000-0000-0000-000000000002",
+      "name": "Login (get JWT)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://app.seemaai.co.uk/api/ai/scan-compliance",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $json.access_token }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aaaaaaaa-0000-0000-0000-000000000003",
+      "name": "Run Compliance Scan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 320]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "version": 2 },
+          "combinator": "or",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.overall_rating }}",
+              "rightValue": "high",
+              "operator": { "type": "string", "operation": "equals" }
+            },
+            {
+              "leftValue": "={{ ($json.urgent_actions || []).length }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "gt" }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aaaaaaaa-0000-0000-0000-000000000004",
+      "name": "Needs attention?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [920, 320]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "s1", "name": "rating", "value": "={{ $json.overall_rating }}", "type": "string" },
+            { "id": "s2", "name": "risk_score", "value": "={{ $json.overall_risk_score }}", "type": "number" },
+            { "id": "s3", "name": "urgent_actions", "value": "={{ ($json.urgent_actions || []).join('; ') }}", "type": "string" },
+            { "id": "s4", "name": "scan_id", "value": "={{ $json.scan_id }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aaaaaaaa-0000-0000-0000-000000000005",
+      "name": "Build alert payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1160, 220],
+      "notes": "Add an Email / Slack / Microsoft Teams node after this to notify the COLP."
+    }
+  ],
+  "connections": {
+    "Manual Trigger": { "main": [[{ "node": "Login (get JWT)", "type": "main", "index": 0 }]] },
+    "Login (get JWT)": { "main": [[{ "node": "Run Compliance Scan", "type": "main", "index": 0 }]] },
+    "Run Compliance Scan": { "main": [[{ "node": "Needs attention?", "type": "main", "index": 0 }]] },
+    "Needs attention?": { "main": [[{ "node": "Build alert payload", "type": "main", "index": 0 }], []] }
+  },
+  "settings": {},
+  "active": false
+}

@@ -167,17 +167,29 @@ export default function ConflictsPage() {
         return;
       }
 
-      const [statsRes, checksRes] = await Promise.allSettled([
+      const [statsRes, checksRes, partiesRes] = await Promise.allSettled([
         apiClient.get('/compliance/conflicts/stats'),
         apiClient.get('/compliance/conflicts'),
+        apiClient.get('/compliance/conflicts/parties'),
       ]);
 
+      // Real API stats shape is { pending, clear, conflicted, total }; the cards read
+      // total_checks / pending / conflicts_found / parties_in_register. parties_in_register
+      // is not in stats, so derive it from the parties list.
       if (statsRes.status === 'fulfilled') {
-        setStats(statsRes.value.data);
+        const raw = (statsRes.value.data as any) ?? {};
+        const partiesData = partiesRes.status === 'fulfilled' ? partiesRes.value.data : null;
+        setStats({
+          total_checks: raw.total_checks ?? raw.total ?? 0,
+          pending: raw.pending ?? 0,
+          conflicts_found: raw.conflicts_found ?? raw.conflicted ?? 0,
+          parties_in_register:
+            raw.parties_in_register ?? (Array.isArray(partiesData) ? partiesData.length : 0),
+        });
       }
 
       if (checksRes.status === 'fulfilled') {
-        setConflictChecks(Array.isArray(checksRes.value.data) ? checksRes.value.data : []);
+        setConflictChecks(normalizeChecks(checksRes.value.data));
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load conflict data';
@@ -250,7 +262,7 @@ export default function ConflictsPage() {
         setStats(statsRes.value.data);
       }
       if (checksRes.status === 'fulfilled') {
-        setConflictChecks(Array.isArray(checksRes.value.data) ? checksRes.value.data : []);
+        setConflictChecks(normalizeChecks(checksRes.value.data));
       }
 
       showToast(
@@ -303,7 +315,7 @@ export default function ConflictsPage() {
 
       // Refresh data
       const checksRes = await apiClient.get('/compliance/conflicts');
-      setConflictChecks(Array.isArray(checksRes.data) ? checksRes.data : []);
+      setConflictChecks(normalizeChecks(checksRes.data));
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to resolve conflict';
       showToast(message, 'error');
@@ -1041,14 +1053,34 @@ export default function ConflictsPage() {
 }
 
 // Helper functions
+
+// Normalize the real conflict-check list to the shape the table renders.
+// Real API returns status "conflicted" (page compares to "conflict_found"), uses
+// created_at (page reads checked_at), and has no opposing_party column.
+function normalizeChecks(data: unknown): ConflictCheck[] {
+  if (!Array.isArray(data)) return [];
+  return data.map((c: any) => {
+    const status =
+      c.status === 'conflicted' ? 'conflict_found' : c.status;
+    return {
+      ...c,
+      status,
+      opposing_party: c.opposing_party ?? c.conflict_type ?? undefined,
+      matter_type: c.matter_type ?? '',
+      checked_at: c.checked_at ?? c.created_at ?? '',
+    } as ConflictCheck;
+  });
+}
+
 function formatStatusLabel(status: string): string {
   const labels: Record<string, string> = {
     clear: 'Clear',
     conflict_found: 'Conflict Found',
+    conflicted: 'Conflict Found',
     pending: 'Pending',
     waiver_granted: 'Waiver Granted',
   };
-  return labels[status] || status;
+  return labels[status] || status || '—';
 }
 
 function formatPartyType(type: string): string {

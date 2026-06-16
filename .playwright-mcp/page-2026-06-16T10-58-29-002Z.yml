@@ -1,0 +1,139 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - heading "Seema" [level=1] [ref=e6]
+          - generic [ref=e7]: Essentials
+        - paragraph [ref=e8]: Compliance Platform
+      - navigation [ref=e9]:
+        - generic [ref=e10]:
+          - link "Dashboard" [ref=e11] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e12]
+            - generic [ref=e17]: Dashboard
+          - link "Compliance Scan" [ref=e18] [cursor=pointer]:
+            - /url: /compliance-scan
+            - img [ref=e19]
+            - generic [ref=e24]: Compliance Scan
+          - link "Breach Logs" [ref=e25] [cursor=pointer]:
+            - /url: /breaches
+            - img [ref=e26]
+            - generic [ref=e28]: Breach Logs
+          - link "Reconciliation" [ref=e29] [cursor=pointer]:
+            - /url: /reconciliation
+            - img [ref=e30]
+            - generic [ref=e32]: Reconciliation
+          - link "Undertakings" [ref=e33] [cursor=pointer]:
+            - /url: /undertakings
+            - img [ref=e34]
+            - generic [ref=e37]: Undertakings
+        - generic [ref=e38]:
+          - button "More" [ref=e39] [cursor=pointer]:
+            - generic [ref=e40]: More
+            - img [ref=e41]
+          - generic [ref=e43]:
+            - link "Regulatory Updates" [ref=e44] [cursor=pointer]:
+              - /url: /regulatory
+              - img [ref=e45]
+              - generic [ref=e47]: Regulatory Updates
+            - link "AML / CDD" [ref=e48] [cursor=pointer]:
+              - /url: /aml
+              - img [ref=e49]
+              - generic [ref=e58]: AML / CDD
+            - link "Conflict Check" [ref=e59] [cursor=pointer]:
+              - /url: /conflicts
+              - img [ref=e60]
+              - generic [ref=e63]: Conflict Check
+            - link "File Review" [ref=e64] [cursor=pointer]:
+              - /url: /matters
+              - img [ref=e65]
+              - generic [ref=e68]: File Review
+            - link "Compliance Deadlines" [ref=e69] [cursor=pointer]:
+              - /url: /deadlines
+              - img [ref=e70]
+              - generic [ref=e72]: Compliance Deadlines
+            - link "Complaints" [ref=e73] [cursor=pointer]:
+              - /url: /complaints
+              - img [ref=e74]
+              - generic [ref=e76]: Complaints
+            - link "Chasers" [ref=e77] [cursor=pointer]:
+              - /url: /chasers
+              - img [ref=e78]
+              - generic [ref=e80]: Chasers
+            - link "Remediation" [ref=e81] [cursor=pointer]:
+              - /url: /remediation
+              - img [ref=e82]
+              - generic [ref=e85]: Remediation
+            - link "Policies" [ref=e86] [cursor=pointer]:
+              - /url: /policies
+              - img [ref=e87]
+              - generic [ref=e90]: Policies
+            - link "Alerts" [ref=e91] [cursor=pointer]:
+              - /url: /alerts
+              - img [ref=e92]
+              - generic [ref=e94]: Alerts
+            - link "Staff & Training" [ref=e95] [cursor=pointer]:
+              - /url: /staff
+              - img [ref=e96]
+              - generic [ref=e101]: Staff & Training
+            - link "Supervision" [ref=e102] [cursor=pointer]:
+              - /url: /supervision
+              - img [ref=e103]
+              - generic [ref=e105]: Supervision
+            - link "SRA Inspection Pack" [ref=e106] [cursor=pointer]:
+              - /url: /sra-audit
+              - img [ref=e107]
+              - generic [ref=e110]: SRA Inspection Pack
+            - generic [ref=e111]:
+              - paragraph [ref=e112]: Admin
+              - link "Settings" [ref=e113] [cursor=pointer]:
+                - /url: /settings
+                - img [ref=e114]
+                - generic [ref=e117]: Settings
+              - link "User Management" [ref=e118] [cursor=pointer]:
+                - /url: /user-management
+                - img [ref=e119]
+                - generic [ref=e124]: User Management
+              - link "Data Management" [ref=e125] [cursor=pointer]:
+                - /url: /data-management
+                - img [ref=e126]
+                - generic [ref=e130]: Data Management
+      - generic [ref=e131]:
+        - link "Omar Nawaz Solicitors LLP demo@seemaai.co.uk View firm profile" [ref=e132] [cursor=pointer]:
+          - /url: /settings
+          - paragraph [ref=e133]: Omar Nawaz Solicitors LLP
+          - paragraph [ref=e134]: demo@seemaai.co.uk
+          - paragraph [ref=e135]:
+            - img [ref=e136]
+            - text: View firm profile
+        - button "Logout" [ref=e139] [cursor=pointer]:
+          - img [ref=e140]
+          - generic [ref=e143]: Logout
+    - main [ref=e144]:
+      - button "Notifications (0)" [ref=e148] [cursor=pointer]:
+        - img [ref=e149]
+      - generic [ref=e153]:
+        - generic [ref=e155]:
+          - heading "File Review" [level=1] [ref=e156]
+          - paragraph [ref=e157]: AI-assisted file review across the firm's matters. Flags missing CDD, overdue checklist items, and regulatory gaps — synced from your PMS where connected. Generate a per-matter File Review Form from any matter's checklist.
+        - generic [ref=e158]:
+          - generic [ref=e159]:
+            - generic [ref=e161]:
+              - button "All" [ref=e162] [cursor=pointer]:
+                - generic [ref=e163]: All
+              - button "Conveyancing" [ref=e165] [cursor=pointer]:
+                - generic [ref=e166]: Conveyancing
+              - button "Litigation" [ref=e167] [cursor=pointer]:
+                - generic [ref=e168]: Litigation
+              - button "Family" [ref=e169] [cursor=pointer]:
+                - generic [ref=e170]: Family
+              - button "Criminal" [ref=e171] [cursor=pointer]:
+                - generic [ref=e172]: Criminal
+              - button "Commercial" [ref=e173] [cursor=pointer]:
+                - generic [ref=e174]: Commercial
+            - generic [ref=e175]:
+              - button "File Review Form (PDF)" [ref=e176] [cursor=pointer]
+              - button "Create Checklist" [ref=e177] [cursor=pointer]
+          - paragraph [ref=e180]: Loading matters...
+  - alert [ref=e181]

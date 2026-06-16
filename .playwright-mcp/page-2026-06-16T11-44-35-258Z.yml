@@ -1,0 +1,171 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e85]:
+    - complementary [ref=e86]:
+      - generic [ref=e87]:
+        - generic [ref=e88]:
+          - heading "Seema" [level=1] [ref=e89]
+          - generic [ref=e90]: Essentials
+        - paragraph [ref=e91]: Compliance Platform
+      - navigation [ref=e92]:
+        - generic [ref=e93]:
+          - link "Dashboard" [ref=e94] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e95]
+            - generic [ref=e100]: Dashboard
+          - link "Compliance Scan" [ref=e101] [cursor=pointer]:
+            - /url: /compliance-scan
+            - img [ref=e102]
+            - generic [ref=e107]: Compliance Scan
+          - link "Breach Logs" [ref=e108] [cursor=pointer]:
+            - /url: /breaches
+            - img [ref=e109]
+            - generic [ref=e111]: Breach Logs
+          - link "Reconciliation" [ref=e112] [cursor=pointer]:
+            - /url: /reconciliation
+            - img [ref=e113]
+            - generic [ref=e115]: Reconciliation
+          - link "Undertakings" [ref=e116] [cursor=pointer]:
+            - /url: /undertakings
+            - img [ref=e117]
+            - generic [ref=e120]: Undertakings
+        - button "More" [ref=e122] [cursor=pointer]:
+          - generic [ref=e123]: More
+          - img [ref=e124]
+      - generic [ref=e126]:
+        - link "Omar Nawaz Solicitors LLP demo@seemaai.co.uk View firm profile" [ref=e127] [cursor=pointer]:
+          - /url: /settings
+          - paragraph [ref=e128]: Omar Nawaz Solicitors LLP
+          - paragraph [ref=e129]: demo@seemaai.co.uk
+          - paragraph [ref=e130]:
+            - img [ref=e131]
+            - text: View firm profile
+        - button "Logout" [ref=e134] [cursor=pointer]:
+          - img [ref=e135]
+          - generic [ref=e138]: Logout
+    - main [ref=e139]:
+      - button "Notifications (0)" [ref=e143] [cursor=pointer]:
+        - img [ref=e144]
+      - generic [ref=e148]:
+        - generic [ref=e149]:
+          - generic [ref=e150]:
+            - generic [ref=e151]:
+              - heading "Good afternoon, COLP" [level=1] [ref=e152]
+              - paragraph [ref=e153]:
+                - text: Tuesday, 16 June 2026 · Omar Nawaz Solicitors LLP
+                - generic [ref=e154]: Essentials
+            - button "Run Compliance Scan" [ref=e156] [cursor=pointer]:
+              - img [ref=e157]
+              - text: Run Compliance Scan
+          - generic [ref=e159]:
+            - img [ref=e161]
+            - paragraph [ref=e164]: No urgent actions — your compliance position is strong
+        - generic [ref=e165]:
+          - button "Open Matters" [ref=e166] [cursor=pointer]:
+            - generic [ref=e167]:
+              - generic [ref=e168]:
+                - paragraph [ref=e169]: Open Matters
+                - paragraph [ref=e171]: "102"
+              - img [ref=e174]
+          - button "Critical Items" [ref=e177] [cursor=pointer]:
+            - generic [ref=e178]:
+              - generic [ref=e179]:
+                - paragraph [ref=e180]: Critical Items
+                - paragraph [ref=e182]: "0"
+              - img [ref=e185]
+          - button "Pending Intakes" [ref=e187] [cursor=pointer]:
+            - generic [ref=e188]:
+              - generic [ref=e189]:
+                - paragraph [ref=e190]: Pending Intakes
+                - paragraph [ref=e192]: "0"
+              - img [ref=e195]
+          - button "Active Staff" [ref=e199] [cursor=pointer]:
+            - generic [ref=e200]:
+              - generic [ref=e201]:
+                - paragraph [ref=e202]: Active Staff
+                - paragraph [ref=e204]: "2"
+              - img [ref=e207]
+          - button "Open Breaches" [ref=e212] [cursor=pointer]:
+            - generic [ref=e213]:
+              - generic [ref=e214]:
+                - paragraph [ref=e215]: Open Breaches
+                - paragraph [ref=e217]: "0"
+              - img [ref=e220]
+          - button "Pending Tasks" [ref=e222] [cursor=pointer]:
+            - generic [ref=e223]:
+              - generic [ref=e224]:
+                - paragraph [ref=e225]: Pending Tasks
+                - paragraph [ref=e227]: "0"
+              - img [ref=e230]
+        - generic [ref=e233]:
+          - generic [ref=e234]:
+            - heading "Compliance Score Trend" [level=3] [ref=e235]
+            - img [ref=e238]
+          - generic [ref=e242]:
+            - heading "Open Items by Category" [level=3] [ref=e243]
+            - img [ref=e246]:
+              - generic [ref=e253]: Staff
+              - generic [ref=e255]:
+                - generic [ref=e257]: "0"
+                - generic [ref=e259]: "0.5"
+                - generic [ref=e261]: "1"
+                - generic [ref=e263]: "1.5"
+                - generic [ref=e265]: "2"
+        - generic [ref=e271]:
+          - generic [ref=e272]:
+            - generic [ref=e274]:
+              - button "Daily Briefing 0" [ref=e275] [cursor=pointer]:
+                - generic [ref=e276]:
+                  - text: Daily Briefing
+                  - generic [ref=e277]: "0"
+              - button "Regulatory Updates 0" [ref=e279] [cursor=pointer]:
+                - generic [ref=e280]:
+                  - text: Regulatory Updates
+                  - generic [ref=e281]: "0"
+            - generic [ref=e283]:
+              - img [ref=e285]
+              - heading "All clear" [level=3] [ref=e287]
+              - paragraph [ref=e288]: No action items today — your compliance position is strong
+          - generic [ref=e289]:
+            - generic [ref=e290]:
+              - img [ref=e291]
+              - generic [ref=e294]:
+                - generic [ref=e295]: 100%
+                - generic [ref=e296]: Compliance Health
+            - generic [ref=e297]:
+              - heading "Quick Actions" [level=3] [ref=e298]
+              - generic [ref=e299]:
+                - button "View Alerts" [ref=e300] [cursor=pointer]:
+                  - generic [ref=e301]:
+                    - img [ref=e302]
+                    - generic [ref=e305]: View Alerts
+                  - img [ref=e307]
+                - button "Check Deadlines" [ref=e309] [cursor=pointer]:
+                  - generic [ref=e310]:
+                    - img [ref=e311]
+                    - generic [ref=e314]: Check Deadlines
+                  - img [ref=e316]
+                - button "Review Breaches" [ref=e318] [cursor=pointer]:
+                  - generic [ref=e319]:
+                    - img [ref=e320]
+                    - generic [ref=e322]: Review Breaches
+                  - img [ref=e324]
+                - button "Regulatory Feed" [ref=e326] [cursor=pointer]:
+                  - generic [ref=e327]:
+                    - img [ref=e328]
+                    - generic [ref=e332]: Regulatory Feed
+                  - img [ref=e334]
+            - heading "Recent Activity" [level=3] [ref=e337]
+        - generic [ref=e338]:
+          - img [ref=e340]
+          - heading "Firm-Wide Risk Heatmap" [level=3] [ref=e342]
+          - paragraph [ref=e343]: Firm-Wide Risk Heatmap is available on the Professional plan. Upgrade to unlock this feature for your firm.
+          - button "Upgrade to Professional" [ref=e344] [cursor=pointer]
+          - paragraph [ref=e345]: Starting at £700/month for 10-50 solicitors
+        - generic [ref=e346]:
+          - img [ref=e348]
+          - heading "Multi-Department Views" [level=3] [ref=e350]
+          - paragraph [ref=e351]: Multi-Department Views is available on the Professional plan. Upgrade to unlock this feature for your firm.
+          - button "Upgrade to Professional" [ref=e352] [cursor=pointer]
+          - paragraph [ref=e353]: Starting at £700/month for 10-50 solicitors
+  - alert [ref=e78]
+  - generic [ref=e354]: "0"

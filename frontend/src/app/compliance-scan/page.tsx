@@ -89,20 +89,9 @@ export default function ComplianceScanPage() {
       const checks = Array.isArray(checksRes.data) ? checksRes.data : [];
       const riskScore = riskScoreRes.data;
 
-      // Transform checks into scan history
-      if (checks && checks.length > 0) {
-        const categories = groupChecksByType(checks);
-        const score = riskScore?.score || 0;
-        const totalIssues = categories.reduce((sum, cat) => sum + cat.count, 0);
-
-        const scanResult: ScanResult = {
-          id: '1',
-          date: new Date().toISOString(),
-          categories,
-          score: Math.round(score),
-          totalIssues,
-        };
-
+      // Transform checks into scan history (handles the AI comprehensive-scan row)
+      const scanResult = buildScanResult(checks, riskScore, '1');
+      if (scanResult) {
         setScanHistory([scanResult]);
       }
     } catch (err) {
@@ -141,6 +130,52 @@ export default function ComplianceScanPage() {
     });
   };
 
+  // Build a ScanResult from the real API. The AI comprehensive scan is stored as a single
+  // /compliance/checks row { category: "ai_comprehensive_scan", details: "<json string>" }
+  // where the JSON has { overall_risk_score, overall_rating, categories:[{category, score,
+  // status, findings, recommendations}] }. We parse that into the page's category shape and
+  // use overall_risk_score as the score. Falls back to the legacy grouped-checks shape.
+  const buildScanResult = (checks: any[], riskScore: any, id: string): ScanResult | null => {
+    const aiRow = checks.find(
+      (c) => c?.category === 'ai_comprehensive_scan' || c?.check_type === 'ai_comprehensive_scan',
+    );
+
+    if (aiRow) {
+      let parsed: any = aiRow.details;
+      if (typeof parsed === 'string') {
+        try { parsed = JSON.parse(parsed); } catch { parsed = {}; }
+      }
+      parsed = parsed || {};
+      const rawCats: any[] = Array.isArray(parsed.categories) ? parsed.categories : [];
+      const categories: ScanCategory[] = rawCats.map((cat) => {
+        const findings: string[] = [
+          ...(Array.isArray(cat.findings) ? cat.findings : []),
+          ...(Array.isArray(cat.recommendations) ? cat.recommendations : []),
+        ].filter((v): v is string => Boolean(v));
+        const status: 'pass' | 'warning' | 'fail' =
+          cat.status === 'fail' || cat.status === 'warning' || cat.status === 'pass'
+            ? cat.status
+            : (Array.isArray(cat.findings) && cat.findings.length > 0 ? 'warning' : 'pass');
+        return {
+          name: cat.category || cat.name || 'General',
+          status,
+          // Issue count = number of findings (recommendations are advisory, not counted).
+          count: Array.isArray(cat.findings) ? cat.findings.length : 0,
+          findings,
+        };
+      });
+      const score = Math.round(parsed.overall_risk_score ?? aiRow.score ?? riskScore?.score ?? 0);
+      const totalIssues = categories.reduce((sum, cat) => sum + cat.count, 0);
+      return { id, date: aiRow.created_at || new Date().toISOString(), categories, score, totalIssues };
+    }
+
+    if (!checks.length) return null;
+    const categories = groupChecksByType(checks);
+    const score = Math.round(riskScore?.score ?? riskScore?.pass_rate ?? 0);
+    const totalIssues = categories.reduce((sum, cat) => sum + cat.count, 0);
+    return { id, date: new Date().toISOString(), categories, score, totalIssues };
+  };
+
   const DEFAULT_SCAN_STEPS = [
     'AML Compliance',
     'Data Protection',
@@ -170,31 +205,39 @@ export default function ComplianceScanPage() {
         setCurrentStep(steps[0]);
       }
 
-      // Trigger backend re-evaluation, then fetch fresh results
-      await apiClient.post('/compliance/checks/run');
-      const [checksRes, riskScoreRes] = await Promise.all([
-        apiClient.get('/compliance/checks'),
-        apiClient.get('/compliance/risk-scores'),
-      ]);
-      const checks = Array.isArray(checksRes.data) ? checksRes.data : [];
-      const riskScore = riskScoreRes.data;
+      // Run the AI compliance scan — it returns the full result directly:
+      // { overall_risk_score, overall_rating, categories:[{category, score, status,
+      //   findings, recommendations}] }. Fall back to the legacy re-evaluate + refetch.
+      let newResult: ScanResult | null = null;
+      try {
+        const scanRes = await apiClient.post('/ai/scan-compliance', {}, { timeout: 120000 });
+        const data = scanRes.data as any;
+        if (data && Array.isArray(data.categories)) {
+          // Reuse buildScanResult by wrapping the live response as an ai_comprehensive_scan row.
+          newResult = buildScanResult(
+            [{ category: 'ai_comprehensive_scan', details: data }],
+            null,
+            String(scanHistory.length + 1),
+          );
+        }
+      } catch {
+        // Fall through to the legacy path below.
+      }
+
+      if (!newResult) {
+        await apiClient.post('/compliance/checks/run');
+        const [checksRes, riskScoreRes] = await Promise.all([
+          apiClient.get('/compliance/checks'),
+          apiClient.get('/compliance/risk-scores'),
+        ]);
+        const checks = Array.isArray(checksRes.data) ? checksRes.data : [];
+        newResult = buildScanResult(checks, riskScoreRes.data, String(scanHistory.length + 1));
+      }
 
       clearInterval(progressInterval);
       setScanProgress(95);
 
-      if (checks && checks.length > 0) {
-        const categories = groupChecksByType(checks);
-        const score = riskScore?.score || 0;
-        const totalIssues = categories.reduce((sum, cat) => sum + cat.count, 0);
-
-        const newResult: ScanResult = {
-          id: String(scanHistory.length + 1),
-          date: new Date().toISOString(),
-          categories,
-          score: Math.round(score),
-          totalIssues,
-        };
-
+      if (newResult) {
         setResults(newResult);
         setScanHistory([newResult, ...scanHistory]);
       }

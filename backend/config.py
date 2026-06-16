@@ -52,6 +52,18 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str = ""
     AI_MODEL: str = "claude-sonnet-4-6"
 
+    # PII redaction + n8n AI gateway (privacy) — OPT-IN, off by default.
+    # The app calls OpenAI directly. Set AI_REDACT_PII=true (and/or
+    # AI_PROVIDER=n8n) later to tokenise PII / route through n8n; the plumbing in
+    # services/ai_analysis.py + services/pii_redaction.py is ready for that.
+    AI_REDACT_PII: bool = False
+    # Set AI_PROVIDER="n8n" to route every LLM call through an n8n webhook on
+    # your own VPS instead of calling OpenAI/Anthropic directly. n8n becomes the
+    # single, auditable egress point (and can later swap to a self-hosted model).
+    N8N_AI_WEBHOOK_URL: str = ""          # e.g. https://n8n.seemaai.co.uk/webhook/seema-ai
+    N8N_AI_WEBHOOK_TOKEN: str = ""        # optional shared secret -> X-Seema-Token header
+    N8N_AI_TIMEOUT: int = 120             # seconds
+
     # Email (optional — logs emails in dev mode without it)
     SENDGRID_API_KEY: str = ""
     EMAIL_FROM: str = "noreply@seemaai.co.uk"

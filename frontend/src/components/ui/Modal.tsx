@@ -73,12 +73,12 @@ export const Modal: React.FC<ModalProps> = ({
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-xl shadow-2xl ring-1 ring-black/5 w-full ${sizeClass || (className.includes('max-w-') ? '' : 'max-w-md')} mx-4 transform transition-all duration-200 animate-slideUp ${
+        className={`bg-white rounded-xl shadow-2xl ring-1 ring-black/5 w-full max-h-[90vh] flex flex-col overflow-hidden ${sizeClass || (className.includes('max-w-') ? '' : 'max-w-md')} mx-4 transform transition-all duration-200 animate-slideUp ${
           isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         } ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-6 border-b border-[#e2e5ed]">
+        <div className="flex items-center justify-between p-6 border-b border-[#e2e5ed] shrink-0">
           <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
           <button
             onClick={onClose}
@@ -101,10 +101,10 @@ export const Modal: React.FC<ModalProps> = ({
           </button>
         </div>
 
-        <div className="p-6">{children}</div>
+        <div className="flex-1 overflow-y-auto p-6">{children}</div>
 
         {(actions || onSubmit) && (
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-[#e2e5ed]">
+          <div className="flex items-center justify-end gap-3 p-6 border-t border-[#e2e5ed] shrink-0">
             {actions?.map((action, index) => (
               <Button
                 key={index}

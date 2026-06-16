@@ -1,0 +1,210 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - heading "Seema" [level=1] [ref=e6]
+          - generic [ref=e7]: Essentials
+        - paragraph [ref=e8]: Compliance Platform
+      - navigation [ref=e9]:
+        - generic [ref=e10]:
+          - link "Dashboard" [ref=e11] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e12]
+            - generic [ref=e17]: Dashboard
+          - link "Compliance Scan" [ref=e18] [cursor=pointer]:
+            - /url: /compliance-scan
+            - img [ref=e19]
+            - generic [ref=e24]: Compliance Scan
+          - link "Breach Logs" [ref=e25] [cursor=pointer]:
+            - /url: /breaches
+            - img [ref=e26]
+            - generic [ref=e28]: Breach Logs
+          - link "Reconciliation" [ref=e29] [cursor=pointer]:
+            - /url: /reconciliation
+            - img [ref=e30]
+            - generic [ref=e32]: Reconciliation
+          - link "Undertakings" [ref=e33] [cursor=pointer]:
+            - /url: /undertakings
+            - img [ref=e34]
+            - generic [ref=e37]: Undertakings
+        - button "More" [ref=e39] [cursor=pointer]:
+          - generic [ref=e40]: More
+          - img [ref=e41]
+      - generic [ref=e43]:
+        - link "Omar Nawaz Solicitors LLP demo@seemaai.co.uk View firm profile" [ref=e44] [cursor=pointer]:
+          - /url: /settings
+          - paragraph [ref=e45]: Omar Nawaz Solicitors LLP
+          - paragraph [ref=e46]: demo@seemaai.co.uk
+          - paragraph [ref=e47]:
+            - img [ref=e48]
+            - text: View firm profile
+        - button "Logout" [ref=e51] [cursor=pointer]:
+          - img [ref=e52]
+          - generic [ref=e55]: Logout
+    - main [ref=e56]:
+      - button "Notifications (0)" [ref=e60] [cursor=pointer]:
+        - img [ref=e61]
+      - generic [ref=e65]:
+        - generic [ref=e67]:
+          - heading "Compliance Scan Tool" [level=1] [ref=e68]
+          - paragraph [ref=e69]: Run automated compliance checks across your firm
+        - generic [ref=e70]:
+          - generic [ref=e71]:
+            - link "Compliance Scan" [ref=e72] [cursor=pointer]:
+              - /url: /compliance-scan
+              - img [ref=e73]
+              - text: Compliance Scan
+            - img [ref=e78]
+          - generic [ref=e80]:
+            - link "Alerts" [ref=e81] [cursor=pointer]:
+              - /url: /alerts
+              - img [ref=e82]
+              - text: Alerts
+            - img [ref=e84]
+          - link "Remediation" [ref=e87] [cursor=pointer]:
+            - /url: /remediation
+            - img [ref=e88]
+            - text: Remediation
+        - generic [ref=e239]:
+          - generic [ref=e240]:
+            - generic [ref=e241]:
+              - heading "Compliance Score" [level=3] [ref=e242]
+              - paragraph [ref=e243]: Scan completed 16 Jun 2026
+            - generic [ref=e244]:
+              - paragraph [ref=e245]: 75%
+              - paragraph [ref=e246]: 5 issues found
+          - generic [ref=e247]:
+            - button "Run Another Scan" [ref=e248] [cursor=pointer]
+            - button "Generate PDF Report" [ref=e249] [cursor=pointer]:
+              - img [ref=e250]
+              - text: Generate PDF Report
+        - generic [ref=e253]:
+          - heading "Scan Details" [level=3] [ref=e254]
+          - generic [ref=e255]:
+            - generic [ref=e256]:
+              - generic [ref=e257]:
+                - generic [ref=e258]:
+                  - img [ref=e259]
+                  - generic [ref=e261]:
+                    - heading "AML/CDD" [level=4] [ref=e262]
+                    - paragraph [ref=e263]: 1 issue found
+                - generic [ref=e264]:
+                  - button "Fix This" [ref=e265] [cursor=pointer]
+                  - generic [ref=e266]: Warning
+              - generic [ref=e267]:
+                - paragraph [ref=e268]: • The firm has not appointed a Money Laundering Reporting Officer (MLRO).
+                - paragraph [ref=e269]: • Appoint an MLRO immediately to ensure compliance with AML regulations.
+            - generic [ref=e270]:
+              - generic [ref=e271]:
+                - generic [ref=e272]:
+                  - img [ref=e273]
+                  - generic [ref=e275]:
+                    - heading "Data Protection" [level=4] [ref=e276]
+                    - paragraph [ref=e277]: 1 issue found
+                - generic [ref=e278]:
+                  - button "Fix This" [ref=e279] [cursor=pointer]
+                  - generic [ref=e280]: Warning
+              - generic [ref=e281]:
+                - paragraph [ref=e282]: • No specific findings but due to size, ensure proper data protocols.
+                - paragraph [ref=e283]: • Review and document data protection protocols to ensure compliance with GDPR.
+            - generic [ref=e284]:
+              - generic [ref=e285]:
+                - generic [ref=e286]:
+                  - img [ref=e287]
+                  - generic [ref=e291]:
+                    - heading "Professional Standards" [level=4] [ref=e292]
+                    - paragraph [ref=e293]: 1 issue found
+                - generic [ref=e294]:
+                  - button "Fix This" [ref=e295] [cursor=pointer]
+                  - generic [ref=e296]: Fail
+              - generic [ref=e297]:
+                - paragraph [ref=e298]: • Firm does not currently have a Compliance Officer for Legal Practice (COLP) or Compliance Officer for Finance and Administration (COFA).
+                - paragraph [ref=e299]: • Appoint a COLP and COFA to oversee compliance obligations.
+            - generic [ref=e300]:
+              - generic [ref=e301]:
+                - generic [ref=e302]:
+                  - img [ref=e303]
+                  - generic [ref=e305]:
+                    - heading "Training & CPD" [level=4] [ref=e306]
+                    - paragraph [ref=e307]: 1 issue found
+                - generic [ref=e308]:
+                  - button "Fix This" [ref=e309] [cursor=pointer]
+                  - generic [ref=e310]: Warning
+              - generic [ref=e311]:
+                - paragraph [ref=e312]: • No overdue training but a formal plan is needed.
+                - paragraph [ref=e313]: • Develop a structured CPD plan tailored to the practice's needs.
+            - generic [ref=e314]:
+              - generic [ref=e315]:
+                - generic [ref=e316]:
+                  - img [ref=e317]
+                  - generic [ref=e320]:
+                    - heading "Undertakings" [level=4] [ref=e321]
+                    - paragraph [ref=e322]: 1 issue found
+                - generic [ref=e324]: Pass
+              - paragraph [ref=e326]: • No pending or overdue undertakings identified.
+            - generic [ref=e327]:
+              - generic [ref=e328]:
+                - generic [ref=e329]:
+                  - img [ref=e330]
+                  - generic [ref=e332]:
+                    - heading "Client Money" [level=4] [ref=e333]
+                    - paragraph [ref=e334]: 0 issues found
+                - generic [ref=e335]:
+                  - button "Fix This" [ref=e336] [cursor=pointer]
+                  - generic [ref=e337]: Warning
+              - paragraph [ref=e339]: • Ensure all client money is properly separated and accounted for according to SRA Accounts Rules.
+            - generic [ref=e340]:
+              - generic [ref=e341]:
+                - generic [ref=e342]:
+                  - img [ref=e343]
+                  - generic [ref=e345]:
+                    - heading "Conflicts" [level=4] [ref=e346]
+                    - paragraph [ref=e347]: 0 issues found
+                - generic [ref=e348]:
+                  - button "Fix This" [ref=e349] [cursor=pointer]
+                  - generic [ref=e350]: Warning
+              - paragraph [ref=e352]: • Implement a conflicts check system to identify and manage potential conflicts of interest.
+            - generic [ref=e353]:
+              - generic [ref=e354]:
+                - generic [ref=e355]:
+                  - img [ref=e356]
+                  - generic [ref=e358]:
+                    - heading "Complaints Handling" [level=4] [ref=e359]
+                    - paragraph [ref=e360]: 0 issues found
+                - generic [ref=e361]:
+                  - button "Fix This" [ref=e362] [cursor=pointer]
+                  - generic [ref=e363]: Warning
+              - paragraph [ref=e365]: • Establish a robust complaints handling procedure that adheres to SRA requirements.
+            - generic [ref=e366]:
+              - generic [ref=e367]:
+                - generic [ref=e368]:
+                  - img [ref=e369]
+                  - generic [ref=e371]:
+                    - heading "File Management" [level=4] [ref=e372]
+                    - paragraph [ref=e373]: 0 issues found
+                - generic [ref=e374]:
+                  - button "Fix This" [ref=e375] [cursor=pointer]
+                  - generic [ref=e376]: Warning
+              - paragraph [ref=e378]: • Create and maintain an effective file management system to ensure efficiency.
+            - generic [ref=e379]:
+              - generic [ref=e380]:
+                - generic [ref=e381]:
+                  - img [ref=e382]
+                  - generic [ref=e386]:
+                    - heading "Supervision" [level=4] [ref=e387]
+                    - paragraph [ref=e388]: 0 issues found
+                - generic [ref=e389]:
+                  - button "Fix This" [ref=e390] [cursor=pointer]
+                  - generic [ref=e391]: Fail
+              - paragraph [ref=e393]: • With a single staff setup, ensure self-supervision and accountability measures are in place.
+        - generic [ref=e394]:
+          - heading "Scan History" [level=3] [ref=e395]
+          - generic [ref=e397] [cursor=pointer]:
+            - generic [ref=e398]:
+              - paragraph [ref=e399]: Scan from 16 Jun 2026
+              - paragraph [ref=e400]: 5 issues found
+            - generic [ref=e401]:
+              - paragraph [ref=e403]: 75%
+              - img [ref=e404]
+  - alert [ref=e189]

@@ -87,21 +87,73 @@ export default function DashboardPage() {
       }
 
       // Promise.allSettled never throws — each result is 'fulfilled' or 'rejected'
-      const [statsRes, briefingRes, updatesRes] = await Promise.allSettled([
+      const [statsRes, briefingRes, updatesRes, staffRes, mattersRes] = await Promise.allSettled([
         api.get('/dashboard/stats'),
         api.get('/compliance/daily-briefing'),
         api.get('/compliance/regulatory-updates'),
+        api.get('/compliance/staff'),
+        api.get('/compliance/matters'),
       ]);
 
-      // Validate response data shape before using — fall back to demo data if malformed only in demo mode
+      // Real API returns a NESTED stats shape: { alerts:{open,critical}, breaches:{open},
+      // intake:{pending}, training:{overdue}, compliance_scans:{...} }. The cards below read
+      // a flat shape, so normalize to it (keeping flat keys for demo/legacy responses).
+      // total_staff has no key in stats — derive it from /compliance/staff. There is no
+      // pending_tasks source, so it falls back to overdue training.
       if (statsRes.status === 'fulfilled' && statsRes.value.data && typeof statsRes.value.data === 'object') {
-        setStats(statsRes.value.data);
+        const raw = statsRes.value.data as any;
+        const staffData = staffRes.status === 'fulfilled' ? staffRes.value.data : null;
+        const staffCount = Array.isArray(staffData) ? staffData.length : (raw.total_staff ?? 0);
+        const mattersData = mattersRes.status === 'fulfilled' ? mattersRes.value.data : null;
+        const matterCount = Array.isArray(mattersData) ? mattersData.length : 0;
+        const normalized: any = {
+          open_alerts: raw.open_alerts ?? raw.alerts?.open ?? 0,
+          critical_alerts: raw.critical_alerts ?? raw.alerts?.critical ?? 0,
+          open_breaches: raw.open_breaches ?? raw.breaches?.open ?? 0,
+          pending_intake: raw.pending_intake ?? raw.intake?.pending ?? 0,
+          pending_tasks: raw.pending_tasks ?? raw.training?.overdue ?? 0,
+          total_staff: staffCount,
+          open_matters: matterCount,
+        };
+        setStats(normalized);
       } else if (isDemoMode()) {
         setStats(DEMO_DASHBOARD_STATS as DashboardStats);
       }
 
-      if (briefingRes.status === 'fulfilled' && briefingRes.value.data && Array.isArray(briefingRes.value.data?.overdue_training)) {
-        setBriefing(briefingRes.value.data);
+      // Real API returns { today_alerts, overdue_items, upcoming_deadlines }, not the
+      // overdue_training/overdue_reviews/... shape the briefing tab reads. Normalize so the
+      // briefing list and quick-jump flags populate from real data.
+      if (briefingRes.status === 'fulfilled' && briefingRes.value.data && typeof briefingRes.value.data === 'object') {
+        const raw = briefingRes.value.data as any;
+        if (Array.isArray(raw.overdue_training)) {
+          setBriefing(raw);
+        } else {
+          const overdueItems = Array.isArray(raw.overdue_items) ? raw.overdue_items : [];
+          const upcoming = Array.isArray(raw.upcoming_deadlines) ? raw.upcoming_deadlines : [];
+          const normalizedBriefing: BriefingData = {
+            date: raw.date || new Date().toISOString(),
+            overdue_training: overdueItems.map((t: any) => ({
+              staff_id: t.staff_id || t.id,
+              staff_name: t.staff_name || '',
+              title: t.title || '',
+              due_date: t.due_date || '',
+              training_type: t.training_type || t.status || '',
+            })),
+            overdue_reviews: [],
+            overdue_supervision: [],
+            open_breaches: [],
+            high_risk_intakes: [],
+            pending_regulatory_updates: [],
+            upcoming_deadlines: upcoming.map((d: any) => ({
+              id: d.id,
+              title: d.title || '',
+              due_date: d.due_date || '',
+              priority: d.priority || 'medium',
+              assigned_to: d.assigned_to || d.staff_name || '',
+            })),
+          };
+          setBriefing(normalizedBriefing);
+        }
       } else if (isDemoMode()) {
         setBriefing(DEMO_DASHBOARD_BRIEFING as BriefingData);
       }
@@ -332,10 +384,10 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatCard
           title="Open Matters"
-          value={stats?.open_alerts ?? 0}
+          value={(stats as any)?.open_matters ?? 0}
           color="red"
           icon={<Bell className="w-5 h-5" />}
-          onClick={() => router.push('/alerts')}
+          onClick={() => router.push('/matters')}
         />
         <StatCard
           title="Critical Items"
