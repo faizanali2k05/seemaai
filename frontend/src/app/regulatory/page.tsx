@@ -41,6 +41,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { useRequireAuth } from '@/lib/hooks';
+import { isDemoMode } from '@/lib/demo-data';
 import apiClient from '@/lib/api';
 
 // ── Types ──
@@ -358,20 +359,12 @@ function InterpretationCard({
             </div>
           )}
 
-          {(interp.source_citation || update.source_url) && (
+          {interp.source_citation && (
             <div className="pl-2 pt-2 border-t border-gray-200">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-700 mb-1">
                 Authority
               </p>
-              {interp.source_citation && (
-                <p className="text-xs text-slate-900">{interp.source_citation}</p>
-              )}
-              {update.source_url && update.source_url !== '#' && (
-                <a href={update.source_url} target="_blank" rel="noopener noreferrer"
-                   className="inline-flex items-center gap-1 text-xs text-blue-700 hover:text-blue-900 mt-1 underline">
-                  Read primary source <ExternalLink className="w-3 h-3" />
-                </a>
-              )}
+              <p className="text-xs text-slate-900">{interp.source_citation}</p>
             </div>
           )}
 
@@ -1490,7 +1483,7 @@ export default function RegulatoryPage() {
       setUpdates(list);
     } catch (_e) {
       setUpdates([]);
-      setError('Failed to load regulatory updates. Showing demo data.');
+      setError('Unable to load regulatory updates right now. Please try again shortly.');
     } finally {
       setIsLoading(false);
     }

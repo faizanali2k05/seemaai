@@ -14,7 +14,7 @@ import {
   EmptyState,
   showToast,
 } from '@/components/ui';
-import { useRequireAuth } from '@/lib/hooks';
+import { useRequireAuth, useClientMatterOptions } from '@/lib/hooks';
 import { isDemoMode, DEMO_UNDERTAKINGS } from '@/lib/demo-data';
 import apiClient from '@/lib/api';
 import { formatDate } from '@/lib/utils/format';
@@ -109,6 +109,9 @@ function normalizeUndertakings(data: unknown): Undertaking[] {
 
 export default function UndertakingsPage() {
   useRequireAuth();
+
+  // DB-driven combobox option lists (client names / matter refs)
+  const { clientNames, matterReferences } = useClientMatterOptions();
 
   const [data, setData] = useState<UndertakingsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -483,6 +486,18 @@ export default function UndertakingsPage() {
         description="Manage and track undertakings given and received"
       />
 
+      {/* DB-driven combobox suggestions (free text still allowed). */}
+      <datalist id="undertakings-client-options">
+        {clientNames.map((name) => (
+          <option key={`client-${name}`} value={name} />
+        ))}
+      </datalist>
+      <datalist id="undertakings-matter-options">
+        {matterReferences.map((ref) => (
+          <option key={`matter-${ref}`} value={ref} />
+        ))}
+      </datalist>
+
       {/* Stats Row */}
       {data?.stats && (
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -684,6 +699,7 @@ export default function UndertakingsPage() {
 
           <Input
             label="Client Name"
+            list="undertakings-client-options"
             value={registerForm.client_name}
             onChange={(e) =>
               setRegisterForm({
@@ -696,6 +712,7 @@ export default function UndertakingsPage() {
 
           <Input
             label="Matter Reference"
+            list="undertakings-matter-options"
             value={registerForm.matter_ref}
             onChange={(e) =>
               setRegisterForm({ ...registerForm, matter_ref: e.target.value })

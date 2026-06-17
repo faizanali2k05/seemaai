@@ -1289,6 +1289,111 @@ def _fallback_conflict_check(new_check: dict, existing_matters: list, parties: l
     }
 
 
+# ── SRA Audit Readiness assessment (AI, 12 guidelines) ──────────────
+SRA_GUIDELINES = [
+    ("Client Care & Costs Information", "SRA Code 8.6-8.7"),
+    ("Conflicts of Interest", "SRA Code 6.1-6.2"),
+    ("Confidentiality & Disclosure", "SRA Code 6.3-6.5"),
+    ("Anti-Money Laundering / CDD", "MLR 2017 reg.18-28; SRA Code 8.1"),
+    ("Client Money & Accounts Rules", "SRA Accounts Rules"),
+    ("Undertakings", "SRA Code 1.3"),
+    ("Complaints Handling", "SRA Code 8.2-8.5"),
+    ("Supervision, Training & Competence", "SRA Code 3.1-3.6"),
+    ("File & Matter Management", "SRA Code 4.1-4.4"),
+    ("Data Protection / UK GDPR", "UK GDPR; ICO"),
+    ("Equality, Diversity & Inclusion", "SRA Code 1.1"),
+    ("Governance — COLP/COFA & Compliance Systems", "SRA Code 9.1-9.2"),
+]
+
+SRA_AUDIT_SYSTEM_PROMPT = """You are Seema AI, running an SRA audit-readiness assessment for a UK law firm regulated by the SRA (Standards and Regulations 2019, SRA Accounts Rules, MLR 2017, UK GDPR).
+
+Assess the firm against these TWELVE readiness guidelines (assess ALL twelve, in this order):
+1. Client Care & Costs Information (SRA Code 8.6-8.7)
+2. Conflicts of Interest (SRA Code 6.1-6.2)
+3. Confidentiality & Disclosure incl. former clients (SRA Code 6.3-6.5)
+4. Anti-Money Laundering / CDD (MLR 2017; SRA Code 8.1)
+5. Client Money & Accounts Rules (SRA Accounts Rules)
+6. Undertakings (SRA Code 1.3)
+7. Complaints Handling (SRA Code 8.2-8.5)
+8. Supervision, Training & Competence (SRA Code 3.1-3.6)
+9. File & Matter Management / record-keeping (SRA Code 4)
+10. Data Protection / UK GDPR (breach handling, ICO, retention)
+11. Equality, Diversity & Inclusion (SRA Code 1.1)
+12. Governance — COLP/COFA roles, risk & compliance systems (SRA Code 9)
+
+For each guideline, decide a status from the FIRM DATA provided:
+- "pass"    — controls in place and evidenced by the data.
+- "partial" — partially in place / gaps present.
+- "fail"    — missing or materially deficient (incl. where there is no evidence at all).
+Be evidence-led and proportionate; where data is absent, treat it as a gap and state what evidence is needed.
+
+Return STRICT JSON only (no markdown):
+{
+  "overall_rating": "ready|nearly_ready|not_ready",
+  "items": [
+    {"category": "<guideline name>", "title": "<short check title>", "status": "pass|partial|fail",
+     "finding": "<what the firm data shows>", "recommendation": "<specific action to close the gap>",
+     "sra_reference": "<e.g. SRA Code 6.2>"}
+  ]
+}
+Return exactly 12 items, one per guideline, in the order above."""
+
+
+def assess_sra_audit(firm, compliance_data: dict) -> dict:
+    """AI SRA audit-readiness assessment: score the firm's live data against the
+    12 SRA guidelines. Returns {overall_rating, items:[...12...], ai_generated}."""
+    import json as _json
+    firm_context = _build_firm_context(firm)
+    try:
+        data_block = _json.dumps(compliance_data, default=str, indent=2)[:3500]
+    except Exception:
+        data_block = str(compliance_data)[:3500]
+
+    user_prompt = f"""Assess SRA audit readiness for this firm.
+
+--- FIRM PROFILE ---
+{firm_context}
+
+--- LIVE FIRM COMPLIANCE DATA (metrics) ---
+{data_block}
+
+Assess all 12 guidelines against this data. Return JSON only (exactly 12 items)."""
+
+    text = _call_claude(SRA_AUDIT_SYSTEM_PROMPT, user_prompt, max_tokens=3000)
+    if text is None:
+        return _fallback_sra_audit()
+    result = _parse_json_response(text)
+    items = result.get("items") if isinstance(result, dict) else None
+    if not isinstance(items, list) or not items:
+        return _fallback_sra_audit()
+    for it in items:
+        st = (it.get("status") or "partial").lower()
+        it["status"] = st if st in ("pass", "partial", "fail") else "partial"
+    result["items"] = items
+    result["ai_generated"] = True
+    return result
+
+
+def _fallback_sra_audit() -> dict:
+    """Rule-based 12-guideline scaffold when AI is unavailable — every item flagged
+    for manual review so nothing is falsely marked compliant."""
+    return {
+        "overall_rating": "not_ready",
+        "ai_generated": False,
+        "items": [
+            {
+                "category": cat,
+                "title": f"{cat} — review required",
+                "status": "partial",
+                "finding": "AI unavailable — this guideline has not been automatically assessed.",
+                "recommendation": "Review the firm's controls and evidence for this area manually.",
+                "sra_reference": ref,
+            }
+            for cat, ref in SRA_GUIDELINES
+        ],
+    }
+
+
 MATTER_REVIEW_SYSTEM_PROMPT = """You are Seema AI, a UK legal compliance reviewer.
 You analyze a single legal matter and identify compliance gaps under SRA Standards
 and Regulations 2019, AML regulations, and conflict-of-interest rules.

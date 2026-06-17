@@ -23,6 +23,22 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 
 
+def _fit(value, maxlen: int):
+    """Coerce to a trimmed string and cap to a column width; empty -> None.
+
+    Clio free-text fields can exceed our VARCHAR limits (e.g. a phone field
+    holding "44 7733384030 (applicant) - 44 7938243059 (James Hindmarch)").
+    Capping here keeps one oversized value from aborting the whole sync with
+    a StringDataRightTruncationError.
+    """
+    if value is None:
+        return None
+    s = str(value).strip()
+    if not s:
+        return None
+    return s[:maxlen]
+
+
 # ── OAuth2 ──────────────────────────────────────────────────────────────
 
 CLIO_AUTH_URL = f"{settings.CLIO_API_BASE}/oauth/authorize"
@@ -309,44 +325,53 @@ class ClioSyncEngine:
             )
 
             for cm in clio_matters:
+                clio_id = str(cm.get("id"))
                 try:
-                    clio_id = str(cm.get("id"))
-                    result = await self.db.execute(
-                        select(Matter).where(
-                            Matter.firm_id == self.firm_id,
-                            Matter.external_ref == clio_id,
-                        )
-                    )
-                    existing = result.scalar_one_or_none()
-
+                    practice_area = (cm.get("practice_area") or {}).get("name")
                     matter_data = {
                         "firm_id": self.firm_id,
-                        "external_ref": clio_id,
-                        "title": cm.get("display_number") or cm.get("description", "Untitled"),
+                        "external_ref": _fit(clio_id, 100),
+                        "title": _fit(cm.get("display_number") or cm.get("description") or "Untitled", 255),
                         # The app (File Review, dashboard) reads reference / matter_type /
                         # client_name — populate them from Clio so synced matters render.
-                        "reference": cm.get("display_number"),
-                        "matter_type": (cm.get("practice_area") or {}).get("name"),
-                        "client_name": (cm.get("client") or {}).get("name"),
+                        "reference": _fit(cm.get("display_number"), 100),
+                        "matter_type": _fit(practice_area, 100),
+                        "client_name": _fit((cm.get("client") or {}).get("name"), 255),
                         "description": cm.get("description"),
-                        "status": (cm.get("status") or "open").lower(),
-                        "practice_area": (cm.get("practice_area") or {}).get("name"),
-                        "client_id": str(cm["client"]["id"]) if cm.get("client") else None,
-                        "open_date": cm.get("open_date"),
-                        "close_date": cm.get("close_date"),
+                        "status": _fit((cm.get("status") or "open").lower(), 20),
+                        "practice_area": _fit(practice_area, 100),
+                        "client_id": _fit(str(cm["client"]["id"]) if cm.get("client") else None, 36),
+                        "open_date": _fit(cm.get("open_date"), 20),
+                        "close_date": _fit(cm.get("close_date"), 20),
                         "source": "clio",
                     }
 
-                    if existing:
-                        for key, val in matter_data.items():
-                            if key != "firm_id":
-                                setattr(existing, key, val)
+                    # One SAVEPOINT per row: a single bad row (oversized field,
+                    # constraint clash) rolls back only itself instead of
+                    # poisoning the whole sync transaction.
+                    async with self.db.begin_nested():
+                        result = await self.db.execute(
+                            select(Matter).where(
+                                Matter.firm_id == self.firm_id,
+                                Matter.external_ref == clio_id,
+                            )
+                        )
+                        existing = result.scalar_one_or_none()
+                        if existing:
+                            for key, val in matter_data.items():
+                                if key != "firm_id":
+                                    setattr(existing, key, val)
+                            was_update = True
+                        else:
+                            self.db.add(Matter(**matter_data))
+                            was_update = False
+                        await self.db.flush()
+                    if was_update:
                         updated += 1
                     else:
-                        self.db.add(Matter(**matter_data))
                         created += 1
                 except Exception as e:
-                    logger.warning(f"Failed to sync matter {cm.get('id')}: {e}")
+                    logger.warning(f"Failed to sync matter {clio_id}: {e}")
                     errored += 1
 
             await self.db.commit()
@@ -375,44 +400,53 @@ class ClioSyncEngine:
             )
 
             for cc in clio_contacts:
+                clio_id = str(cc.get("id"))
                 try:
-                    clio_id = str(cc.get("id"))
-                    result = await self.db.execute(
-                        select(ClientIntake).where(
-                            ClientIntake.firm_id == self.firm_id,
-                            ClientIntake.external_ref == clio_id,
-                        )
-                    )
-                    existing = result.scalar_one_or_none()
-
                     # Extract primary email and phone
                     emails = cc.get("email_addresses") or []
                     phones = cc.get("phone_numbers") or []
                     primary_email = emails[0].get("address") if emails else None
                     primary_phone = phones[0].get("number") if phones else None
+                    company = cc.get("company") if isinstance(cc.get("company"), dict) else None
 
                     contact_data = {
                         "firm_id": self.firm_id,
-                        "external_ref": clio_id,
-                        "client_name": cc.get("name") or f"{cc.get('first_name', '')} {cc.get('last_name', '')}".strip(),
-                        "client_email": primary_email,
-                        "client_phone": primary_phone,
-                        "client_type": (cc.get("type") or "individual").lower(),
-                        "company_name": (cc.get("company") or {}).get("name") if isinstance(cc.get("company"), dict) else None,
+                        "external_ref": _fit(clio_id, 100),
+                        "client_name": _fit(cc.get("name") or f"{cc.get('first_name', '')} {cc.get('last_name', '')}".strip(), 255),
+                        "client_email": _fit(primary_email, 255),
+                        "client_phone": _fit(primary_phone, 255),
+                        "client_type": _fit((cc.get("type") or "individual").lower(), 50),
+                        "company_name": _fit((company or {}).get("name"), 255),
                         "source": "clio",
                         "status": "active",
                     }
 
-                    if existing:
-                        for key, val in contact_data.items():
-                            if key != "firm_id":
-                                setattr(existing, key, val)
+                    # One SAVEPOINT per row: a single bad row (oversized field,
+                    # constraint clash) rolls back only itself instead of
+                    # poisoning the whole sync transaction.
+                    async with self.db.begin_nested():
+                        result = await self.db.execute(
+                            select(ClientIntake).where(
+                                ClientIntake.firm_id == self.firm_id,
+                                ClientIntake.external_ref == clio_id,
+                            )
+                        )
+                        existing = result.scalar_one_or_none()
+                        if existing:
+                            for key, val in contact_data.items():
+                                if key != "firm_id":
+                                    setattr(existing, key, val)
+                            was_update = True
+                        else:
+                            self.db.add(ClientIntake(**contact_data))
+                            was_update = False
+                        await self.db.flush()
+                    if was_update:
                         updated += 1
                     else:
-                        self.db.add(ClientIntake(**contact_data))
                         created += 1
                 except Exception as e:
-                    logger.warning(f"Failed to sync contact {cc.get('id')}: {e}")
+                    logger.warning(f"Failed to sync contact {clio_id}: {e}")
                     errored += 1
 
             await self.db.commit()
@@ -439,36 +473,44 @@ class ClioSyncEngine:
             )
 
             for cu in clio_users:
+                clio_id = str(cu.get("id"))
                 try:
-                    clio_id = str(cu.get("id"))
-                    result = await self.db.execute(
-                        select(StaffMember).where(
-                            StaffMember.firm_id == self.firm_id,
-                            StaffMember.external_ref == clio_id,
-                        )
-                    )
-                    existing = result.scalar_one_or_none()
-
                     staff_data = {
                         "firm_id": self.firm_id,
-                        "external_ref": clio_id,
-                        "name": cu.get("name") or f"{cu.get('first_name', '')} {cu.get('last_name', '')}".strip(),
-                        "email": cu.get("email"),
-                        "role": cu.get("role"),
+                        "external_ref": _fit(clio_id, 100),
+                        "name": _fit(cu.get("name") or f"{cu.get('first_name', '')} {cu.get('last_name', '')}".strip(), 255),
+                        "email": _fit(cu.get("email"), 255),
+                        "role": _fit(cu.get("role"), 100),
                         "status": "active" if cu.get("enabled", True) else "inactive",
                         "source": "clio",
                     }
 
-                    if existing:
-                        for key, val in staff_data.items():
-                            if key != "firm_id":
-                                setattr(existing, key, val)
+                    # One SAVEPOINT per row: a single bad row (oversized field,
+                    # constraint clash) rolls back only itself instead of
+                    # poisoning the whole sync transaction.
+                    async with self.db.begin_nested():
+                        result = await self.db.execute(
+                            select(StaffMember).where(
+                                StaffMember.firm_id == self.firm_id,
+                                StaffMember.external_ref == clio_id,
+                            )
+                        )
+                        existing = result.scalar_one_or_none()
+                        if existing:
+                            for key, val in staff_data.items():
+                                if key != "firm_id":
+                                    setattr(existing, key, val)
+                            was_update = True
+                        else:
+                            self.db.add(StaffMember(**staff_data))
+                            was_update = False
+                        await self.db.flush()
+                    if was_update:
                         updated += 1
                     else:
-                        self.db.add(StaffMember(**staff_data))
                         created += 1
                 except Exception as e:
-                    logger.warning(f"Failed to sync user {cu.get('id')}: {e}")
+                    logger.warning(f"Failed to sync user {clio_id}: {e}")
                     errored += 1
 
             await self.db.commit()

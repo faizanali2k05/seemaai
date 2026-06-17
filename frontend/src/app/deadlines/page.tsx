@@ -110,11 +110,10 @@ export default function DeadlinesPage() {
 
       await api.post('/compliance/deadlines', {
         title: formData.description,
-        source_type: formData.type,
+        category: formData.type,
         due_date: formData.dueDate,
         priority: formData.priority,
         assigned_to: formData.assignedTo,
-        notes: formData.notes,
       });
 
       showToast('Deadline added successfully', 'success');
@@ -160,14 +159,14 @@ export default function DeadlinesPage() {
 
       const response = await api.get('/compliance/deadlines');
       const items = Array.isArray(response.data) ? response.data : [];
-      if (items.length > 0) {
-        const enriched = items.map((deadline: any) => ({
-          ...deadline,
-          days_until: daysUntilDeadline(deadline.due_date),
-          is_overdue: isOverdue(deadline.due_date),
-        }));
-        setDeadlines(enriched);
-      }
+      const enriched = items.map((deadline: any) => ({
+        ...deadline,
+        // Backend returns `category`; the table column reads `source_type`.
+        source_type: deadline.source_type ?? deadline.category,
+        days_until: daysUntilDeadline(deadline.due_date),
+        is_overdue: isOverdue(deadline.due_date),
+      }));
+      setDeadlines(enriched);
     } catch (err) {
       console.error('Failed to load deadlines:', err);
       // Fall back to demo data on error only if in demo mode
@@ -443,16 +442,14 @@ export default function DeadlinesPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
-            <select
+            <input
+              type="text"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Staff member responsible (optional)"
               value={formData.assignedTo}
               onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
               disabled={submitting}
-            >
-              <option value="">Select staff member</option>
-              <option value="user1">John Smith</option>
-              <option value="user2">Jane Doe</option>
-            </select>
+            />
           </div>
 
           <div>

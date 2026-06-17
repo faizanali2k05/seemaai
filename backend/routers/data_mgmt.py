@@ -34,6 +34,69 @@ async def get_import_logs(
     logs = result.scalars().all()
     return [{"id": log.id, "import_type": log.import_type, "filename": log.filename, "status": log.status, "records_processed": log.records_processed, "records_failed": log.records_failed, "imported_by": log.imported_by, "created_at": log.created_at.isoformat() if log.created_at else None} for log in logs]
 
+@router.get("/admin/database-stats")
+async def get_database_stats(
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """Per-table record counts (firm-scoped) for the Data Management → System tab.
+
+    Each entry: {table, recordCount, lastUpdated}. Counting is wrapped per-model
+    so a single missing/empty table never blanks the whole panel.
+    """
+    current_user.require_role("admin")
+
+    from models.matters import Matter
+    from models.staff import StaffMember, StaffTraining
+    from models.compliance import ComplianceCheck, ComplianceAlert
+    from models.aml import CDDRecord, SARRecord
+    from models.breach import BreachReport
+    from models.intake import ClientIntake
+    from models.remediation import RemediationPlan
+    from models.chaser import ChaserLog
+    from models.workflow import Deadline
+
+    # (label, model) — order is the display order in the UI.
+    targets = [
+        ("Matters", Matter),
+        ("Staff", StaffMember),
+        ("Training Records", StaffTraining),
+        ("Compliance Checks", ComplianceCheck),
+        ("Alerts", ComplianceAlert),
+        ("CDD Records", CDDRecord),
+        ("SARs", SARRecord),
+        ("Breaches", BreachReport),
+        ("Client Intakes", ClientIntake),
+        ("Remediation Plans", RemediationPlan),
+        ("Chasers", ChaserLog),
+        ("Deadlines", Deadline),
+    ]
+
+    stats = []
+    for label, model in targets:
+        try:
+            count = (await db.execute(
+                select(func.count(model.id)).where(model.firm_id == current_user.firm_id)
+            )).scalar() or 0
+
+            last_updated = None
+            updated_col = getattr(model, "updated_at", None) or getattr(model, "created_at", None)
+            if updated_col is not None:
+                last_updated = (await db.execute(
+                    select(func.max(updated_col)).where(model.firm_id == current_user.firm_id)
+                )).scalar()
+
+            stats.append({
+                "table": label,
+                "recordCount": int(count),
+                "lastUpdated": last_updated.isoformat() if last_updated else None,
+            })
+        except Exception:
+            # Never let one bad table blank the whole panel.
+            continue
+
+    return {"data": stats}
+
 @router.post("/admin/import/staff")
 async def import_staff(file: UploadFile = File(...), current_user: CurrentUser = Depends(get_current_user), db: AsyncSession = Depends(tenant_db_from_jwt)):
     current_user.require_role("admin")

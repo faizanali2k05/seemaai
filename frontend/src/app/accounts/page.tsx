@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useRequireAuth } from '@/lib/hooks';
+import { useRequireAuth, useClientMatterOptions } from '@/lib/hooks';
 import { isDemoMode, DEMO_ACCOUNTS } from '@/lib/demo-data';
 import apiClient from '@/lib/api';
 import {
@@ -78,6 +78,9 @@ interface Reconciliation {
 export default function AccountsPage() {
   useRequireAuth();
   const router = useRouter();
+
+  // DB-driven combobox option lists (client names / matter refs)
+  const { clientNames, matterReferences } = useClientMatterOptions();
 
   const [stats, setStats] = useState<AccountStats | null>(null);
   const [accounts, setAccounts] = useState<ClientAccount[]>([]);
@@ -329,6 +332,18 @@ export default function AccountsPage() {
         description="Manage client money accounts and reconciliations under SRA Account Rules"
       />
 
+      {/* DB-driven combobox suggestions (free text still allowed). */}
+      <datalist id="accounts-client-options">
+        {clientNames.map((name) => (
+          <option key={`client-${name}`} value={name} />
+        ))}
+      </datalist>
+      <datalist id="accounts-matter-options">
+        {matterReferences.map((ref) => (
+          <option key={`matter-${ref}`} value={ref} />
+        ))}
+      </datalist>
+
       {/* Error State */}
       {error && (
         <Card className="bg-red-50 border border-red-200 p-4 rounded-xl">
@@ -547,6 +562,7 @@ export default function AccountsPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Client Name *</label>
             <input
               type="text"
+              list="accounts-client-options"
               value={openAccountForm.client_name}
               onChange={(e) => setOpenAccountForm({ ...openAccountForm, client_name: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -557,6 +573,7 @@ export default function AccountsPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Matter Reference *</label>
             <input
               type="text"
+              list="accounts-matter-options"
               value={openAccountForm.matter_ref}
               onChange={(e) => setOpenAccountForm({ ...openAccountForm, matter_ref: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"

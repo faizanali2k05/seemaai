@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useRequireAuth } from '@/lib/hooks';
+import { useRequireAuth, useClientMatterOptions } from '@/lib/hooks';
 import apiClient from '@/lib/api';
 import {
   PageHeader,
@@ -105,6 +105,9 @@ interface SARRecord {
 export default function AMLPage() {
   useRequireAuth();
   const router = useRouter();
+
+  // DB-driven combobox option lists (client names / matter refs)
+  const { clientNames, matterReferences } = useClientMatterOptions();
 
   // Stats
   const [stats, setStats] = useState<AMLStats | null>(null);
@@ -625,6 +628,18 @@ export default function AMLPage() {
         description="Manage Customer Due Diligence and Suspicious Activity Reports"
       />
 
+      {/* DB-driven combobox suggestions (free text still allowed). */}
+      <datalist id="aml-client-options">
+        {clientNames.map((name) => (
+          <option key={`client-${name}`} value={name} />
+        ))}
+      </datalist>
+      <datalist id="aml-matter-options">
+        {matterReferences.map((ref) => (
+          <option key={`matter-${ref}`} value={ref} />
+        ))}
+      </datalist>
+
       {error && (
         <Card className="bg-red-50 border border-red-200 p-4">
           <div className="flex items-start gap-3">
@@ -805,6 +820,7 @@ export default function AMLPage() {
             </label>
             <input
               type="text"
+              list="aml-client-options"
               value={cddFormData.client_name}
               onChange={(e) =>
                 setCDDFormData({ ...cddFormData, client_name: e.target.value })
@@ -1147,6 +1163,7 @@ export default function AMLPage() {
             </label>
             <input
               type="text"
+              list="aml-client-options"
               value={sarFormData.client_name}
               onChange={(e) =>
                 setSARFormData({ ...sarFormData, client_name: e.target.value })
@@ -1162,6 +1179,7 @@ export default function AMLPage() {
             </label>
             <input
               type="text"
+              list="aml-matter-options"
               value={sarFormData.matter_ref}
               onChange={(e) =>
                 setSARFormData({ ...sarFormData, matter_ref: e.target.value })

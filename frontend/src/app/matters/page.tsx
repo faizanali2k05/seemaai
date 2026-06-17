@@ -338,6 +338,20 @@ export default function MattersPage() {
         description="AI-assisted file review across the firm's matters. Flags missing CDD, overdue checklist items, and regulatory gaps — synced from your PMS where connected. Generate a per-matter File Review Form from any matter's checklist."
       />
 
+      {/* DB-driven combobox suggestions, reusing the already-fetched matters
+          list (free text still allowed). */}
+      <datalist id="matters-client-options">
+        {Array.from(
+          new Set(
+            matters
+              .map((m) => (m.client_name || '').trim())
+              .filter((name) => name && name !== '—')
+          )
+        ).map((name) => (
+          <option key={`client-${name}`} value={name} />
+        ))}
+      </datalist>
+
       {error && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
           <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -500,6 +514,7 @@ export default function MattersPage() {
             </label>
             <input
               type="text"
+              list="matters-client-options"
               value={clientNameInput}
               onChange={(e) => setClientNameInput(e.target.value)}
               placeholder="e.g., Smith & Co Ltd"

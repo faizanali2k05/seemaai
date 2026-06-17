@@ -6,18 +6,22 @@ import { useRequireAuth } from '@/lib/hooks';
 import { formatDate, formatDateTime } from '@/lib/utils/format';
 import apiClient from '@/lib/api';
 
+// Shape matches GET /compliance/chasers (see backend/routers/chasers.py):
+// { id, firm_id, matter_ref, chaser_type, recipient, subject, status,
+//   sent_at, response_at, attempts, created_at }.
+// status is one of: sent | escalated | responded | failed.
 interface ChaseRecord {
   id: string;
-  chaser_type: 'training' | 'review' | 'cdd' | 'supervision';
-  recipient_name: string;
-  recipient_email: string;
+  firm_id?: string;
+  matter_ref?: string;
+  chaser_type: 'training' | 'review' | 'cdd' | 'supervision' | string;
+  recipient: string;
   subject: string;
-  body: string;
-  sent_at: string;
-  status: 'pending' | 'acknowledged' | 'escalated';
-  acknowledged_at?: string;
-  escalated: boolean;
-  escalation_count: number;
+  status: 'sent' | 'escalated' | 'responded' | 'failed' | string;
+  sent_at?: string;
+  response_at?: string;
+  attempts?: number;
+  created_at?: string;
 }
 
 interface DailyBriefingAction {
@@ -66,17 +70,18 @@ export default function ChasersPage() {
     fetchChasers();
   }, []);
 
-  // Calculate stats from actual data
-  const pendingCount = chasers.filter(c => c.status === 'pending').length;
-  const awaitingCount = chasers.filter(c => c.status === 'pending' && !c.escalated).length;
+  // Calculate stats from actual data.
+  // "Pending"/"awaiting" = sent but not yet responded or escalated.
+  const pendingCount = chasers.filter(c => c.status === 'sent').length;
+  const awaitingCount = pendingCount;
   const resolvedThisWeek = chasers.filter(c => {
-    if (c.status !== 'acknowledged' || !c.acknowledged_at) return false;
-    const ackDate = new Date(c.acknowledged_at);
+    if (c.status !== 'responded' || !c.response_at) return false;
+    const ackDate = new Date(c.response_at);
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     return ackDate >= weekAgo;
   }).length;
-  const escalatedCount = chasers.filter(c => c.escalated).length;
+  const escalatedCount = chasers.filter(c => c.status === 'escalated').length;
 
   const stats = [
     {
@@ -105,22 +110,22 @@ export default function ChasersPage() {
 
   const columns = [
     { accessor: 'chaser_type', header: 'Type', width: '12%' },
-    { accessor: 'recipient_name', header: 'Recipient', width: '20%' },
+    { accessor: 'recipient', header: 'Recipient', width: '22%' },
     { accessor: 'subject', header: 'Subject', width: '28%' },
     { accessor: 'sent_at', header: 'Sent Date', width: '15%' },
     { accessor: 'status', header: 'Status', width: '12%' },
-    { accessor: 'acknowledged_at', header: 'Acknowledged', width: '12%' },
-    { accessor: 'escalated', header: 'Escalated', width: '11%' },
+    { accessor: 'attempts', header: 'Attempts', width: '11%' },
   ];
 
   const getFilteredChases = () => {
     if (activeTab === 'escalated') {
-      return chasers.filter(c => c.escalated);
+      return chasers.filter(c => c.status === 'escalated');
     }
     if (activeTab === 'history') {
-      return chasers.filter(c => c.status === 'acknowledged' || c.escalated);
+      return chasers.filter(c => c.status === 'responded' || c.status === 'escalated');
     }
-    return chasers.filter(c => c.status === 'pending');
+    // Active = sent / failed (awaiting a response).
+    return chasers.filter(c => c.status === 'sent' || c.status === 'failed');
   };
 
   const filteredChases = getFilteredChases();
@@ -129,15 +134,14 @@ export default function ChasersPage() {
     chases.map(chase => ({
       ...chase,
       chaser_type: (chase.chaser_type || '').charAt(0).toUpperCase() + (chase.chaser_type || '').slice(1),
-      sent_at: formatDate(new Date(chase.sent_at)),
+      sent_at: chase.sent_at ? formatDate(new Date(chase.sent_at)) : '—',
       status: (
         <StatusBadge
           status={chase.status}
           label={(chase.status || '').charAt(0).toUpperCase() + (chase.status || '').slice(1)}
         />
       ),
-      acknowledged_at: chase.acknowledged_at ? 'Yes' : 'No',
-      escalated: chase.escalated ? 'Yes' : 'No',
+      attempts: chase.attempts ?? 1,
     }));
 
   const handleSendChase = async () => {
@@ -180,7 +184,8 @@ export default function ChasersPage() {
   const handleEscalate = async (chaserId: string) => {
     try {
       setEscalatingId(chaserId);
-      await apiClient.post(`/compliance/chasers/${chaserId}/escalate`);
+      // Backend ChaserEscalate requires a `priority` field.
+      await apiClient.post(`/compliance/chasers/${chaserId}/escalate`, { priority: 'high' });
 
       showToast('Chase escalated successfully', 'success');
       // Refresh the chasers list
@@ -217,7 +222,10 @@ export default function ChasersPage() {
 
   const handleAcknowledge = async (chaserId: string) => {
     try {
-      await apiClient.post(`/compliance/chasers/${chaserId}/acknowledge`);
+      // Backend ChaserAcknowledge requires a `response_at` timestamp.
+      await apiClient.post(`/compliance/chasers/${chaserId}/acknowledge`, {
+        response_at: new Date().toISOString(),
+      });
       showToast('Chase acknowledged successfully', 'success');
       const response = await apiClient.get('/compliance/chasers');
       setChasers(Array.isArray(response.data) ? response.data : []);
@@ -231,9 +239,20 @@ export default function ChasersPage() {
   const handleBulkChaseTraining = async () => {
     try {
       setBulkChaseLoading(true);
-      await apiClient.post('/compliance/briefing/chase-training');
-
-      showToast('Chase notifications sent to all staff with overdue training', 'success');
+      // Backend BulkChaserRequest requires { chaser_type, recipients }.
+      // Recipients are resolved from the compliance scan / staff overdue list;
+      // sending an empty list here is a no-op rather than a 422.
+      const res = await apiClient.post('/compliance/briefing/chase-training', {
+        chaser_type: 'training',
+        recipients: [],
+      });
+      const sent = (res.data as any)?.sent ?? 0;
+      showToast(
+        sent > 0
+          ? `Chase notifications sent to ${sent} staff with overdue training`
+          : 'No staff currently have overdue training to chase',
+        sent > 0 ? 'success' : 'info',
+      );
       // Refresh the chasers list
       const response = await apiClient.get('/compliance/chasers');
       setChasers(Array.isArray(response.data) ? response.data : []);
@@ -249,9 +268,17 @@ export default function ChasersPage() {
   const handleBulkChaseReview = async () => {
     try {
       setBulkReviewChaseLoading(true);
-      await apiClient.post('/compliance/briefing/chase-review');
-
-      showToast('Chase notifications sent to all staff with overdue reviews', 'success');
+      const res = await apiClient.post('/compliance/briefing/chase-review', {
+        chaser_type: 'review',
+        recipients: [],
+      });
+      const sent = (res.data as any)?.sent ?? 0;
+      showToast(
+        sent > 0
+          ? `Chase notifications sent to ${sent} staff with overdue reviews`
+          : 'No staff currently have overdue reviews to chase',
+        sent > 0 ? 'success' : 'info',
+      );
       // Refresh the chasers list
       const response = await apiClient.get('/compliance/chasers');
       setChasers(Array.isArray(response.data) ? response.data : []);

@@ -13,7 +13,7 @@ import {
   showToast,
   Tabs,
 } from '@/components/ui';
-import { useRequireAuth } from '@/lib/hooks';
+import { useRequireAuth, useClientMatterOptions } from '@/lib/hooks';
 import apiClient from '@/lib/api';
 import { isDemoMode, DEMO_CONFLICTS } from '@/lib/demo-data';
 import { formatDate } from '@/lib/utils/format';
@@ -93,6 +93,9 @@ type TabType = 'checks' | 'parties';
 
 export default function ConflictsPage() {
   useRequireAuth();
+
+  // DB-driven combobox option lists (client names / matter refs / conflict parties)
+  const { clientNames, partyNames } = useClientMatterOptions();
 
   // Stats
   const [stats, setStats] = useState<ConflictStats | null>(null);
@@ -396,6 +399,21 @@ export default function ConflictsPage() {
         description="Manage conflict checks, maintain the parties register, and track resolutions"
       />
 
+      {/* DB-driven combobox suggestions (free text still allowed). */}
+      <datalist id="conflicts-client-options">
+        {clientNames.map((name) => (
+          <option key={`client-${name}`} value={name} />
+        ))}
+      </datalist>
+      <datalist id="conflicts-party-client-options">
+        {partyNames.map((name) => (
+          <option key={`party-${name}`} value={name} />
+        ))}
+        {clientNames.map((name) => (
+          <option key={`pc-client-${name}`} value={name} />
+        ))}
+      </datalist>
+
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-sm text-red-600">{error}</p>
@@ -611,6 +629,7 @@ export default function ConflictsPage() {
             </label>
             <input
               type="text"
+              list="conflicts-client-options"
               value={checkFormData.client_name}
               onChange={(e) =>
                 setCheckFormData({ ...checkFormData, client_name: e.target.value })
@@ -626,6 +645,7 @@ export default function ConflictsPage() {
             </label>
             <input
               type="text"
+              list="conflicts-party-client-options"
               value={checkFormData.opposing_party}
               onChange={(e) =>
                 setCheckFormData({ ...checkFormData, opposing_party: e.target.value })
@@ -641,6 +661,7 @@ export default function ConflictsPage() {
             </label>
             <input
               type="text"
+              list="conflicts-party-client-options"
               value={checkFormData.related_parties}
               onChange={(e) =>
                 setCheckFormData({ ...checkFormData, related_parties: e.target.value })
@@ -962,6 +983,7 @@ export default function ConflictsPage() {
             </label>
             <input
               type="text"
+              list="conflicts-party-client-options"
               value={partyFormData.party_name}
               onChange={(e) =>
                 setPartyFormData({ ...partyFormData, party_name: e.target.value })

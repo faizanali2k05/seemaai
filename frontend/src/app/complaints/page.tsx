@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRequireAuth } from '@/lib/hooks';
+import { useRequireAuth, useClientMatterOptions } from '@/lib/hooks';
 import apiClient from '@/lib/api';
 import {
   PageHeader,
@@ -132,6 +132,9 @@ function isOverdueAcknowledgement(dateReceived: string): boolean {
 
 export default function ComplaintsPage() {
   useRequireAuth();
+
+  // DB-driven combobox option list (client / complainant names)
+  const { clientNames } = useClientMatterOptions();
 
   const [stats, setStats] = useState<ComplaintStats | null>(null);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
@@ -463,6 +466,13 @@ export default function ComplaintsPage() {
 
   return (
     <div className="space-y-6 p-8">
+      {/* DB-driven combobox suggestions (free text still allowed). */}
+      <datalist id="complaints-client-options">
+        {clientNames.map((name) => (
+          <option key={`client-${name}`} value={name} />
+        ))}
+      </datalist>
+
       <div className="flex items-center justify-between">
         <PageHeader
           title="Complaints Handling"
@@ -592,6 +602,7 @@ export default function ComplaintsPage() {
         <div className="space-y-4">
           <Input
             label="Complainant Name *"
+            list="complaints-client-options"
             value={logComplaintForm.complainant_name}
             onChange={(e) =>
               setLogComplaintForm({

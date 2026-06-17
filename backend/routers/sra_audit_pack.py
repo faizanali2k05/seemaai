@@ -337,3 +337,61 @@ async def generate_audit_pack(
         "firm_name": firm.name,
         "sra_number": firm.sra_number,
     }
+
+
+@router.post("/compliance/sra-audit/ai-assess")
+async def ai_assess_sra_audit(
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """AI-assess the firm's LIVE data against the 12 SRA readiness guidelines and
+    persist the result as the firm's SRA audit items (so the readiness page loads)."""
+    from sqlalchemy import delete as _delete
+    from routers.ai import _gather_compliance_data
+    from services.ai_analysis import assess_sra_audit
+
+    firm = (await db.execute(select(Firm).where(Firm.id == current_user.firm_id))).scalar_one_or_none()
+    if not firm:
+        raise HTTPException(status_code=404, detail="Firm not found")
+
+    compliance_data = await _gather_compliance_data(db, current_user.firm_id)
+    result = assess_sra_audit(firm, compliance_data)
+
+    # Replace the firm's audit items with this fresh AI assessment.
+    await db.execute(_delete(SRAauditItem).where(SRAauditItem.firm_id == current_user.firm_id))
+    now_iso = datetime.utcnow().isoformat()
+    for it in result.get("items", []):
+        rec = (it.get("recommendation") or "").strip()
+        ref = (it.get("sra_reference") or "").strip()
+        notes = rec + (f"  [{ref}]" if ref else "")
+        db.add(SRAauditItem(
+            id=str(uuid.uuid4()),
+            firm_id=current_user.firm_id,
+            category=it.get("category"),
+            item_name=it.get("title") or it.get("category"),
+            description=it.get("finding"),
+            status=it.get("status") or "not_reviewed",
+            last_reviewed=now_iso,
+            notes=notes,
+        ))
+    await db.flush()
+
+    await log_audit(
+        db=db, firm_id=current_user.firm_id, action="ai_sra_audit_assessment",
+        entity_type="sra_audit", entity_id=str(current_user.firm_id),
+        user_id=current_user.user_id,
+        details=json.dumps({
+            "overall_rating": result.get("overall_rating"),
+            "ai_generated": result.get("ai_generated", False),
+        }),
+    )
+
+    items = await _firm_audit_items(db, current_user.firm_id)
+    return {
+        "score": _compute_score(items),
+        "summary": _get_summary(items),
+        "assessed_at": now_iso,
+        "items": items,
+        "overall_rating": result.get("overall_rating"),
+        "ai_generated": result.get("ai_generated", False),
+    }

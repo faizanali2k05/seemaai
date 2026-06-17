@@ -36,7 +36,7 @@ interface ImportLog {
 interface DatabaseStats {
   table: string;
   recordCount: number;
-  lastUpdated: string;
+  lastUpdated: string | null;
 }
 
 export default function DataManagementPage() {
@@ -57,6 +57,25 @@ export default function DataManagementPage() {
   const [confirmClear, setConfirmClear] = useState(false);
 
   const [databaseStats, setDatabaseStats] = useState<DatabaseStats[]>([]);
+  const [statsLoading, setStatsLoading] = useState(false);
+
+  // Fetch real per-table database statistics for the System tab.
+  useEffect(() => {
+    const fetchDatabaseStats = async () => {
+      setStatsLoading(true);
+      try {
+        const response = await apiClient.get('/admin/database-stats');
+        const data = response?.data?.data ?? response?.data ?? [];
+        setDatabaseStats(Array.isArray(data) ? data : []);
+      } catch {
+        setDatabaseStats([]);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchDatabaseStats();
+  }, []);
 
   // Fetch import logs
   useEffect(() => {
@@ -364,7 +383,9 @@ export default function DataManagementPage() {
                 Database Statistics
               </h3>
               <div className="space-y-3">
-                {databaseStats.length > 0 ? (
+                {statsLoading ? (
+                  <LoadingSpinner />
+                ) : databaseStats.length > 0 ? (
                   databaseStats.map((stat) => (
                     <div
                       key={stat.table}
@@ -373,14 +394,14 @@ export default function DataManagementPage() {
                       <div>
                         <p className="font-medium capitalize uppercase tracking-wide text-gray-900">{stat.table}</p>
                         <p className="text-sm text-gray-500">
-                          Updated {formatDate(stat.lastUpdated)}
+                          {stat.lastUpdated ? `Updated ${formatDate(stat.lastUpdated)}` : 'No records yet'}
                         </p>
                       </div>
-                      <p className="text-lg font-semibold tabular-nums">{stat.recordCount.toLocaleString()}</p>
+                      <p className="text-lg font-semibold tabular-nums">{(stat.recordCount ?? 0).toLocaleString()}</p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500 text-sm">Database statistics not available</p>
+                  <EmptyState title="No data yet" description="Record counts will appear here once you import or sync data." />
                 )}
               </div>
             </Card>

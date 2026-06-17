@@ -99,6 +99,11 @@ celery_app.conf.update(
     task_track_started=True,
     task_acks_late=True,
     worker_prefetch_multiplier=1,
+    # The worker consumes queues: compliance, email, default. Without this, Celery's
+    # default queue is "celery" (which the worker does NOT consume), so every task
+    # dispatched without an explicit queue (regulatory scrapers, poll_all_feeds, …)
+    # got stuck forever and never ran. Route the default queue to "default".
+    task_default_queue="default",
 )
 
 # Scheduled tasks.

@@ -198,6 +198,7 @@ export default function SRAAuditPage() {
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [assessing, setAssessing] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [activeTab, setActiveTab] = useState<"all" | "pass" | "partial" | "fail">("all");
   const [sendOpen, setSendOpen] = useState(false);
@@ -314,6 +315,24 @@ export default function SRAAuditPage() {
 </body></html>`;
   };
 
+  const handleAiAssess = async () => {
+    try {
+      setAssessing(true);
+      // AI analyses the firm's live data against the 12 SRA guidelines and
+      // persists the result as the firm's audit items.
+      const res = await apiClient.post("/compliance/sra-audit/ai-assess", undefined, { timeout: 120000 });
+      if (res.data && res.data.score !== undefined) {
+        setData(res.data);
+        setError(null);
+        setToast({ message: `AI assessment complete — readiness ${res.data.score}%`, type: "success" });
+      }
+    } catch (_err: any) {
+      setToast({ message: _err?.response?.data?.message || "AI assessment failed", type: "error" });
+    } finally {
+      setAssessing(false);
+    }
+  };
+
   const handleGeneratePack = async () => {
     // Open window synchronously to avoid popup blocker
     const win = window.open("", "_blank");
@@ -424,6 +443,28 @@ export default function SRAAuditPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+          <button
+            onClick={handleAiAssess}
+            disabled={assessing}
+            className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm"
+          >
+            {assessing ? (
+              <>
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Analyzing…
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Run AI Assessment
+              </>
+            )}
+          </button>
           <button
             onClick={() => setSendOpen(true)}
             className="inline-flex items-center gap-2 bg-white text-indigo-700 border border-indigo-200 px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-indigo-50 transition-all shadow-sm"

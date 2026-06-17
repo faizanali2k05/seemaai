@@ -182,6 +182,11 @@ async def _mark_delivered(db: AsyncSession, interp):
         interp.delivered_at = datetime.utcnow()
         db.add(interp)
         await db.flush()
+        # Reload server-computed columns (updated_at uses onupdate=func.now()).
+        # Without this they stay expired after the flush and accessing them during
+        # serialization triggers a lazy reload that crashes the async session
+        # (sqlalchemy MissingGreenlet).
+        await db.refresh(interp)
 
 # ── Endpoints ────────────────────────────────────────────────────────────
 
@@ -209,38 +214,37 @@ async def list_regulatory_updates(
     result = await db.execute(query)
     updates = result.scalars().all()
 
-    # Batch-fetch interpretations for this firm
-    update_ids = [u.id for u in updates]
-    interp_map = {}
-    if update_ids:
+    # Serialize the update rows IMMEDIATELY — capture column values while the
+    # attributes are still fresh. Doing this before the interpretation query /
+    # _mark_delivered flush avoids async-SQLAlchemy MissingGreenlet errors from
+    # expired-attribute lazy loads on the async session.
+    data = [{
+        "id": u.id,
+        "source": u.source,
+        "source_url": u.source_url,
+        "title": u.title,
+        "summary": u.summary,
+        "category": u.category,
+        "published_date": u.published_date,
+        "impact_level": u.impact_level,
+        "tags": u.tags,
+        "scraped_at": u.scraped_at.isoformat() if u.scraped_at else None,
+        "interpretation": None,
+    } for u in updates]
+    by_id = {d["id"]: d for d in data}
+
+    # Batch-fetch interpretations for this firm and attach them
+    if by_id:
         interp_result = await db.execute(
             select(RegulatoryInterpretation).where(
-                RegulatoryInterpretation.update_id.in_(update_ids),
+                RegulatoryInterpretation.update_id.in_(list(by_id.keys())),
                 RegulatoryInterpretation.firm_id == user.firm_id,
             )
         )
         for interp in interp_result.scalars().all():
-            # Mark as delivered on first view
             await _mark_delivered(db, interp)
-
-            serialized = _serialize_interp(interp, include_audit=True)
-            interp_map[interp.update_id] = serialized
-
-    data = []
-    for u in updates:
-        data.append({
-            "id": u.id,
-            "source": u.source,
-            "source_url": u.source_url,
-            "title": u.title,
-            "summary": u.summary,
-            "category": u.category,
-            "published_date": u.published_date,
-            "impact_level": u.impact_level,
-            "tags": u.tags,
-            "scraped_at": u.scraped_at.isoformat() if u.scraped_at else None,
-            "interpretation": interp_map.get(u.id),
-        })
+            if interp.update_id in by_id:
+                by_id[interp.update_id]["interpretation"] = _serialize_interp(interp, include_audit=True)
 
     return {"data": data}
 

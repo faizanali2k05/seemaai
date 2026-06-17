@@ -25,3 +25,7 @@ export {
 
 // Tier gating hooks
 export { useTierGate } from './use-tier-gate';
+
+// DB-driven combobox option lists (client names / matter refs / conflict parties)
+export { useClientMatterOptions } from './use-client-matter-options';
+export type { ClientMatterOptions } from './use-client-matter-options';

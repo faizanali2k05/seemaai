@@ -14,7 +14,7 @@ import {
   ConfirmDialog,
 } from '@/components/ui';
 import { ChevronRight, Check } from 'lucide-react';
-import { useRequireAuth } from '@/lib/hooks';
+import { useRequireAuth, useClientMatterOptions } from '@/lib/hooks';
 import apiClient from '@/lib/api';
 import { formatDate, riskBadgeColor } from '@/lib/utils/format';
 import type { ClientIntake, PracticeArea, RiskLevel } from '@/lib/types';
@@ -42,6 +42,9 @@ interface CDDChecklist {
 export default function IntakePage() {
   useRequireAuth();
   const api = apiClient;
+
+  // DB-driven combobox option list (client names)
+  const { clientNames } = useClientMatterOptions();
 
   const [intakeList, setIntakeList] = useState<IntakeItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -340,6 +343,13 @@ export default function IntakePage() {
         description="Manage client onboarding and due diligence"
       />
 
+      {/* DB-driven combobox suggestions (free text still allowed). */}
+      <datalist id="intake-client-options">
+        {clientNames.map((name) => (
+          <option key={`client-${name}`} value={name} />
+        ))}
+      </datalist>
+
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
           {error}
@@ -480,6 +490,7 @@ export default function IntakePage() {
             </label>
             <input
               type="text"
+              list="intake-client-options"
               className={`w-full px-3 py-2 border rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 intakeErrors.clientName ? 'border-red-500' : 'border-gray-300'
               }`}

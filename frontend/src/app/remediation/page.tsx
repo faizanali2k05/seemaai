@@ -12,7 +12,7 @@ import {
   showToast,
   ConfirmDialog,
 } from '@/components/ui';
-import { useRequireAuth } from '@/lib/hooks';
+import { useRequireAuth, useClientMatterOptions } from '@/lib/hooks';
 import { isDemoMode, DEMO_REMEDIATION } from '@/lib/demo-data';
 import { formatDate } from '@/lib/utils/format';
 import apiClient from '@/lib/api';
@@ -161,7 +161,11 @@ export default function RemediationPage() {
 
   const columns = [
     { accessor: 'title', header: 'Plan Title', sortable: true },
-    { accessor: 'alert_id', header: 'Alert ID' },
+    {
+      accessor: 'source',
+      header: 'Source / Reference',
+      render: (_value: any, row: any) => row.source || row.alert_id || '—',
+    },
     {
       accessor: 'status',
       header: 'Status',
@@ -178,7 +182,7 @@ export default function RemediationPage() {
     {
       accessor: 'due_date',
       header: 'Deadline',
-      render: (_value: any, row: any) => formatDate(new Date(row.due_date)),
+      render: (_value: any, row: any) => (row.due_date ? formatDate(new Date(row.due_date)) : '—'),
     },
   ];
 
@@ -343,6 +347,10 @@ interface CreatePlanModalProps {
 }
 
 function CreatePlanModal({ isOpen, onClose, onSuccess }: CreatePlanModalProps) {
+  // DB-driven combobox option lists (client names / matter refs) — same
+  // datalist pattern used by the conflicts / undertakings / AML forms.
+  const { clientNames, matterReferences } = useClientMatterOptions();
+
   const [title, setTitle] = useState('');
   const [alertId, setAlertId] = useState('');
   const [priority, setPriority] = useState('medium');
@@ -369,10 +377,11 @@ function CreatePlanModal({ isOpen, onClose, onSuccess }: CreatePlanModalProps) {
         return;
       }
       // POST /compliance/remediate resolves an existing plan; the create
-      // endpoint is /compliance/remediation-plans.
+      // endpoint is /compliance/remediation-plans. The backend schema uses
+      // `source` (not `alert_id`) for the originating reference.
       await apiClient.post('/compliance/remediation-plans', {
-        alert_id: alertId,
         title,
+        source: alertId,
         priority,
         assigned_to: assignedTo,
       });
@@ -404,24 +413,38 @@ function CreatePlanModal({ isOpen, onClose, onSuccess }: CreatePlanModalProps) {
             {error}
           </div>
         )}
+        {/* DB-driven suggestion lists (free-text entry still allowed) */}
+        <datalist id="remediation-client-options">
+          {clientNames.map((name) => (
+            <option key={name} value={name} />
+          ))}
+        </datalist>
+        <datalist id="remediation-matter-options">
+          {matterReferences.map((ref) => (
+            <option key={ref} value={ref} />
+          ))}
+        </datalist>
+
         <div>
           <label className="block text-sm font-semibold mb-1">Plan Title</label>
           <input
             type="text"
-            placeholder="Enter plan title"
+            placeholder="Enter plan title (or pick a client)"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            list="remediation-client-options"
             className="w-full px-3 py-2 border rounded"
             disabled={loading}
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold mb-1">Alert ID</label>
+          <label className="block text-sm font-semibold mb-1">Related Matter / Reference</label>
           <input
             type="text"
-            placeholder="Enter related alert ID"
+            placeholder="Enter related matter reference or alert ID"
             value={alertId}
             onChange={(e) => setAlertId(e.target.value)}
+            list="remediation-matter-options"
             className="w-full px-3 py-2 border rounded"
             disabled={loading}
           />

@@ -90,10 +90,13 @@ export default function SettingsPage() {
   const { user } = useRequireAuth();
   const searchParams = useSearchParams();
 
+  // SUBSCRIPTIONS TEMPORARILY DISABLED — 'billing' is no longer a selectable tab.
+  // The type still includes it so the billing code below stays valid/restorable,
+  // but it's filtered out of the allowlist so ?tab=billing falls back to 'firm'.
   const [activeTab, setActiveTab] = useState<'firm' | 'billing' | 'security' | 'notifications' | 'preferences' | 'integrations'>(
     () => {
       const tab = searchParams?.get('tab');
-      if (tab && ['firm', 'billing', 'security', 'notifications', 'preferences', 'integrations'].includes(tab)) {
+      if (tab && ['firm', 'security', 'notifications', 'preferences', 'integrations'].includes(tab)) {
         return tab as any;
       }
       return 'firm';
@@ -928,13 +931,15 @@ export default function SettingsPage() {
     <div className="space-y-8">
       <PageHeader
         title="Settings"
-        description="Manage firm profile, billing, and security settings"
+        description="Manage firm profile and security settings"
       />
 
       <Tabs
         tabs={[
           { id: 'firm', label: 'Firm Profile' },
-          { id: 'billing', label: 'Billing' },
+          // SUBSCRIPTIONS TEMPORARILY DISABLED — 'Billing' tab hidden from nav.
+          // The billing tab panel below is kept (just unreachable) so it can be
+          // re-enabled by restoring this entry.
           { id: 'security', label: 'Security' },
           { id: 'notifications', label: 'Notifications' },
           { id: 'preferences', label: 'Preferences' },
@@ -1131,29 +1136,9 @@ export default function SettingsPage() {
                   </Button>
                 </Card>
 
-                {/* Plan / Upgrade — surfaced at the END of the firm profile so
-                    the current plan and upgrade path sit with the firm's
-                    details. Full billing management lives in the Billing tab. */}
-                <Card className="rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold uppercase tracking-wide text-gray-900">Your Plan</h3>
-                      <p className="text-sm text-gray-600 mt-1 max-w-md">
-                        You&apos;re on the{' '}
-                        <span className="font-semibold text-blue-900">{subscription?.planName || 'Essentials'}</span>{' '}
-                        plan. Upgrade for more users, training records and storage.
-                      </p>
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                      <Button variant="outline" className="w-full sm:w-auto" onClick={() => setActiveTab('billing')}>
-                        Manage billing
-                      </Button>
-                      <Button className="w-full sm:w-auto" onClick={() => setActiveTab('billing')}>
-                        Upgrade Plan
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
+                {/* SUBSCRIPTIONS TEMPORARILY DISABLED — the "Your Plan" /
+                    upgrade card that previously sat here has been removed.
+                    Restore it (and the Billing tab) when plans return. */}
               </>
             )}
           </div>

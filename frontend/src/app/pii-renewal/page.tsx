@@ -323,7 +323,7 @@ export default function PiiRenewalPage() {
                       : '—'
                   }
                 />
-                <Field label="Subscription tier" value={pack.firm?.subscription_tier} />
+                {/* SUBSCRIPTIONS TEMPORARILY DISABLED — "Subscription tier" field hidden */}
                 <Field label="Onboarding status" value={pack.firm?.onboarding_status} />
               </div>
             </div>

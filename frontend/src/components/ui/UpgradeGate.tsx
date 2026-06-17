@@ -114,21 +114,12 @@ export interface TierBadgeProps {
   className?: string;
 }
 
-export const TierBadge: React.FC<TierBadgeProps> = ({ className = '' }) => {
-  const { tier, isPro } = useTierGate();
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-        isPro
-          ? 'bg-indigo-100 text-indigo-700'
-          : 'bg-gray-100 text-gray-600'
-      } ${className}`}
-    >
-      {isPro && <StarIcon className="w-3 h-3" />}
-      {tier === 'professional' ? 'Professional' : 'Essentials'}
-    </span>
-  );
+export const TierBadge: React.FC<TierBadgeProps> = ({ className: _className = '' }) => {
+  // ── SUBSCRIPTIONS TEMPORARILY DISABLED ──
+  // No plan/tier name is shown anywhere. Render nothing so existing call sites
+  // (e.g. the dashboard greeting) don't display a plan badge. Restore the
+  // tier-driven badge below when subscriptions are re-enabled.
+  return null;
 };
 
 TierBadge.displayName = 'TierBadge';
@@ -142,64 +133,13 @@ export interface UserLimitWarningProps {
 }
 
 export const UserLimitWarning: React.FC<UserLimitWarningProps> = ({
-  className = '',
+  className: _className = '',
 }) => {
-  const { tier, userLimit, currentUsers, atUserLimit, usersRemaining } = useTierGate();
-
-  // No limit (Professional) or no data yet
-  if (userLimit === null || tier === 'professional') {
-    return null;
-  }
-
-  // Show warning when within 2 users of the limit, or at the limit
-  if (usersRemaining !== null && usersRemaining > 2) {
-    return null;
-  }
-
-  const handleUpgrade = () => {
-    window.location.href = '/settings?tab=billing';
-  };
-
-  if (atUserLimit) {
-    return (
-      <div
-        className={`flex items-center gap-3 px-4 py-3 bg-red-50 border border-red-200 rounded-lg ${className}`}
-      >
-        <WarningIcon className="w-5 h-5 text-red-500 flex-shrink-0" />
-        <div className="flex-1">
-          <p className="text-sm font-medium text-red-800">
-            User limit reached ({currentUsers}/{userLimit})
-          </p>
-          <p className="text-xs text-red-600">
-            Upgrade to Professional for unlimited user accounts.
-          </p>
-        </div>
-        <button
-          onClick={handleUpgrade}
-          className="text-xs font-semibold text-red-600 hover:text-red-800 whitespace-nowrap"
-        >
-          Upgrade
-        </button>
-      </div>
-    );
-  }
-
-  // Approaching limit
-  return (
-    <div
-      className={`flex items-center gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg ${className}`}
-    >
-      <WarningIcon className="w-5 h-5 text-amber-500 flex-shrink-0" />
-      <div className="flex-1">
-        <p className="text-sm font-medium text-amber-800">
-          {usersRemaining} user {usersRemaining === 1 ? 'slot' : 'slots'} remaining ({currentUsers}/{userLimit})
-        </p>
-        <p className="text-xs text-amber-600">
-          Upgrade to Professional for unlimited users.
-        </p>
-      </div>
-    </div>
-  );
+  // ── SUBSCRIPTIONS TEMPORARILY DISABLED ──
+  // No user-cap warnings are shown (unlimited users). Render nothing. The
+  // tier-driven warning lived here previously — restore from git history when
+  // subscriptions are re-enabled.
+  return null;
 };
 
 UserLimitWarning.displayName = 'UserLimitWarning';
@@ -213,21 +153,10 @@ export interface ProBadgeProps {
   className?: string;
 }
 
-export const ProBadge: React.FC<ProBadgeProps> = ({ feature, className = '' }) => {
-  const { isPro, isLocked } = useTierGate();
-
-  // Don't show badge if the firm already has Professional
-  if (isPro) return null;
-  // If a feature is specified and it's not locked, don't show
-  if (feature && !isLocked(feature)) return null;
-
-  return (
-    <span
-      className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase bg-gradient-to-r from-blue-500 to-indigo-500 text-white ${className}`}
-    >
-      PRO
-    </span>
-  );
+export const ProBadge: React.FC<ProBadgeProps> = ({ feature: _feature, className: _className = '' }) => {
+  // ── SUBSCRIPTIONS TEMPORARILY DISABLED ──
+  // No "PRO" badges are shown (everything is unlocked). Render nothing.
+  return null;
 };
 
 ProBadge.displayName = 'ProBadge';

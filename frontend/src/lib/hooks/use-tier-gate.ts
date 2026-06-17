@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useFirmStore, TIER_HIERARCHY, PROFESSIONAL_FEATURES, FEATURE_LABELS } from '../stores/firm-store';
+// SUBSCRIPTIONS TEMPORARILY DISABLED — TIER_HIERARCHY no longer needed (gating bypassed)
+import { useFirmStore, PROFESSIONAL_FEATURES, FEATURE_LABELS } from '../stores/firm-store';
 import type { SubscriptionTier } from '../types';
 import type { ProfessionalFeature, TierInfo } from '../stores/firm-store';
 
@@ -28,46 +29,44 @@ export function useTierGate() {
   }, [firm, tierInfo, fetchTierInfo]);
 
   const currentTier: SubscriptionTier = firm?.subscription_tier || 'essentials';
-  const currentLevel = TIER_HIERARCHY[currentTier] || 0;
 
+  // ── SUBSCRIPTIONS TEMPORARILY DISABLED ──────────────────────────────────
+  // All tier-gating is bypassed: every feature is treated as unlocked and no
+  // user cap is enforced. The plan/limit infrastructure below is preserved so
+  // subscriptions can be re-enabled later — just flip these return values back
+  // to the tier-driven versions (kept in git history) when ready.
   return {
-    /** Current tier name */
+    /** Current tier name (kept for reference; gating ignores it) */
     tier: currentTier,
 
-    /** Whether the firm is on the Professional plan */
-    isPro: currentTier === 'professional',
+    /** Subscriptions disabled — treat everyone as fully unlocked */
+    isPro: true,
 
     /** Full tier info from backend (null until loaded) */
     tierInfo,
 
-    /** Check if the firm's tier meets or exceeds the required tier */
-    canAccess: (requiredTier: SubscriptionTier): boolean => {
-      return currentLevel >= (TIER_HIERARCHY[requiredTier] || 0);
-    },
+    /** Subscriptions disabled — every tier check passes */
+    canAccess: (_requiredTier: SubscriptionTier): boolean => true,
 
-    /** Check if a specific Professional feature is locked for this firm */
-    isLocked: (feature: ProfessionalFeature): boolean => {
-      return currentTier !== 'professional' && PROFESSIONAL_FEATURES.includes(feature);
-    },
+    /** Subscriptions disabled — no feature is ever locked */
+    isLocked: (_feature: ProfessionalFeature): boolean => false,
 
-    /** Get human-readable label for a locked feature */
+    /** Get human-readable label for a feature */
     getFeatureLabel: (feature: ProfessionalFeature): string => {
       return FEATURE_LABELS[feature] || feature;
     },
 
-    /** Max users allowed (null = unlimited) */
-    userLimit: tierInfo?.limits.max_users ?? (currentTier === 'professional' ? null : 10),
+    /** Subscriptions disabled — unlimited users */
+    userLimit: null,
 
     /** Current active user count */
     currentUsers: tierInfo?.limits.current_users ?? 0,
 
-    /** Users remaining before hitting the cap (null = unlimited) */
-    usersRemaining: tierInfo?.limits.users_remaining ?? null,
+    /** Subscriptions disabled — unlimited users remaining */
+    usersRemaining: null,
 
-    /** Whether the firm is at or above the user cap */
-    atUserLimit: tierInfo
-      ? tierInfo.limits.max_users !== null && tierInfo.limits.current_users >= tierInfo.limits.max_users
-      : false,
+    /** Subscriptions disabled — never at a user cap */
+    atUserLimit: false,
 
     /** All Professional feature keys */
     professionalFeatures: PROFESSIONAL_FEATURES,

@@ -30,6 +30,6 @@ class ClientIntake(Base):
     # Clio / PMS integration fields
     external_ref = Column(String(100), index=True)  # Clio contact ID
     source = Column(String(50))  # "clio", "manual", etc.
-    client_phone = Column(String(50))
+    client_phone = Column(String(255))
     client_type = Column(String(50))  # person, company
     company_name = Column(String(255))

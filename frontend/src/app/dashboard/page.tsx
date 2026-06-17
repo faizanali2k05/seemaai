@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import {
   PageHeader, StatCard, Card, Button, EmptyState, Tabs, showToast,
-  DashboardSkeleton, UpgradeGate, TierBadge,
+  DashboardSkeleton,
+  // SUBSCRIPTIONS TEMPORARILY DISABLED — UpgradeGate/TierBadge no longer used here
 } from '@/components/ui';
 
 // Dynamic imports for Recharts-based components — avoids SSR crashes in production
@@ -13,7 +14,7 @@ const TrendChart = dynamic(() => import('@/components/ui/Charts').then(m => m.Tr
 const BarChartCard = dynamic(() => import('@/components/ui/Charts').then(m => m.BarChartCard), { ssr: false });
 const ComplianceGauge = dynamic(() => import('@/components/ui/Charts').then(m => m.ComplianceGauge), { ssr: false });
 const ActivityTimeline = dynamic(() => import('@/components/ui/Charts').then(m => m.ActivityTimeline), { ssr: false });
-import { useRequireAuth, useTierGate } from '@/lib/hooks';
+import { useRequireAuth } from '@/lib/hooks';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import apiClient from '@/lib/api';
 import { formatDate } from '@/lib/utils/format';
@@ -57,7 +58,7 @@ interface RegulatoryUpdate {
 export default function DashboardPage() {
   useRequireAuth();
   const router = useRouter();
-  const { isPro } = useTierGate();
+  // SUBSCRIPTIONS TEMPORARILY DISABLED — tier gate removed from dashboard
   const user = useAuthStore((s) => s.user);
   const accessToken = useAuthStore((s) => s.accessToken);
   const api = apiClient;
@@ -321,7 +322,8 @@ export default function DashboardPage() {
               {greeting}, {userName}
             </h1>
             <p className="text-sm text-gray-500 mt-0.5 flex items-center gap-2">
-              {todayFormatted}{firmName ? ` · ${firmName}` : ''} <TierBadge />
+              {/* SUBSCRIPTIONS TEMPORARILY DISABLED — plan badge removed */}
+              {todayFormatted}{firmName ? ` · ${firmName}` : ''}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -595,29 +597,12 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── Professional Tier: Risk Heatmap ── */}
-      <UpgradeGate feature="risk_heatmap">
-        <Card title="Firm-Wide Risk Heatmap">
-          <p className="text-sm text-gray-500 mb-4">
-            Visual overview of compliance risk across all departments and practice areas.
-          </p>
-          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 text-sm">
-            Risk heatmap visualization
-          </div>
-        </Card>
-      </UpgradeGate>
-
-      {/* ── Professional Tier: Department Views ── */}
-      <UpgradeGate feature="multi_department_views">
-        <Card title="Department Compliance Overview">
-          <p className="text-sm text-gray-500 mb-4">
-            Compare compliance metrics across departments — training completion, open alerts, and risk scores.
-          </p>
-          <div className="h-48 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 text-sm">
-            Department comparison view
-          </div>
-        </Card>
-      </UpgradeGate>
+      {/* ── SUBSCRIPTIONS TEMPORARILY DISABLED ──
+          The "Firm-Wide Risk Heatmap" and "Department Compliance Overview"
+          upgrade cards (previously gated behind <UpgradeGate>) were placeholder
+          visualisations with no real data, so they have been removed while
+          subscriptions are off. Re-add them (wrapped in <UpgradeGate>) when
+          plans return. */}
     </div>
   );
 }

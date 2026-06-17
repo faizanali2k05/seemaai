@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/lib/stores/auth-store';
-import { useFirmStore } from '@/lib/stores/firm-store';
+// SUBSCRIPTIONS TEMPORARILY DISABLED — firm-store tier no longer used here
 import {
   Menu,
   X,
@@ -149,8 +149,7 @@ export default function Sidebar() {
   const storeUser = useAuthStore((state) => state.user);
   const isHydrated = useAuthStore((state) => state.isHydrated);
   const storeLogout = useAuthStore((state) => state.logout);
-  const firmTier = useFirmStore((state) => state.firm?.subscription_tier || 'essentials');
-  const isPro = firmTier === 'professional';
+  // SUBSCRIPTIONS TEMPORARILY DISABLED — plan/tier no longer drives the sidebar
   const user = storeUser;
   const isLoading = !isHydrated;
 
@@ -195,16 +194,10 @@ export default function Sidebar() {
         } lg:translate-x-0 fixed lg:relative top-0 left-0 h-screen z-40 bg-seema-sidebar-bg text-white transition-transform duration-300 flex flex-col w-64 lg:w-[260px]`}
       >
         {/* Logo */}
+        {/* SUBSCRIPTIONS TEMPORARILY DISABLED — plan name badge removed */}
         <div className="px-5 py-4 border-b border-seema-sidebar-hover">
           <div className="flex items-center justify-between">
             <h1 className="text-lg font-bold">Seema</h1>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-              isPro
-                ? 'bg-indigo-500/20 text-indigo-300'
-                : 'bg-gray-500/20 text-gray-400'
-            }`}>
-              {isPro ? 'Professional' : 'Essentials'}
-            </span>
           </div>
           <p className="text-xs text-gray-400 mt-0.5">Compliance Platform</p>
         </div>
@@ -267,11 +260,7 @@ export default function Sidebar() {
                       >
                         {item.icon}
                         <span className="flex-1">{item.label}</span>
-                        {item.proOnly && !isPro && (
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wide uppercase bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
-                            PRO
-                          </span>
-                        )}
+                        {/* SUBSCRIPTIONS TEMPORARILY DISABLED — PRO badge removed */}
                       </Link>
                     );
                   })}

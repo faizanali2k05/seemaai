@@ -157,6 +157,17 @@ class TierGateMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next):
+        # ── SUBSCRIPTIONS TEMPORARILY DISABLED ──────────────────────────────
+        # All tier/plan gating is bypassed: every request passes straight
+        # through regardless of the firm's subscription tier, and no feature is
+        # blocked by plan or user-cap limits. The middleware stays in the stack
+        # (registered in main.py) and all the gating logic below is preserved
+        # so subscriptions can be re-enabled later — simply delete this early
+        # return to restore tier enforcement. Auth/RLS are untouched: this only
+        # short-circuits the tier check.
+        return await call_next(request)
+
+        # ── Original tier-gating logic (kept, but unreachable while disabled) ──
         path = request.url.path
         method = request.method.upper()
 
