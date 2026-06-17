@@ -29,6 +29,9 @@ class CreateConflictCheckRequest(BaseModel):
     client_name: str
     matter_type: str | None = None
     parties: list[str] | None = None
+    related_parties: list[str] | None = None   # frontend sends this name
+    opposing_party: str | None = None
+    matter_description: str | None = None
 
 class AddPartyRequest(BaseModel):
     party_name: str
@@ -112,33 +115,88 @@ async def run_conflict_check(
     user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(tenant_db_from_jwt),
 ):
-    """Run new conflict check."""
+    """Run an AI-powered conflict-of-interest check.
+
+    Reasons about the new matter (client, parties, facts) against the firm's
+    existing matters + conflict-party register under SRA paras 6.1/6.2 and the
+    duty of confidentiality to former clients.
+    """
+    from models.matters import Matter
+    from models.firm import Firm
+    from services.ai_analysis import check_conflicts
+
+    # Parties on the new matter (accept both `parties` and the frontend's `related_parties`)
+    new_parties = list(req.related_parties or req.parties or [])
+    if req.opposing_party:
+        new_parties.append(req.opposing_party)
+    new_parties = [p for p in (p.strip() for p in new_parties) if p]
+
+    # Gather the firm's "conflict universe": existing matters + party register
+    m_res = await db.execute(select(Matter).where(Matter.firm_id == user.firm_id))
+    existing_matters = [
+        {"reference": m.reference, "title": m.title, "client_name": m.client_name,
+         "matter_type": m.matter_type, "practice_area": m.practice_area, "description": m.description}
+        for m in m_res.scalars().all()
+    ]
+    p_res = await db.execute(select(ConflictParty).where(ConflictParty.firm_id == user.firm_id))
+    party_names = [p.party_name for p in p_res.scalars().all()]
+
+    firm = (await db.execute(select(Firm).where(Firm.id == user.firm_id))).scalar_one_or_none()
+
+    verdict = check_conflicts(
+        {"client_name": req.client_name, "matter_type": req.matter_type,
+         "parties": new_parties, "description": req.matter_description},
+        existing_matters, party_names, firm,
+    )
+
+    status = verdict.get("status", "potential")          # clear | potential | conflicted
+    conflict_found = status != "clear"
+
     check = ConflictCheck(
         id=str(uuid.uuid4()),
         firm_id=user.firm_id,
         client_name=req.client_name,
         matter_type=req.matter_type,
-        parties=json.dumps(req.parties) if req.parties else json.dumps([]),
-        status="pending",
+        parties=json.dumps(new_parties),
+        status=status,
+        conflict_type=verdict.get("conflict_type"),
+        resolution=json.dumps(verdict),                  # full AI verdict for later display
         checked_by=user.user_id,
     )
     db.add(check)
     await db.flush()
 
     await log_audit(
-        db=db,
-        firm_id=user.firm_id,
-        action="created",
-        entity_type="conflict_check",
-        entity_id=check.id,
-        user_id=user.user_id,
-        details=f"Conflict check initiated for {req.client_name}",
+        db=db, firm_id=user.firm_id, action="created", entity_type="conflict_check",
+        entity_id=check.id, user_id=user.user_id,
+        details=f"AI conflict check for {req.client_name}: {status}",
     )
+
+    # Shape the response for the frontend result modal
+    refs = " · ".join(verdict.get("sra_references") or [])
+    summary = verdict.get("reasoning", "")
+    if verdict.get("recommendation"):
+        summary += f"\n\nRecommendation: {verdict['recommendation']}"
+    if refs:
+        summary += f"\n\nSRA references: {refs}"
+    matter_matches = [
+        {"reference": mm.get("reference"), "client_name": mm.get("reference"),
+         "matter_type": verdict.get("conflict_type"), "reason": mm.get("reason")}
+        for mm in (verdict.get("matched_against") or [])
+    ]
 
     return {
         "id": check.id,
         "client_name": check.client_name,
-        "status": check.status,
+        "status": status,
+        "conflict_found": conflict_found,
+        "conflict_type": verdict.get("conflict_type"),
+        "recommendation": verdict.get("recommendation"),
+        "sra_references": verdict.get("sra_references") or [],
+        "reasoning": verdict.get("reasoning"),
+        "ai_generated": verdict.get("ai_generated", False),
+        "summary": summary,
+        "matches": {"matters": matter_matches, "intakes": [], "parties": [], "clio_contacts": []},
         "created_at": str(check.created_at),
     }
 

@@ -1164,6 +1164,131 @@ Return valid JSON only."""
 # 6. PER-MATTER COMPLIANCE REVIEW
 # ═══════════════════════════════════════════════════════════════════
 
+# ── Conflict of interest check (AI) ─────────────────────────────────
+CONFLICT_CHECK_SYSTEM_PROMPT = """You are Seema AI, a conflict-of-interest checker for a UK law firm regulated by the SRA.
+
+Apply the SRA Standards and Regulations 2019:
+- Para 6.1 — own-interest conflict.
+- Para 6.2 — conflict between two or more current clients (only act under a permitted exception: substantially common interest OR competing for the same objective, WITH informed written consent and safeguards).
+- Paras 6.3-6.5 — duty of confidentiality to current AND former clients; do not act against a former client where you hold confidential information material to the new matter.
+
+Reason about the FACTS of the matter, not only whether names match. Acting against a party the firm previously advised on the same or a related matter is a classic conflict even if names differ.
+
+Decide exactly one status:
+- "clear"      — no conflict identified.
+- "potential"  — a possible conflict a human MUST review before proceeding.
+- "conflicted" — a clear conflict; do not act (or only with the proper exception/consent/safeguards).
+
+Return STRICT JSON only (no markdown):
+{
+  "status": "clear|potential|conflicted",
+  "conflict_type": "short label, e.g. 'former client - same matter' or 'none'",
+  "matched_against": [{"reference": "matter ref or party name", "reason": "why this conflicts"}],
+  "reasoning": "concise explanation a COLP can rely on",
+  "sra_references": ["SRA Code 6.2", ...],
+  "recommendation": "clear to proceed | obtain informed written consent | erect an information barrier | decline instruction"
+}
+Be cautious: when in doubt choose "potential" and explain. NEVER falsely clear a real conflict."""
+
+
+def check_conflicts(new_check: dict, existing_matters: list, parties: list, firm) -> dict:
+    """AI conflict-of-interest check: reason about a NEW matter against the firm's
+    existing matters + conflict-party register under SRA rules. Returns a verdict dict."""
+    firm_context = _build_firm_context(firm)
+
+    client = new_check.get("client_name") or "n/a"
+    mtype = new_check.get("matter_type") or "n/a"
+    new_parties = new_check.get("parties") or []
+    details = new_check.get("description") or ""
+
+    if existing_matters:
+        m_lines = []
+        for m in existing_matters[:200]:
+            m_lines.append(
+                f"  - Ref: {m.get('reference') or m.get('title') or 'n/a'} | "
+                f"Client: {m.get('client_name') or 'n/a'} | "
+                f"Type: {m.get('matter_type') or m.get('practice_area') or 'n/a'} | "
+                f"Desc: {(m.get('description') or '')[:160]}"
+            )
+        matters_block = "\n".join(m_lines)
+    else:
+        matters_block = "  (no existing matters on file)"
+
+    parties_block = "\n".join(f"  - {p}" for p in parties[:300]) if parties else "  (register empty)"
+    np_block = ", ".join(new_parties) if new_parties else "none listed"
+
+    user_prompt = f"""Run a conflict-of-interest check for a NEW matter.
+
+--- FIRM ---
+{firm_context}
+
+--- NEW MATTER ---
+Client: {client}
+Matter type: {mtype}
+Other parties on this matter: {np_block}
+Matter details / facts: {details or 'none provided'}
+
+--- FIRM'S EXISTING MATTERS (check the new matter against these) ---
+{matters_block}
+
+--- CONFLICT PARTIES REGISTER ---
+{parties_block}
+
+Assess against SRA paras 6.1, 6.2 and the duty of confidentiality to former clients.
+Use the FACTS in the matter details (e.g. acting against someone the firm previously
+advised on the same/related matter), not only exact name matches. Return JSON only."""
+
+    text = _call_claude(CONFLICT_CHECK_SYSTEM_PROMPT, user_prompt, max_tokens=1500,
+                        pii_terms=[client] + list(new_parties))
+    if text is None:
+        return _fallback_conflict_check(new_check, existing_matters, parties)
+
+    result = _parse_json_response(text)
+    if not isinstance(result, dict) or "status" not in result:
+        return _fallback_conflict_check(new_check, existing_matters, parties)
+
+    st = (result.get("status") or "potential").lower()
+    if st not in ("clear", "potential", "conflicted"):
+        st = "potential"
+    result["status"] = st
+    result["ai_generated"] = True
+    return result
+
+
+def _fallback_conflict_check(new_check: dict, existing_matters: list, parties: list) -> dict:
+    """Rule-based conflict check when AI is unavailable: case-insensitive name match
+    against existing matters' clients and the conflict-party register."""
+    names = {(new_check.get("client_name") or "").strip().lower()}
+    for p in (new_check.get("parties") or []):
+        names.add((p or "").strip().lower())
+    names.discard("")
+
+    matched = []
+    for m in existing_matters or []:
+        cn = (m.get("client_name") or "").strip().lower()
+        if cn and cn in names:
+            matched.append({"reference": m.get("reference") or m.get("title") or "matter",
+                            "reason": f"Same client name '{m.get('client_name')}' appears on an existing matter."})
+    for p in parties or []:
+        if (p or "").strip().lower() in names:
+            matched.append({"reference": p, "reason": "Name appears on the conflict-party register."})
+
+    if matched:
+        return {
+            "status": "potential", "conflict_type": "name match (rule-based)",
+            "matched_against": matched,
+            "reasoning": "AI unavailable - a name match was found and must be reviewed by a human under SRA paras 6.1/6.2.",
+            "sra_references": ["SRA Code 6.1", "SRA Code 6.2"],
+            "recommendation": "obtain informed written consent", "ai_generated": False,
+        }
+    return {
+        "status": "clear", "conflict_type": "none", "matched_against": [],
+        "reasoning": "AI unavailable - no name match found against existing matters or the register. Manual review still recommended.",
+        "sra_references": ["SRA Code 6.1", "SRA Code 6.2"],
+        "recommendation": "clear to proceed", "ai_generated": False,
+    }
+
+
 MATTER_REVIEW_SYSTEM_PROMPT = """You are Seema AI, a UK legal compliance reviewer.
 You analyze a single legal matter and identify compliance gaps under SRA Standards
 and Regulations 2019, AML regulations, and conflict-of-interest rules.

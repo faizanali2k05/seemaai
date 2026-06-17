@@ -68,3 +68,7 @@ archive/data/
 # Agent skills installed via the `skills` CLI (dev tooling, not app code)
 .agents/
 .claude/skills/
+
+# Playwright MCP test artifacts (screenshots/snapshots/console logs)
+.playwright-mcp/
+demo-*.png
