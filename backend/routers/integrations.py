@@ -133,7 +133,9 @@ async def clio_sync(
     """Trigger a Clio data sync.
 
     Body (optional):
-        {"sync_type": "full"}  — full, matters, contacts, staff
+        {"sync_type": "full"}  — full pulls everything (matters, contacts, staff,
+        bank accounts, transactions, calendar, activities, bills). Individual
+        types can also be requested for a targeted re-sync.
     """
     body = {}
     try:
@@ -141,8 +143,13 @@ async def clio_sync(
     except Exception:
         pass
 
+    valid_types = (
+        "full", "matters", "contacts", "staff",
+        "bank_accounts", "bank_transactions", "calendar",
+        "activities", "bills", "financials",
+    )
     sync_type = body.get("sync_type", "full")
-    if sync_type not in ("full", "matters", "contacts", "staff"):
+    if sync_type not in valid_types:
         raise HTTPException(400, f"Invalid sync_type: {sync_type}")
 
     try:
@@ -169,6 +176,70 @@ async def clio_sync(
                 "error": str(e),
             }
         }
+
+
+@router.get("/clio/activities")
+async def clio_activities(
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """List synced Clio time/expense activities for the firm."""
+    from sqlalchemy import select, desc
+    from models.clio_data import ClioActivity
+
+    rows = (await db.execute(
+        select(ClioActivity)
+        .where(ClioActivity.firm_id == user.firm_id)
+        .order_by(desc(ClioActivity.date))
+        .limit(500)
+    )).scalars().all()
+    return {
+        "data": [
+            {
+                "id": a.id,
+                "type": a.activity_type,
+                "date": a.date.isoformat() if a.date else None,
+                "quantity": float(a.quantity) if a.quantity is not None else None,
+                "total": float(a.total) if a.total is not None else None,
+                "note": a.note,
+                "matter_ref": a.matter_ref,
+                "user_name": a.user_name,
+            }
+            for a in rows
+        ]
+    }
+
+
+@router.get("/clio/bills")
+async def clio_bills(
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(tenant_db_from_jwt),
+):
+    """List synced Clio bills/invoices for the firm."""
+    from sqlalchemy import select, desc
+    from models.clio_data import ClioBill
+
+    rows = (await db.execute(
+        select(ClioBill)
+        .where(ClioBill.firm_id == user.firm_id)
+        .order_by(desc(ClioBill.issued_at))
+        .limit(500)
+    )).scalars().all()
+    return {
+        "data": [
+            {
+                "id": b.id,
+                "number": b.number,
+                "state": b.state,
+                "total": float(b.total) if b.total is not None else None,
+                "balance": float(b.balance) if b.balance is not None else None,
+                "issued_at": b.issued_at.isoformat() if b.issued_at else None,
+                "due_at": b.due_at.isoformat() if b.due_at else None,
+                "client_name": b.client_name,
+            }
+            for b in rows
+        ]
+    }
 
 
 @router.get("/clio/sync-history")

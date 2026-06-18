@@ -20,6 +20,10 @@ class ClientAccount(Base):
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
+    # Clio / PMS integration fields (added in migration 0005)
+    external_ref = Column(String(100), index=True)  # Clio bank_account ID
+    source = Column(String(50))  # "clio", "manual", etc.
+
 
 class Transaction(Base):
     __tablename__ = "transactions"
@@ -33,6 +37,10 @@ class Transaction(Base):
     type = Column(String(50))  # debit, credit, transfer
     matter_ref = Column(String(100))
     created_at = Column(DateTime, server_default=func.now())
+
+    # Clio / PMS integration fields (added in migration 0005)
+    external_ref = Column(String(100), index=True)  # Clio bank_transaction ID
+    source = Column(String(50))  # "clio", "manual", etc.
 
 
 class Reconciliation(Base):

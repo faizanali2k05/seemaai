@@ -18,9 +18,52 @@ from models.integrations import Integration, IntegrationSyncLog
 from models.matters import Matter
 from models.intake import ClientIntake
 from models.staff import StaffMember
+from models.client_accounts import ClientAccount, Transaction
+from models.workflow import Deadline
+from models.clio_data import ClioActivity, ClioBill
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
+
+
+def _fit(value, maxlen):
+    """Coerce to a trimmed str and cap to a column width; None/empty -> None.
+
+    Clio free-text fields can exceed our column limits (e.g. a phone field
+    holding "44 ... (applicant) - 44 ... (James Hindmarch)"); truncating keeps
+    the sync from aborting the whole batch on one oversized value.
+    """
+    if value is None:
+        return None
+    s = str(value).strip()
+    if not s:
+        return None
+    return s[:maxlen]
+
+
+def _parse_dt(value):
+    """Parse a Clio ISO-8601 date/datetime string to a naive datetime, or None."""
+    if not value:
+        return None
+    try:
+        s = str(value).strip().replace("Z", "+00:00")
+        dt = datetime.fromisoformat(s)
+        # Store naive UTC (the schema columns are timezone-naive).
+        if dt.tzinfo is not None:
+            dt = dt.astimezone(tz=None).replace(tzinfo=None)
+        return dt
+    except Exception:
+        return None
+
+
+def _num(value):
+    """Coerce a Clio numeric/string money value to float, or None."""
+    if value is None or value == "":
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def _fit(value, maxlen: int):
@@ -262,22 +305,48 @@ class ClioSyncEngine:
         total_errored = 0
 
         try:
+            # A full sync pulls everything available for the firm. bank_accounts
+            # MUST precede bank_transactions (transactions link to the synced
+            # accounts). Each entity also has its own sync_type for targeted runs.
+            full = [
+                "matters", "contacts", "staff",
+                "bank_accounts", "bank_transactions",
+                "calendar", "activities", "bills",
+            ]
             sync_methods = {
-                "full": ["matters", "contacts", "staff"],
+                "full": full,
                 "matters": ["matters"],
                 "contacts": ["contacts"],
                 "staff": ["staff"],
+                "bank_accounts": ["bank_accounts"],
+                "bank_transactions": ["bank_accounts", "bank_transactions"],
+                "calendar": ["calendar"],
+                "activities": ["activities"],
+                "bills": ["bills"],
+                "financials": ["bank_accounts", "bank_transactions", "bills"],
             }
-            entities = sync_methods.get(sync_type, ["matters", "contacts", "staff"])
+            entities = sync_methods.get(sync_type, full)
 
             for entity in entities:
                 method = getattr(self, f"_sync_{entity}", None)
-                if method:
+                if not method:
+                    continue
+                # Isolate each entity: a failing endpoint (e.g. a Clio plan that
+                # doesn't expose bills) must not abort the entities that follow.
+                try:
                     result = await method()
                     total_created += result.get("created", 0)
                     total_updated += result.get("updated", 0)
                     total_synced += result.get("synced", 0)
                     total_errored += result.get("errored", 0)
+                except Exception as e:
+                    logger.error(f"Entity '{entity}' sync failed for firm {self.firm_id}: {e}")
+                    total_errored += 1
+                    # Roll back any partial state so the next entity starts clean.
+                    try:
+                        await self.db.rollback()
+                    except Exception:
+                        pass
 
             duration = int(time.time() - start_time)
             sync_log.status = "completed"
@@ -518,6 +587,307 @@ class ClioSyncEngine:
             logger.error(f"Staff sync failed: {e}")
             raise
 
+        return {"synced": created + updated, "created": created, "updated": updated, "errored": errored}
+
+    async def _sync_bank_accounts(self) -> dict:
+        """Pull Clio bank accounts (Operating/Trust) into Seema's ClientAccount table."""
+        logger.info(f"Syncing bank accounts for firm {self.firm_id}")
+        created = updated = errored = 0
+
+        clio_accounts = await self.client.get_all_pages(
+            "/bank_accounts.json",
+            {"fields": "id,name,type,account_number,balance", "order": "id(asc)"},
+        )
+
+        for ba in clio_accounts:
+            clio_id = str(ba.get("id"))
+            try:
+                # Clio type is "Operating" or "Trust"; Seema uses client/office.
+                clio_type = (ba.get("type") or "").lower()
+                acct_type = "client" if "trust" in clio_type else "office"
+                acct_data = {
+                    "firm_id": self.firm_id,
+                    "external_ref": _fit(clio_id, 100),
+                    "account_name": _fit(ba.get("name") or "Clio account", 255),
+                    "account_type": acct_type,
+                    "balance": _num(ba.get("balance")) or 0,
+                    "account_number": _fit(ba.get("account_number"), 50),
+                    "status": "active",
+                    "source": "clio",
+                }
+                async with self.db.begin_nested():
+                    result = await self.db.execute(
+                        select(ClientAccount).where(
+                            ClientAccount.firm_id == self.firm_id,
+                            ClientAccount.external_ref == clio_id,
+                        )
+                    )
+                    existing = result.scalar_one_or_none()
+                    if existing:
+                        for key, val in acct_data.items():
+                            if key != "firm_id":
+                                setattr(existing, key, val)
+                        was_update = True
+                    else:
+                        self.db.add(ClientAccount(**acct_data))
+                        was_update = False
+                    await self.db.flush()
+                if was_update:
+                    updated += 1
+                else:
+                    created += 1
+            except Exception as e:
+                logger.warning(f"Failed to sync bank account {clio_id}: {e}")
+                errored += 1
+
+        await self.db.commit()
+        return {"synced": created + updated, "created": created, "updated": updated, "errored": errored}
+
+    async def _sync_bank_transactions(self) -> dict:
+        """Pull Clio bank transactions into Seema's Transaction table (client-money ledger)."""
+        logger.info(f"Syncing bank transactions for firm {self.firm_id}")
+        created = updated = errored = 0
+
+        # Map Clio bank_account id -> Seema ClientAccount.id so transactions link.
+        acct_rows = await self.db.execute(
+            select(ClientAccount.id, ClientAccount.external_ref).where(
+                ClientAccount.firm_id == self.firm_id,
+                ClientAccount.source == "clio",
+            )
+        )
+        acct_map = {ext: aid for aid, ext in acct_rows.all() if ext}
+
+        clio_txns = await self.client.get_all_pages(
+            "/bank_transactions.json",
+            {"fields": "id,type,date,amount,description,bank_account{id}", "order": "id(asc)"},
+        )
+
+        for tx in clio_txns:
+            clio_id = str(tx.get("id"))
+            try:
+                ba = tx.get("bank_account") or {}
+                clio_acct_id = str(ba.get("id")) if ba.get("id") is not None else None
+                account_id = acct_map.get(clio_acct_id)
+                if not account_id:
+                    # No matching Seema account (account sync may have skipped it).
+                    errored += 1
+                    continue
+                clio_type = (tx.get("type") or "").lower()
+                tx_type = "debit" if ("withdraw" in clio_type or "debit" in clio_type) else "credit"
+                tx_data = {
+                    "firm_id": self.firm_id,
+                    "external_ref": _fit(clio_id, 100),
+                    "account_id": account_id,
+                    "date": _parse_dt(tx.get("date")) or datetime.utcnow(),
+                    "description": _fit(tx.get("description"), 255),
+                    "amount": _num(tx.get("amount")) or 0,
+                    "type": tx_type,
+                    "source": "clio",
+                }
+                async with self.db.begin_nested():
+                    result = await self.db.execute(
+                        select(Transaction).where(
+                            Transaction.firm_id == self.firm_id,
+                            Transaction.external_ref == clio_id,
+                        )
+                    )
+                    existing = result.scalar_one_or_none()
+                    if existing:
+                        for key, val in tx_data.items():
+                            if key != "firm_id":
+                                setattr(existing, key, val)
+                        was_update = True
+                    else:
+                        self.db.add(Transaction(**tx_data))
+                        was_update = False
+                    await self.db.flush()
+                if was_update:
+                    updated += 1
+                else:
+                    created += 1
+            except Exception as e:
+                logger.warning(f"Failed to sync bank transaction {clio_id}: {e}")
+                errored += 1
+
+        await self.db.commit()
+        return {"synced": created + updated, "created": created, "updated": updated, "errored": errored}
+
+    async def _sync_calendar(self) -> dict:
+        """Pull Clio calendar entries into Seema's Deadline table (key dates)."""
+        logger.info(f"Syncing calendar entries for firm {self.firm_id}")
+        created = updated = errored = 0
+
+        clio_entries = await self.client.get_all_pages(
+            "/calendar_entries.json",
+            {
+                "fields": "id,summary,start_at,all_day,matter{display_number}",
+                "order": "id(asc)",
+            },
+        )
+
+        for ce in clio_entries:
+            clio_id = str(ce.get("id"))
+            try:
+                due = _parse_dt(ce.get("start_at"))
+                if due is None:
+                    errored += 1
+                    continue
+                matter = ce.get("matter") or {}
+                title = ce.get("summary") or "Clio calendar entry"
+                if matter.get("display_number"):
+                    title = f"{title} ({matter['display_number']})"
+                dl_data = {
+                    "firm_id": self.firm_id,
+                    "external_ref": _fit(clio_id, 100),
+                    "title": _fit(title, 255),
+                    "due_date": due,
+                    "category": "clio_calendar",
+                    "priority": "medium",
+                    "status": "pending",
+                    "source": "clio",
+                }
+                async with self.db.begin_nested():
+                    result = await self.db.execute(
+                        select(Deadline).where(
+                            Deadline.firm_id == self.firm_id,
+                            Deadline.external_ref == clio_id,
+                        )
+                    )
+                    existing = result.scalar_one_or_none()
+                    if existing:
+                        for key, val in dl_data.items():
+                            if key != "firm_id":
+                                setattr(existing, key, val)
+                        was_update = True
+                    else:
+                        self.db.add(Deadline(**dl_data))
+                        was_update = False
+                    await self.db.flush()
+                if was_update:
+                    updated += 1
+                else:
+                    created += 1
+            except Exception as e:
+                logger.warning(f"Failed to sync calendar entry {clio_id}: {e}")
+                errored += 1
+
+        await self.db.commit()
+        return {"synced": created + updated, "created": created, "updated": updated, "errored": errored}
+
+    async def _sync_activities(self) -> dict:
+        """Pull Clio time/expense activities into Seema's ClioActivity table."""
+        logger.info(f"Syncing activities for firm {self.firm_id}")
+        created = updated = errored = 0
+
+        clio_acts = await self.client.get_all_pages(
+            "/activities.json",
+            {
+                "fields": "id,type,date,quantity,total,note,matter{id,display_number},user{name}",
+                "order": "id(asc)",
+            },
+        )
+
+        for act in clio_acts:
+            clio_id = str(act.get("id"))
+            try:
+                matter = act.get("matter") or {}
+                user = act.get("user") or {}
+                act_data = {
+                    "firm_id": self.firm_id,
+                    "external_ref": _fit(clio_id, 100),
+                    "activity_type": _fit(act.get("type"), 50),
+                    "date": _parse_dt(act.get("date")),
+                    "quantity": _num(act.get("quantity")),
+                    "total": _num(act.get("total")),
+                    "note": act.get("note"),
+                    "matter_ref": _fit(matter.get("display_number"), 100),
+                    "matter_external_ref": _fit(str(matter.get("id")) if matter.get("id") is not None else None, 100),
+                    "user_name": _fit(user.get("name"), 255),
+                    "source": "clio",
+                }
+                async with self.db.begin_nested():
+                    result = await self.db.execute(
+                        select(ClioActivity).where(
+                            ClioActivity.firm_id == self.firm_id,
+                            ClioActivity.external_ref == clio_id,
+                        )
+                    )
+                    existing = result.scalar_one_or_none()
+                    if existing:
+                        for key, val in act_data.items():
+                            if key != "firm_id":
+                                setattr(existing, key, val)
+                        was_update = True
+                    else:
+                        self.db.add(ClioActivity(**act_data))
+                        was_update = False
+                    await self.db.flush()
+                if was_update:
+                    updated += 1
+                else:
+                    created += 1
+            except Exception as e:
+                logger.warning(f"Failed to sync activity {clio_id}: {e}")
+                errored += 1
+
+        await self.db.commit()
+        return {"synced": created + updated, "created": created, "updated": updated, "errored": errored}
+
+    async def _sync_bills(self) -> dict:
+        """Pull Clio bills/invoices into Seema's ClioBill table."""
+        logger.info(f"Syncing bills for firm {self.firm_id}")
+        created = updated = errored = 0
+
+        clio_bills = await self.client.get_all_pages(
+            "/bills.json",
+            {
+                "fields": "id,number,state,total,balance,issued_at,due_at,client{name}",
+                "order": "id(asc)",
+            },
+        )
+
+        for bill in clio_bills:
+            clio_id = str(bill.get("id"))
+            try:
+                client = bill.get("client") or {}
+                bill_data = {
+                    "firm_id": self.firm_id,
+                    "external_ref": _fit(clio_id, 100),
+                    "number": _fit(bill.get("number"), 100),
+                    "state": _fit(bill.get("state"), 50),
+                    "total": _num(bill.get("total")),
+                    "balance": _num(bill.get("balance")),
+                    "issued_at": _parse_dt(bill.get("issued_at")),
+                    "due_at": _parse_dt(bill.get("due_at")),
+                    "client_name": _fit(client.get("name"), 255),
+                    "source": "clio",
+                }
+                async with self.db.begin_nested():
+                    result = await self.db.execute(
+                        select(ClioBill).where(
+                            ClioBill.firm_id == self.firm_id,
+                            ClioBill.external_ref == clio_id,
+                        )
+                    )
+                    existing = result.scalar_one_or_none()
+                    if existing:
+                        for key, val in bill_data.items():
+                            if key != "firm_id":
+                                setattr(existing, key, val)
+                        was_update = True
+                    else:
+                        self.db.add(ClioBill(**bill_data))
+                        was_update = False
+                    await self.db.flush()
+                if was_update:
+                    updated += 1
+                else:
+                    created += 1
+            except Exception as e:
+                logger.warning(f"Failed to sync bill {clio_id}: {e}")
+                errored += 1
+
+        await self.db.commit()
         return {"synced": created + updated, "created": created, "updated": updated, "errored": errored}
 
 

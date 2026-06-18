@@ -24,7 +24,11 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   children,
   label,
 }) => {
-  const status = statusProp || variant || 'info';
+  // Coerce to a string: some callers accidentally pass a non-string (e.g. a
+  // React element when a status column was pre-rendered into row data). Guard
+  // so .charAt/.slice below never throw "charAt is not a function".
+  const rawStatus = statusProp ?? variant ?? 'info';
+  const status = typeof rawStatus === 'string' ? rawStatus : 'info';
   const sizeStyles = {
     sm: 'px-2 py-1 text-xs',
     md: 'px-3 py-1.5 text-sm',

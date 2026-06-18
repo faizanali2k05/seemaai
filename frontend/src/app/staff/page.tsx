@@ -117,10 +117,12 @@ export default function StaffPage() {
 
   const staffColumns = [
     { accessor: 'name', header: 'NAME', sortable: true },
-    { accessor: 'role', header: 'ROLE', sortable: true },
+    { accessor: 'role', header: 'ROLE', sortable: true, render: (v: any) => formatRole(v) || '-' },
     { accessor: 'department', header: 'DEPARTMENT', sortable: true },
     { accessor: 'email', header: 'EMAIL', sortable: false },
-    { accessor: 'status', header: 'STATUS', sortable: true },
+    // Render the badge via the column (not by mutating row data) so the row
+    // object passed to onRowClick keeps the raw string status.
+    { accessor: 'status', header: 'STATUS', sortable: true, render: (v: any) => <StatusBadge status={v} /> },
   ];
 
   const trainingColumns = [
@@ -310,12 +312,7 @@ export default function StaffPage() {
             {filteredStaff.length > 0 ? (
               <DataTable
                 columns={staffColumns}
-                data={filteredStaff.map((s) => ({
-                  ...s,
-                  status: (
-                    <StatusBadge status={s.status as any} />
-                  ),
-                }))}
+                data={filteredStaff}
                 onRowClick={(row) => {
                   setSelectedStaff(row as StaffMember);
                   setShowDetailModal(true);

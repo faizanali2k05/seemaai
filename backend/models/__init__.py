@@ -34,6 +34,7 @@ from .data_mgmt import ImportHistory
 from .integrations import Integration, IntegrationSyncLog
 from .law import KeyDate, SupervisionRecord, SupervisionSession
 from .workflow import Deadline
+from .clio_data import ClioActivity, ClioBill
 
 __all__ = [
     'Firm',
@@ -78,4 +79,6 @@ __all__ = [
     'SupervisionRecord',
     'SupervisionSession',
     'Deadline',
+    'ClioActivity',
+    'ClioBill',
 ]

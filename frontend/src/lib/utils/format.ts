@@ -231,8 +231,11 @@ export function statusBadgeColor(status: ComplianceStatus | string | null | unde
  * Get human-readable status label
  */
 export function formatStatus(status: string | null | undefined): string {
-  if (!status) return '';
-  return status
+  if (status === null || status === undefined || status === '') return '';
+  // Coerce non-strings (a number, or an accidental React element) so .split
+  // never throws "split is not a function".
+  const s = typeof status === 'string' ? status : String(status);
+  return s
     .split('_')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
@@ -320,8 +323,11 @@ export function getEmailDomain(email: string | null | undefined): string {
  * Capitalize string
  */
 export function capitalize(str: string | null | undefined): string {
-  if (!str) return '';
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  if (str === null || str === undefined || str === '') return '';
+  // Coerce non-strings (number / accidental React element) so .charAt never
+  // throws "charAt is not a function".
+  const s = typeof str === 'string' ? str : String(str);
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 }
 
 /**

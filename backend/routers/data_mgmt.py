@@ -55,6 +55,8 @@ async def get_database_stats(
     from models.remediation import RemediationPlan
     from models.chaser import ChaserLog
     from models.workflow import Deadline
+    from models.client_accounts import ClientAccount, Transaction
+    from models.clio_data import ClioActivity, ClioBill
 
     # (label, model) — order is the display order in the UI.
     targets = [
@@ -70,6 +72,10 @@ async def get_database_stats(
         ("Remediation Plans", RemediationPlan),
         ("Chasers", ChaserLog),
         ("Deadlines", Deadline),
+        ("Client Accounts", ClientAccount),
+        ("Transactions", Transaction),
+        ("Clio Activities", ClioActivity),
+        ("Clio Bills", ClioBill),
     ]
 
     stats = []
